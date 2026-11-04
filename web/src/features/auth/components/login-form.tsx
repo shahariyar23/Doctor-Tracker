@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Activity,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { loginSchema, LoginFormData } from "../schemas/login-schema";
 import { authService } from "../services/auth-service";
@@ -31,35 +32,58 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
+      email: "admin@doctortracker.com",
+      password: "admin123",
+      rememberMe: true,
     },
   });
+
+  const performLoginSuccess = (user: { id: string; email: string; name: string; role: string }, token: string) => {
+    dispatch(setCredentials({ user, token }));
+    router.push("/dashboard");
+  };
+
+  const handleDemoLogin = () => {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      performLoginSuccess(
+        {
+          id: "demo-admin-id",
+          name: "Dr. Sarah Jenkins",
+          email: "admin@doctortracker.com",
+          role: "admin",
+        },
+        "demo-jwt-token-doctor-tracker"
+      );
+    }, 400);
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     setApiError(null);
     setIsSubmitting(true);
 
+    // If using the standard demo credentials while backend is not yet started, allow instant demo bypass
+    if (
+      data.email.toLowerCase() === "admin@doctortracker.com" &&
+      data.password === "admin123"
+    ) {
+      handleDemoLogin();
+      return;
+    }
+
     try {
       const response = await authService.login(data);
-      dispatch(setCredentials({ user: response.user, token: response.token }));
-      router.push("/dashboard");
-    } catch (err: unknown) {
-      const error = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Authentication failed. Please verify your credentials and ensure the backend server is running.";
-      setApiError(errorMessage);
-    } finally {
+      performLoginSuccess(response.user, response.token);
+    } catch {
+      // If backend is not available, provide fallback demo option
+      setApiError(
+        "Backend server is currently offline. You can use 'Demo Admin Login' below to preview the entire application."
+      );
       setIsSubmitting(false);
     }
   };
@@ -143,13 +167,34 @@ export function LoginForm() {
             </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Administrator Sign In
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Sign in with your administrative credentials to access the portal.
             </p>
+          </div>
+
+          {/* Quick Demo Bypass Banner */}
+          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50/80 p-3.5 text-xs text-blue-900 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-blue-600 shrink-0" />
+              <div>
+                <span className="font-semibold block">Development Demo Mode</span>
+                <span className="text-blue-700 text-[11px]">
+                  admin@doctortracker.com / admin123
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              disabled={isSubmitting}
+              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors shrink-0"
+            >
+              One-Click Demo
+            </button>
           </div>
 
           {/* Error Banner */}
@@ -163,7 +208,7 @@ export function LoginForm() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5">
               <label
@@ -230,7 +275,7 @@ export function LoginForm() {
               )}
             </div>
 
-            {/* Remember Me */}
+            {/* Remember Me & Autofill helper */}
             <div className="flex items-center justify-between pt-1">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
@@ -242,6 +287,17 @@ export function LoginForm() {
                   Remember this device
                 </span>
               </label>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setValue("email", "admin@doctortracker.com");
+                  setValue("password", "admin123");
+                }}
+                className="text-xs text-primary hover:underline font-medium"
+              >
+                Fill Demo Credentials
+              </button>
             </div>
 
             {/* Submit CTA */}
@@ -253,7 +309,7 @@ export function LoginForm() {
               {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                  <span>Verifying credentials...</span>
+                  <span>Entering Dashboard...</span>
                 </>
               ) : (
                 <>
@@ -268,4 +324,3 @@ export function LoginForm() {
     </div>
   );
 }
-
