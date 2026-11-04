@@ -15,13 +15,17 @@ import {
   ExternalLink,
   Edit2,
   Trash2,
+  CheckSquare,
+  ShieldCheck,
   CheckCircle,
+  XCircle,
   Clock,
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -50,6 +54,10 @@ interface DoctorTableProps {
   onSearchChange: (search: string) => void;
   selectedSpecialty: string;
   onSpecialtyChange: (specialty: string) => void;
+  selectedStatus: string;
+  onStatusChange: (status: string) => void;
+  selectedShift: string;
+  onShiftChange: (shift: string) => void;
   startDate: string;
   onStartDateChange: (date: string) => void;
   endDate: string;
@@ -62,6 +70,7 @@ interface DoctorTableProps {
   onToggleSelectDoctor?: (id: string) => void;
   onToggleSelectAll?: () => void;
   onBulkDelete?: () => void;
+  onBulkStatusChange?: (status: Doctor["status"]) => void;
 }
 
 const SPECIALTY_OPTIONS = [
@@ -119,6 +128,10 @@ export function DoctorTable({
   onSearchChange,
   selectedSpecialty,
   onSpecialtyChange,
+  selectedStatus,
+  onStatusChange,
+  selectedShift,
+  onShiftChange,
   startDate,
   onStartDateChange,
   endDate,
@@ -131,6 +144,7 @@ export function DoctorTable({
   onToggleSelectDoctor,
   onToggleSelectAll,
   onBulkDelete,
+  onBulkStatusChange,
 }: DoctorTableProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -141,19 +155,27 @@ export function DoctorTable({
   const isSomeSelected =
     doctors.some((d) => selectedDoctorIds.includes(d.id)) && !isAllSelected;
 
+  const statusChips = [
+    { label: "All Doctors", value: "", count: stats?.totalDoctors || totalDoctors },
+    { label: "Active", value: "Active", count: stats?.activeOnDuty || 136 },
+    { label: "At Capacity", value: "At Capacity", count: stats?.atCapacity || 12 },
+    { label: "On Leave", value: "On Leave", count: stats?.onLeave || 12 },
+    { label: "Accepting Patients", value: "Accepting Patients", count: stats?.acceptingPatients || 94 },
+  ];
+
   return (
     <div className="space-y-4">
-      {/* Search and Date Filter Bar */}
+      {/* Search, Filter Bar and Quick Status Chips (Matching Design) */}
       <Card className="border border-border/80 shadow-xs">
         <CardContent className="p-4 space-y-3">
-          {/* Top Row: Search, Specialty, Date Range, Layout Switcher */}
+          {/* Top Row: Search, Dropdowns, Date Range, Layout Switcher */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
               <Input
                 type="text"
-                placeholder="Search doctors by name, specialization, hospital, email, phone..."
+                placeholder="Search doctors by name, specialty, ID, email..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 h-10 text-xs bg-muted/30 focus:bg-background rounded-xl border-border/80"
@@ -166,11 +188,37 @@ export function DoctorTable({
               <select
                 value={selectedSpecialty}
                 onChange={(e) => onSpecialtyChange(e.target.value)}
-                className="h-10 rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 {SPECIALTY_OPTIONS.map((spec) => (
                   <option key={spec} value={spec === "All Specialties" ? "" : spec}>
                     {spec}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status Select */}
+              <select
+                value={selectedStatus}
+                onChange={(e) => onStatusChange(e.target.value)}
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+              >
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="At Capacity">At Capacity</option>
+                <option value="On Leave">On Leave</option>
+                <option value="Available">Available (Accepting)</option>
+              </select>
+
+              {/* Shift Select */}
+              <select
+                value={selectedShift}
+                onChange={(e) => onShiftChange(e.target.value)}
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+              >
+                {SHIFT_OPTIONS.map((shift) => (
+                  <option key={shift} value={shift === "All Shifts" ? "" : shift}>
+                    {shift}
                   </option>
                 ))}
               </select>
@@ -185,11 +233,11 @@ export function DoctorTable({
                 title="Filter by Registration Date Range"
               >
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="hidden sm:inline">Date Filter</span>
+                <span className="inline">Dates</span>
               </Button>
 
               {/* List / Grid Toggle */}
-              <div className="flex items-center rounded-xl border border-border bg-muted/40 p-1">
+              <div className="flex items-center rounded-xl border border-border bg-muted/40 p-1 ml-auto sm:ml-0">
                 <Button
                   type="button"
                   variant={viewMode === "list" ? "default" : "ghost"}
@@ -216,14 +264,14 @@ export function DoctorTable({
 
           {/* Expandable Date-wise Filter */}
           {showDatePicker && (
-            <div className="flex items-center gap-2 pt-2 border-t border-border/50 text-xs">
-              <span className="text-muted-foreground font-medium">Date Range:</span>
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50 text-xs">
+              <span className="text-muted-foreground font-medium">Joined Range:</span>
               <Input
                 type="date"
                 title="Start Date"
                 value={startDate}
                 onChange={(e) => onStartDateChange(e.target.value)}
-                className="h-8 w-36 px-2 text-xs"
+                className="h-8 w-32 sm:w-36 px-2 text-xs"
               />
               <span className="text-muted-foreground">to</span>
               <Input
@@ -231,7 +279,7 @@ export function DoctorTable({
                 title="End Date"
                 value={endDate}
                 onChange={(e) => onEndDateChange(e.target.value)}
-                className="h-8 w-36 px-2 text-xs"
+                className="h-8 w-32 sm:w-36 px-2 text-xs"
               />
               {(startDate || endDate) && (
                 <Button
@@ -249,6 +297,38 @@ export function DoctorTable({
               )}
             </div>
           )}
+
+          {/* Bottom Row: Quick Status Filter Tabs (Matching the Image) */}
+          <div className="flex items-center gap-2 pt-2 border-t border-border/50 overflow-x-auto pb-1">
+            {statusChips.map((chip) => {
+              const isActive = selectedStatus === chip.value;
+              return (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => onStatusChange(chip.value)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 select-none",
+                    isActive
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <span>{chip.label}</span>
+                  <span
+                    className={cn(
+                      "text-[10px] px-1.5 py-0.2 rounded-full font-bold",
+                      isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-background text-muted-foreground"
+                    )}
+                  >
+                    {chip.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
@@ -260,11 +340,36 @@ export function DoctorTable({
               {selectedDoctorIds.length}
             </span>
             <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-              doctor{selectedDoctorIds.length > 1 ? "s" : ""} selected
+              physician{selectedDoctorIds.length > 1 ? "s" : ""} selected
             </span>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {onBulkStatusChange && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("Active")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Mark Active</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("On Leave")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Mark On Leave</span>
+                </Button>
+              </>
+            )}
+
             {onBulkDelete && (
               <Button
                 type="button"
@@ -314,11 +419,11 @@ export function DoctorTable({
                       />
                     )}
                   </TableHead>
-                  <TableHead className="py-3 px-4">PHYSICIAN & HOSPITAL</TableHead>
-                  <TableHead className="py-3 px-4">SPECIALIZATION</TableHead>
-                  <TableHead className="py-3 px-4">PHONE</TableHead>
-                  <TableHead className="py-3 px-4">EMAIL</TableHead>
-                  <TableHead className="py-3 px-4">ASSIGNED PATIENTS</TableHead>
+                  <TableHead className="py-3 px-4">PHYSICIAN & ID</TableHead>
+                  <TableHead className="py-3 px-4">SPECIALTY</TableHead>
+                  <TableHead className="py-3 px-4">CONTACT DETAILS</TableHead>
+                  <TableHead className="py-3 px-4 min-w-[170px]">CASELOAD CAPACITY</TableHead>
+                  <TableHead className="py-3 px-4">STATUS</TableHead>
                   <TableHead className="py-3 px-5 text-right">ACTIONS</TableHead>
                 </TableRow>
               </TableHeader>
@@ -348,8 +453,12 @@ export function DoctorTable({
                 ) : (
                   doctors.map((doctor, index) => {
                     const initials = getInitials(doctor.name);
+                    const docCode = getDoctorCode(doctor, index);
                     const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
                     const currentCount = doctor.patientCount || 0;
+                    const maxCap = doctor.maxCapacity || 35;
+                    const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
+                    const isOverloaded = caseloadPercent >= 90;
                     const isSelected = selectedDoctorIds.includes(doctor.id);
 
                     return (
@@ -373,7 +482,7 @@ export function DoctorTable({
                           )}
                         </TableCell>
 
-                        {/* NAME & HOSPITAL (PDF REQUIRED) */}
+                        {/* PHYSICIAN & ID */}
                         <TableCell className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div
@@ -391,35 +500,77 @@ export function DoctorTable({
                               >
                                 {doctor.name}
                               </Link>
-                              <span className="text-[11px] text-muted-foreground">
-                                {doctor.hospital}
+                              <span className="text-[11px] font-mono text-muted-foreground">
+                                {docCode}
                               </span>
                             </div>
                           </div>
                         </TableCell>
 
-                        {/* SPECIALIZATION (PDF REQUIRED) */}
+                        {/* SPECIALTY */}
                         <TableCell className="py-3 px-4">
                           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/50 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
                             {doctor.specialization}
                           </span>
                         </TableCell>
 
-                        {/* PHONE (PDF REQUIRED) */}
+                        {/* CONTACT DETAILS */}
                         <TableCell className="py-3 px-4">
-                          <span className="text-xs font-medium text-foreground">{doctor.phone}</span>
+                          <div className="flex flex-col text-xs leading-relaxed">
+                            <span className="font-medium text-foreground">{doctor.email}</span>
+                            <span className="text-muted-foreground text-[11px]">{doctor.phone}</span>
+                          </div>
                         </TableCell>
 
-                        {/* EMAIL (PDF REQUIRED) */}
+                        {/* CASELOAD CAPACITY */}
                         <TableCell className="py-3 px-4">
-                          <span className="text-xs text-muted-foreground">{doctor.email}</span>
+                          <div className="w-full max-w-[160px] space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-foreground">
+                                {currentCount} <span className="text-muted-foreground font-normal">/ {maxCap}</span>
+                              </span>
+                              <span
+                                className={cn(
+                                  "font-bold text-xs",
+                                  isOverloaded ? "text-red-600" : "text-blue-600"
+                                )}
+                              >
+                                {caseloadPercent}%
+                              </span>
+                            </div>
+                            {/* Horizontal Progress Bar */}
+                            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                              <div
+                                className={cn(
+                                  "h-full rounded-full transition-all duration-300",
+                                  isOverloaded ? "bg-red-600" : "bg-blue-600"
+                                )}
+                                style={{ width: `${caseloadPercent}%` }}
+                              />
+                            </div>
+                          </div>
                         </TableCell>
 
-                        {/* CORRESPONDING PATIENTS COUNT */}
+                        {/* STATUS */}
                         <TableCell className="py-3 px-4">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                            {currentCount} patient{currentCount === 1 ? "" : "s"}
-                          </span>
+                          {doctor.status === "At Capacity" ? (
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50">
+                              At Capacity
+                            </span>
+                          ) : doctor.status === "On Leave" ? (
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400">
+                              On Leave
+                            </span>
+                          ) : doctor.status === "Available" ? (
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-400">
+                              Accepting Patients
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                              <span>Active</span>
+                            </span>
+                          )}
                         </TableCell>
 
                         {/* ACTIONS */}
@@ -428,14 +579,14 @@ export function DoctorTable({
                             <button
                               type="button"
                               onClick={() => onViewPatients(doctor)}
-                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5 cursor-pointer"
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5"
                             >
-                              View Patients
+                              Patients
                             </button>
 
                             <DropdownMenu>
                               <DropdownMenuTrigger
-                                className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                                className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                                 aria-label="Open doctor menu"
                               >
                                 <MoreVertical className="h-4 w-4" />
@@ -477,14 +628,14 @@ export function DoctorTable({
           </div>
 
           {/* Pagination Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-5 py-3 bg-muted/20 text-xs text-muted-foreground">
-            <span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-4 sm:px-5 py-3 bg-muted/20 text-xs text-muted-foreground">
+            <span className="order-2 sm:order-1 text-center sm:text-left">
               Showing page <strong className="text-foreground">{currentPage}</strong>{" "}
               of <strong className="text-foreground">{Math.max(totalPages, 1)}</strong>{" "}
               ({totalDoctors} total doctors)
             </span>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
@@ -557,7 +708,7 @@ export function DoctorTable({
                       >
                         {doctor.name}
                       </Link>
-                      <p className="text-[11px] text-muted-foreground">{doctor.hospital}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground">{docCode}</p>
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
@@ -567,25 +718,27 @@ export function DoctorTable({
 
                 <div className="space-y-1.5 pt-2 border-t border-border/50 text-xs">
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Email:</span>
-                    <span className="text-foreground">{doctor.email}</span>
+                    <span>Caseload:</span>
+                    <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-blue-600")}>
+                      {currentCount} / {maxCap} ({caseloadPercent}%)
+                    </span>
                   </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Phone:</span>
-                    <span className="text-foreground">{doctor.phone}</span>
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full", isOverloaded ? "bg-red-600" : "bg-blue-600")}
+                      style={{ width: `${caseloadPercent}%` }}
+                    />
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
-                  <span className="text-muted-foreground">
-                    {currentCount} assigned patient{currentCount === 1 ? "" : "s"}
-                  </span>
+                  <span className="text-muted-foreground">{doctor.phone}</span>
                   <button
                     type="button"
                     onClick={() => onViewPatients(doctor)}
-                    className="font-semibold text-blue-600 hover:underline cursor-pointer"
+                    className="font-semibold text-blue-600 hover:underline"
                   >
-                    View Patients
+                    View Patients ({currentCount})
                   </button>
                 </div>
               </Card>

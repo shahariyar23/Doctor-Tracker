@@ -1,16 +1,28 @@
-export type PatientCondition = string;
+export type PatientCondition =
+  | "Critical"
+  | "Under Treatment"
+  | "Stable"
+  | "Recovering";
+
+export type PatientStatus = "Active" | "Inactive" | "Archived";
 
 export interface Patient {
   id: string;
+  code?: string;
   name: string;
+  phone: string;
+  age?: number;
+  gender?: "Male" | "Female" | "Other";
   condition: PatientCondition;
+  status: PatientStatus;
+  bloodGroup?: string;
+  roomNumber?: string;
   assignedDoctorId?: string | null;
   assignedDoctor?: {
     id: string;
     name: string;
     specialization?: string;
   } | null;
-  phone?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -18,6 +30,7 @@ export interface Patient {
 export interface PatientFilterParams {
   search?: string;
   condition?: string;
+  status?: string;
   doctorId?: string;
   startDate?: string;
   endDate?: string;
@@ -27,8 +40,11 @@ export interface PatientFilterParams {
 
 export interface PatientStats {
   totalPatients: number;
-  assignedCount: number;
-  unassignedCount: number;
+  underTreatment: number;
+  criticalCare: number;
+  stable: number;
+  recovering: number;
+  unassigned: number;
 }
 
 export interface PaginatedPatientsResponse {

@@ -10,7 +10,7 @@ export const doctorSchema = z.object({
     .min(2, "Specialization is required (e.g., Cardiology, Neurology)"),
   hospital: z
     .string()
-    .min(2, "Hospital name is required"),
+    .min(2, "Hospital or clinical facility name is required"),
   phone: z
     .string()
     .min(6, "Valid phone number is required")
@@ -18,7 +18,8 @@ export const doctorSchema = z.object({
   email: z
     .string()
     .min(1, "Email address is required")
-    .email("Please provide a valid email address"),
+    .email("Please provide a valid clinical email address"),
+  status: z.enum(["Active", "Available", "On Leave", "At Capacity"]).optional(),
 });
 
 export type DoctorFormData = z.infer<typeof doctorSchema>;
