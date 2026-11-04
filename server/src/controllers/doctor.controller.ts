@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { Doctor } from "../models/doctor.model.js";
+import { Doctor, type IDoctor } from "../models/doctor.model.js";
 import { Patient } from "../models/patient.model.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
@@ -7,8 +7,14 @@ import { ApiResponse } from "../utils/api-response.js";
 import type {
   CreateDoctorInput,
   UpdateDoctorInput,
+  DoctorQueryInput,
 } from "../validators/doctor.validator.js";
 import type { IdParamInput } from "../validators/common.validator.js";
+import {
+  escapeRegex,
+  parseDateFrom,
+  parseDateTo,
+} from "../validators/common.validator.js";
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
@@ -55,18 +61,64 @@ export const createDoctorHandler = asyncHandler(
 );
 
 /**
- * Retrieve all Doctors
+ * Retrieve Doctors with search, date filtering and database pagination
  * GET /api/v1/doctors
  */
 export const getAllDoctorsHandler = asyncHandler(
-  async (_req: Request, res: Response): Promise<void> => {
-    const doctors = await Doctor.find().sort({ createdAt: -1 });
+  async (req: Request, res: Response): Promise<void> => {
+    const query = (req.validated?.query ?? req.query) as unknown as DoctorQueryInput;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const filter: Record<string, unknown> = {};
+
+    // Search condition across name, specialization, hospital, email
+    if (query.search && query.search.trim().length > 0) {
+      const searchRegex = new RegExp(escapeRegex(query.search.trim()), "i");
+      filter.$or = [
+        { name: searchRegex },
+        { specialization: searchRegex },
+        { hospital: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    // Date range condition on createdAt
+    if (query.from || query.to) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.from) {
+        dateFilter.$gte = parseDateFrom(query.from);
+      }
+      if (query.to) {
+        dateFilter.$lte = parseDateTo(query.to);
+      }
+      filter.createdAt = dateFilter;
+    }
+
+    // Run query and total count concurrently
+    const [doctors, total] = await Promise.all([
+      Doctor.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Doctor.countDocuments(filter),
+    ]);
+
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     ApiResponse.success(
       res,
       {
         message: "Doctors retrieved successfully",
         data: doctors,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages,
+        },
       },
     );
   },

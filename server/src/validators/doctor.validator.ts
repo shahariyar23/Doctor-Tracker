@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dateStringSchema, parseDateFrom, parseDateTo } from "./common.validator.js";
 
 /**
  * Zod schema for creating a new Doctor record.
@@ -45,3 +46,49 @@ export const updateDoctorBodySchema = createDoctorBodySchema
 
 export type UpdateDoctorInput = z.infer<typeof updateDoctorBodySchema>;
 
+/**
+ * Zod schema for Doctor list query parameters:
+ * page, limit, search, from, to
+ */
+export const doctorQuerySchema = z
+  .object({
+    page: z
+      .string()
+      .optional()
+      .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 1))
+      .refine(
+        (val) => !isNaN(val) && val >= 1,
+        "Page must be a positive integer",
+      ),
+    limit: z
+      .string()
+      .optional()
+      .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 10))
+      .refine(
+        (val) => !isNaN(val) && val >= 1 && val <= 100,
+        "Limit must be between 1 and 100",
+      ),
+    search: z
+      .string()
+      .trim()
+      .max(100, "Search term cannot exceed 100 characters")
+      .optional(),
+    from: dateStringSchema.optional(),
+    to: dateStringSchema.optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.from && data.to) {
+        const fromDate = parseDateFrom(data.from);
+        const toDate = parseDateTo(data.to);
+        return fromDate <= toDate;
+      }
+      return true;
+    },
+    {
+      message: "'from' date cannot be later than 'to' date",
+      path: ["from"],
+    },
+  );
+
+export type DoctorQueryInput = z.infer<typeof doctorQuerySchema>;

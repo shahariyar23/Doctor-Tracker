@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { Patient } from "../models/patient.model.js";
+import { Patient, type IPatient } from "../models/patient.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiError } from "../utils/api-error.js";
@@ -7,8 +7,14 @@ import { ApiResponse } from "../utils/api-response.js";
 import type {
   CreatePatientInput,
   UpdatePatientInput,
+  PatientQueryInput,
 } from "../validators/patient.validator.js";
 import type { IdParamInput } from "../validators/common.validator.js";
+import {
+  escapeRegex,
+  parseDateFrom,
+  parseDateTo,
+} from "../validators/common.validator.js";
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
@@ -63,18 +69,69 @@ export const createPatientHandler = asyncHandler(
 );
 
 /**
- * Retrieve all Patients
+ * Retrieve Patients with search, condition filtering, date filtering, and database pagination
  * GET /api/v1/patients
  */
 export const getAllPatientsHandler = asyncHandler(
-  async (_req: Request, res: Response): Promise<void> => {
-    const patients = await Patient.find().sort({ createdAt: -1 });
+  async (req: Request, res: Response): Promise<void> => {
+    const query = (req.validated?.query ?? req.query) as unknown as PatientQueryInput;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const filter: Record<string, unknown> = {};
+
+    // Search condition across patient name, condition, and phone
+    if (query.search && query.search.trim().length > 0) {
+      const searchRegex = new RegExp(escapeRegex(query.search.trim()), "i");
+      filter.$or = [
+        { name: searchRegex },
+        { condition: searchRegex },
+        { phone: searchRegex },
+      ];
+    }
+
+    // Condition exact match (case-insensitive)
+    if (query.condition && query.condition.trim().length > 0) {
+      const conditionRegex = new RegExp(`^${escapeRegex(query.condition.trim())}$`, "i");
+      filter.condition = conditionRegex;
+    }
+
+    // Date range condition on createdAt
+    if (query.from || query.to) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.from) {
+        dateFilter.$gte = parseDateFrom(query.from);
+      }
+      if (query.to) {
+        dateFilter.$lte = parseDateTo(query.to);
+      }
+      filter.createdAt = dateFilter;
+    }
+
+    // Run query and count concurrently
+    const [patients, total] = await Promise.all([
+      Patient.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Patient.countDocuments(filter),
+    ]);
+
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     ApiResponse.success(
       res,
       {
         message: "Patients retrieved successfully",
         data: patients,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages,
+        },
       },
     );
   },
@@ -171,4 +228,3 @@ export const deletePatientHandler = asyncHandler(
     );
   },
 );
-

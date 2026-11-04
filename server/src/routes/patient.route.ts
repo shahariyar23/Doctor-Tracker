@@ -11,6 +11,7 @@ import { validate } from "../middlewares/validate.middleware.js";
 import {
   createPatientBodySchema,
   updatePatientBodySchema,
+  patientQuerySchema,
 } from "../validators/patient.validator.js";
 import { idParamSchema } from "../validators/common.validator.js";
 
@@ -25,7 +26,11 @@ router.post(
   createPatientHandler,
 );
 
-router.get("/", getAllPatientsHandler);
+router.get(
+  "/",
+  validate({ query: patientQuerySchema }),
+  getAllPatientsHandler,
+);
 
 router.get(
   "/:id",
@@ -46,4 +51,3 @@ router.delete(
 );
 
 export default router;
-
