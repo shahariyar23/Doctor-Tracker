@@ -15,7 +15,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Patient, PatientStats } from "../types";
-import { usePatients, useDeletePatient } from "../hooks/use-patients";
+import {
+  usePatients,
+  useDeletePatient,
+  useBulkDeletePatients,
+  useBulkReassignPatients,
+  useBulkUpdatePatientStatus,
+} from "../hooks/use-patients";
+import { useDoctors } from "@/features/doctors/hooks/use-doctors";
 import { PatientTable } from "./patient-table";
 import { PatientFormModal } from "./patient-form-modal";
 import { PatientDetailModal } from "./patient-detail-modal";
@@ -41,6 +48,11 @@ export function PatientsView() {
   const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
   const [selectedPatientForDetail, setSelectedPatientForDetail] =
     useState<Patient | null>(null);
+  const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
+
+  // Doctors for bulk reassign
+  const { data: doctorsData } = useDoctors({ limit: 100 });
+  const doctors = doctorsData?.doctors || [];
 
   // Data Fetching
   const { data, isLoading, isError, error, refetch } = usePatients({
@@ -54,6 +66,74 @@ export function PatientsView() {
   });
 
   const deleteMutation = useDeletePatient();
+  const bulkDeleteMutation = useBulkDeletePatients();
+  const bulkReassignMutation = useBulkReassignPatients();
+  const bulkUpdateStatusMutation = useBulkUpdatePatientStatus();
+
+  const handleToggleSelectPatient = (id: string) => {
+    setSelectedPatientIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    const pagePatients = data?.patients || [];
+    const allIds = pagePatients.map((p) => p.id);
+    const isAllSelected =
+      allIds.length > 0 && allIds.every((id) => selectedPatientIds.includes(id));
+
+    if (isAllSelected) {
+      setSelectedPatientIds((prev) => prev.filter((id) => !allIds.includes(id)));
+    } else {
+      setSelectedPatientIds((prev) => Array.from(new Set([...prev, ...allIds])));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPatientIds.length === 0) return;
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedPatientIds.length} selected patient records? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await bulkDeleteMutation.mutateAsync(selectedPatientIds);
+        setSelectedPatientIds([]);
+      } catch {
+        alert("Failed to delete selected patients.");
+      }
+    }
+  };
+
+  const handleBulkStatusChange = async (status: Patient["status"]) => {
+    if (selectedPatientIds.length === 0) return;
+    try {
+      await bulkUpdateStatusMutation.mutateAsync({
+        patientIds: selectedPatientIds,
+        status,
+      });
+      setSelectedPatientIds([]);
+    } catch {
+      alert("Failed to update status for selected patients.");
+    }
+  };
+
+  const handleBulkReassign = async (doctorId: string) => {
+    if (selectedPatientIds.length === 0) return;
+    const doc = doctors.find((d) => d.id === doctorId);
+    try {
+      await bulkReassignMutation.mutateAsync({
+        patientIds: selectedPatientIds,
+        doctorId: doctorId || null,
+        doctorMeta: doc
+          ? { id: doc.id, name: doc.name, specialization: doc.specialization }
+          : undefined,
+      });
+      setSelectedPatientIds([]);
+    } catch {
+      alert("Failed to reassign doctor to selected patients.");
+    }
+  };
 
   // Statistics matching design system
   const stats: PatientStats = data?.stats || {
@@ -318,6 +398,13 @@ export function PatientsView() {
         onViewPatient={(patient) => setSelectedPatientForDetail(patient)}
         onEditPatient={handleEdit}
         onDeletePatient={handleDelete}
+        selectedPatientIds={selectedPatientIds}
+        onToggleSelectPatient={handleToggleSelectPatient}
+        onToggleSelectAll={handleToggleSelectAll}
+        onBulkDelete={handleBulkDelete}
+        onBulkStatusChange={handleBulkStatusChange}
+        onBulkReassign={handleBulkReassign}
+        availableDoctors={doctors}
       />
 
       {/* Patient Detail Modal */}

@@ -15,11 +15,17 @@ import {
   ExternalLink,
   Edit2,
   Trash2,
+  CheckSquare,
+  ShieldCheck,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -60,6 +66,11 @@ interface DoctorTableProps {
   onViewPatients: (doctor: Doctor) => void;
   onEditDoctor: (doctor: Doctor) => void;
   onDeleteDoctor: (doctor: Doctor) => void;
+  selectedDoctorIds?: string[];
+  onToggleSelectDoctor?: (id: string) => void;
+  onToggleSelectAll?: () => void;
+  onBulkDelete?: () => void;
+  onBulkStatusChange?: (status: Doctor["status"]) => void;
 }
 
 const SPECIALTY_OPTIONS = [
@@ -129,10 +140,20 @@ export function DoctorTable({
   onViewPatients,
   onEditDoctor,
   onDeleteDoctor,
+  selectedDoctorIds = [],
+  onToggleSelectDoctor,
+  onToggleSelectAll,
+  onBulkDelete,
+  onBulkStatusChange,
 }: DoctorTableProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const isAllSelected =
+    doctors.length > 0 && doctors.every((d) => selectedDoctorIds.includes(d.id));
+  const isSomeSelected =
+    doctors.some((d) => selectedDoctorIds.includes(d.id)) && !isAllSelected;
 
   const statusChips = [
     { label: "All Doctors", value: "", count: stats?.totalDoctors || totalDoctors },
@@ -311,6 +332,72 @@ export function DoctorTable({
         </CardContent>
       </Card>
 
+      {/* Floating Bulk Actions Bar */}
+      {selectedDoctorIds.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs">
+              {selectedDoctorIds.length}
+            </span>
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+              physician{selectedDoctorIds.length > 1 ? "s" : ""} selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {onBulkStatusChange && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("Active")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Mark Active</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("On Leave")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Mark On Leave</span>
+                </Button>
+              </>
+            )}
+
+            {onBulkDelete && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="xs"
+                onClick={onBulkDelete}
+                className="h-8 text-xs font-semibold gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete Selected ({selectedDoctorIds.length})</span>
+              </Button>
+            )}
+
+            {onToggleSelectAll && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={onToggleSelectAll}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Deselect All
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Table Canvas or Grid View */}
       {viewMode === "list" ? (
         <Card className="overflow-hidden border border-border/80 shadow-xs">
@@ -318,7 +405,21 @@ export function DoctorTable({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 uppercase tracking-wider text-[11px] font-bold text-muted-foreground border-b border-border">
-                  <TableHead className="py-3 px-5">PHYSICIAN & ID</TableHead>
+                  <TableHead className="py-3 px-3 w-10 text-center">
+                    {onToggleSelectAll && (
+                      <input
+                        type="checkbox"
+                        aria-label="Select all doctors on this page"
+                        checked={isAllSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isSomeSelected;
+                        }}
+                        onChange={onToggleSelectAll}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    )}
+                  </TableHead>
+                  <TableHead className="py-3 px-4">PHYSICIAN & ID</TableHead>
                   <TableHead className="py-3 px-4">SPECIALTY</TableHead>
                   <TableHead className="py-3 px-4">CONTACT DETAILS</TableHead>
                   <TableHead className="py-3 px-4 min-w-[170px]">CASELOAD CAPACITY</TableHead>
@@ -329,7 +430,7 @@ export function DoctorTable({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-52 text-center">
+                    <TableCell colSpan={7} className="h-52 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                         <span className="text-xs text-muted-foreground">
@@ -340,7 +441,7 @@ export function DoctorTable({
                   </TableRow>
                 ) : doctors.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-52 text-center">
+                    <TableCell colSpan={7} className="h-52 text-center">
                       <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <Stethoscope className="h-8 w-8 text-muted-foreground/40" />
                         <span className="text-xs font-semibold">
@@ -358,14 +459,31 @@ export function DoctorTable({
                     const maxCap = doctor.maxCapacity || 35;
                     const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
                     const isOverloaded = caseloadPercent >= 90;
+                    const isSelected = selectedDoctorIds.includes(doctor.id);
 
                     return (
                       <TableRow
                         key={doctor.id}
-                        className="hover:bg-muted/30 transition-colors"
+                        className={cn(
+                          "hover:bg-muted/30 transition-colors",
+                          isSelected && "bg-blue-50/50 dark:bg-blue-950/20"
+                        )}
                       >
+                        {/* SELECTION CHECKBOX */}
+                        <TableCell className="py-3 px-3 text-center">
+                          {onToggleSelectDoctor && (
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${doctor.name}`}
+                              checked={isSelected}
+                              onChange={() => onToggleSelectDoctor(doctor.id)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            />
+                          )}
+                        </TableCell>
+
                         {/* PHYSICIAN & ID */}
-                        <TableCell className="py-3 px-5">
+                        <TableCell className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
@@ -554,11 +672,27 @@ export function DoctorTable({
             const maxCap = doctor.maxCapacity || 35;
             const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
             const isOverloaded = caseloadPercent >= 90;
+            const isSelected = selectedDoctorIds.includes(doctor.id);
 
             return (
-              <Card key={doctor.id} className="p-5 border border-border/80 shadow-xs space-y-4">
+              <Card
+                key={doctor.id}
+                className={cn(
+                  "p-5 border border-border/80 shadow-xs space-y-4 transition-all",
+                  isSelected && "border-blue-500 bg-blue-50/20 ring-1 ring-blue-500/30"
+                )}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
+                    {onToggleSelectDoctor && (
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${doctor.name}`}
+                        checked={isSelected}
+                        onChange={() => onToggleSelectDoctor(doctor.id)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                      />
+                    )}
                     <div
                       className={cn(
                         "flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-bold text-sm ring-1 ring-border/50",

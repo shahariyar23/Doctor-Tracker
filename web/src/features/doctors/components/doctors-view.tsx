@@ -15,7 +15,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
-import { useDoctors, useDeleteDoctor } from "../hooks/use-doctors";
+import {
+  useDoctors,
+  useDeleteDoctor,
+  useBulkDeleteDoctors,
+  useBulkUpdateDoctorStatus,
+} from "../hooks/use-doctors";
 import { DoctorTable } from "./doctor-table";
 import { DoctorFormModal } from "./doctor-form-modal";
 import { DoctorDetailModal } from "./doctor-detail-modal";
@@ -42,6 +47,7 @@ export function DoctorsView() {
   const [doctorToEdit, setDoctorToEdit] = useState<Doctor | null>(null);
   const [selectedDoctorForPatients, setSelectedDoctorForPatients] =
     useState<Doctor | null>(null);
+  const [selectedDoctorIds, setSelectedDoctorIds] = useState<string[]>([]);
 
   // Data Fetching
   const { data, isLoading, isError, error, refetch } = useDoctors({
@@ -56,6 +62,56 @@ export function DoctorsView() {
   });
 
   const deleteMutation = useDeleteDoctor();
+  const bulkDeleteMutation = useBulkDeleteDoctors();
+  const bulkUpdateStatusMutation = useBulkUpdateDoctorStatus();
+
+  const handleToggleSelectDoctor = (id: string) => {
+    setSelectedDoctorIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    const pageDoctors = data?.doctors || [];
+    const allIds = pageDoctors.map((d) => d.id);
+    const isAllSelected =
+      allIds.length > 0 && allIds.every((id) => selectedDoctorIds.includes(id));
+
+    if (isAllSelected) {
+      setSelectedDoctorIds((prev) => prev.filter((id) => !allIds.includes(id)));
+    } else {
+      setSelectedDoctorIds((prev) => Array.from(new Set([...prev, ...allIds])));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedDoctorIds.length === 0) return;
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedDoctorIds.length} selected physician(s)? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await bulkDeleteMutation.mutateAsync(selectedDoctorIds);
+        setSelectedDoctorIds([]);
+      } catch {
+        alert("Failed to delete selected doctors.");
+      }
+    }
+  };
+
+  const handleBulkStatusChange = async (status: Doctor["status"]) => {
+    if (selectedDoctorIds.length === 0) return;
+    try {
+      await bulkUpdateStatusMutation.mutateAsync({
+        ids: selectedDoctorIds,
+        status,
+      });
+      setSelectedDoctorIds([]);
+    } catch {
+      alert("Failed to update status for selected doctors.");
+    }
+  };
 
   // Statistics from API or defaults matching the design
   const stats: DoctorStats = data?.stats || {
@@ -330,6 +386,11 @@ export function DoctorsView() {
         onViewPatients={setSelectedDoctorForPatients}
         onEditDoctor={handleEdit}
         onDeleteDoctor={handleDelete}
+        selectedDoctorIds={selectedDoctorIds}
+        onToggleSelectDoctor={handleToggleSelectDoctor}
+        onToggleSelectAll={handleToggleSelectAll}
+        onBulkDelete={handleBulkDelete}
+        onBulkStatusChange={handleBulkStatusChange}
       />
 
       {/* Add / Edit Doctor Modal */}

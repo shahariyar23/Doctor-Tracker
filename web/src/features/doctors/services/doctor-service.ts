@@ -248,6 +248,34 @@ export const doctorService = {
     }
   },
 
+  bulkDeleteDoctors: async (ids: string[]): Promise<{ success: boolean; count: number }> => {
+    try {
+      const response = await apiClient.post<{ success: boolean; count: number }>("/doctors/bulk-delete", { ids });
+      return response.data;
+    } catch {
+      const initialLength = mockDoctors.length;
+      mockDoctors = mockDoctors.filter((d) => !ids.includes(d.id));
+      return { success: true, count: initialLength - mockDoctors.length };
+    }
+  },
+
+  bulkUpdateDoctorStatus: async (ids: string[], status: Doctor["status"]): Promise<{ success: boolean; count: number }> => {
+    try {
+      const response = await apiClient.post<{ success: boolean; count: number }>("/doctors/bulk-status", { ids, status });
+      return response.data;
+    } catch {
+      let count = 0;
+      mockDoctors = mockDoctors.map((d) => {
+        if (ids.includes(d.id)) {
+          count++;
+          return { ...d, status };
+        }
+        return d;
+      });
+      return { success: true, count };
+    }
+  },
+
   getDoctorPatients: async (doctorId: string): Promise<AssociatedPatient[]> => {
     try {
       const response = await apiClient.get<AssociatedPatient[]>(

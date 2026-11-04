@@ -18,11 +18,14 @@ import {
   Trash2,
   Phone,
   Bed,
+  ArrowRightLeft,
+  CheckCircle,
+  Archive,
 } from "lucide-react";
 import { Patient, PatientStats } from "../types";
+import { Doctor } from "@/features/doctors/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -61,6 +64,13 @@ interface PatientTableProps {
   onViewPatient?: (patient: Patient) => void;
   onEditPatient: (patient: Patient) => void;
   onDeletePatient: (patient: Patient) => void;
+  selectedPatientIds?: string[];
+  onToggleSelectPatient?: (id: string) => void;
+  onToggleSelectAll?: () => void;
+  onBulkDelete?: () => void;
+  onBulkStatusChange?: (status: Patient["status"]) => void;
+  onBulkReassign?: (doctorId: string) => void;
+  availableDoctors?: Doctor[];
 }
 
 const CONDITION_OPTIONS = [
@@ -144,10 +154,24 @@ export function PatientTable({
   onViewPatient,
   onEditPatient,
   onDeletePatient,
+  selectedPatientIds = [],
+  onToggleSelectPatient,
+  onToggleSelectAll,
+  onBulkDelete,
+  onBulkStatusChange,
+  onBulkReassign,
+  availableDoctors = [],
 }: PatientTableProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedWard, setSelectedWard] = useState("All Wards & Wings");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showReassignDropdown, setShowReassignDropdown] = useState(false);
+
+  const isAllSelected =
+    patients.length > 0 &&
+    patients.every((p) => selectedPatientIds.includes(p.id));
+  const isSomeSelected =
+    patients.some((p) => selectedPatientIds.includes(p.id)) && !isAllSelected;
 
   const statusChips = [
     { label: "All Patients", value: "", count: stats?.totalPatients || totalPatients },
@@ -326,6 +350,121 @@ export function PatientTable({
         </CardContent>
       </Card>
 
+      {/* Floating Bulk Actions Bar */}
+      {selectedPatientIds.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs">
+              {selectedPatientIds.length}
+            </span>
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+              patient{selectedPatientIds.length > 1 ? "s" : ""} selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap relative">
+            {/* Reassign to Doctor Dropdown */}
+            {onBulkReassign && availableDoctors.length > 0 && (
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => setShowReassignDropdown(!showReassignDropdown)}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600" />
+                  <span>Assign / Transfer Doctor</span>
+                </Button>
+
+                {showReassignDropdown && (
+                  <div className="absolute left-0 mt-1.5 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase px-2 py-1">
+                      Choose Attending Doctor
+                    </div>
+                    <div className="max-h-48 overflow-y-auto space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onBulkReassign("");
+                          setShowReassignDropdown(false);
+                        }}
+                        className="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-amber-600 font-medium"
+                      >
+                        -- Set Unassigned --
+                      </button>
+                      {availableDoctors.map((doc) => (
+                        <button
+                          key={doc.id}
+                          type="button"
+                          onClick={() => {
+                            onBulkReassign(doc.id);
+                            setShowReassignDropdown(false);
+                          }}
+                          className="w-full text-left px-2 py-1.5 text-xs rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 font-medium truncate block"
+                        >
+                          {doc.name} ({doc.specialization})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {onBulkStatusChange && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("Active")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Mark Active</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onBulkStatusChange("Archived")}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white dark:bg-background hover:bg-slate-50"
+                >
+                  <Archive className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Archive</span>
+                </Button>
+              </>
+            )}
+
+            {onBulkDelete && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="xs"
+                onClick={onBulkDelete}
+                className="h-8 text-xs font-semibold gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete Selected ({selectedPatientIds.length})</span>
+              </Button>
+            )}
+
+            {onToggleSelectAll && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={onToggleSelectAll}
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Deselect All
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Table Canvas or Grid View */}
       {viewMode === "list" ? (
         <Card className="overflow-hidden border border-border/80 shadow-xs">
@@ -333,7 +472,21 @@ export function PatientTable({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 uppercase tracking-wider text-[11px] font-bold text-muted-foreground border-b border-border">
-                  <TableHead className="py-3 px-5">PATIENT & MRN</TableHead>
+                  <TableHead className="py-3 px-3 w-10 text-center">
+                    {onToggleSelectAll && (
+                      <input
+                        type="checkbox"
+                        aria-label="Select all patients on this page"
+                        checked={isAllSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isSomeSelected;
+                        }}
+                        onChange={onToggleSelectAll}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    )}
+                  </TableHead>
+                  <TableHead className="py-3 px-4">PATIENT & MRN</TableHead>
                   <TableHead className="py-3 px-4">MEDICAL CONDITION</TableHead>
                   <TableHead className="py-3 px-4">ATTENDING PHYSICIAN</TableHead>
                   <TableHead className="py-3 px-4">CONTACT & ROOM</TableHead>
@@ -345,7 +498,7 @@ export function PatientTable({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-52 text-center">
+                    <TableCell colSpan={8} className="h-52 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                         <span className="text-xs text-muted-foreground">
@@ -356,7 +509,7 @@ export function PatientTable({
                   </TableRow>
                 ) : patients.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-52 text-center">
+                    <TableCell colSpan={8} className="h-52 text-center">
                       <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <User className="h-8 w-8 text-muted-foreground/40" />
                         <span className="text-xs font-semibold">
@@ -374,14 +527,31 @@ export function PatientTable({
                       badge: "bg-slate-50 text-slate-700 border-slate-200",
                       text: "text-slate-600",
                     };
+                    const isSelected = selectedPatientIds.includes(patient.id);
 
                     return (
                       <TableRow
                         key={patient.id}
-                        className="hover:bg-muted/30 transition-colors"
+                        className={cn(
+                          "hover:bg-muted/30 transition-colors",
+                          isSelected && "bg-blue-50/50 dark:bg-blue-950/20"
+                        )}
                       >
+                        {/* SELECTION CHECKBOX */}
+                        <TableCell className="py-3 px-3 text-center">
+                          {onToggleSelectPatient && (
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${patient.name}`}
+                              checked={isSelected}
+                              onChange={() => onToggleSelectPatient(patient.id)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            />
+                          )}
+                        </TableCell>
+
                         {/* PATIENT & MRN */}
-                        <TableCell className="py-3 px-5">
+                        <TableCell className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
@@ -570,11 +740,27 @@ export function PatientTable({
               badge: "bg-slate-50 text-slate-700 border-slate-200",
               text: "text-slate-600",
             };
+            const isSelected = selectedPatientIds.includes(patient.id);
 
             return (
-              <Card key={patient.id} className="p-5 border border-border/80 shadow-xs space-y-4">
+              <Card
+                key={patient.id}
+                className={cn(
+                  "p-5 border border-border/80 shadow-xs space-y-4 transition-all",
+                  isSelected && "border-blue-500 bg-blue-50/20 ring-1 ring-blue-500/30"
+                )}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
+                    {onToggleSelectPatient && (
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${patient.name}`}
+                        checked={isSelected}
+                        onChange={() => onToggleSelectPatient(patient.id)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                      />
+                    )}
                     <div
                       className={cn(
                         "flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-bold text-sm ring-1 ring-border/50",

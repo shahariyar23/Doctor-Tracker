@@ -234,6 +234,68 @@ export const patientService = {
     }
   },
 
+  bulkDeletePatients: async (ids: string[]): Promise<{ success: boolean; count: number }> => {
+    try {
+      const response = await apiClient.post<{ success: boolean; count: number }>("/patients/bulk-delete", { ids });
+      return response.data;
+    } catch {
+      const initialLength = mockPatients.length;
+      mockPatients = mockPatients.filter((p) => !ids.includes(p.id));
+      return { success: true, count: initialLength - mockPatients.length };
+    }
+  },
+
+  bulkReassignPatients: async (
+    patientIds: string[],
+    doctorId: string | null,
+    doctorMeta?: { id: string; name: string; specialization: string }
+  ): Promise<{ success: boolean; count: number }> => {
+    try {
+      const response = await apiClient.post<{ success: boolean; count: number }>("/patients/bulk-reassign", {
+        patientIds,
+        doctorId,
+      });
+      return response.data;
+    } catch {
+      let count = 0;
+      mockPatients = mockPatients.map((p) => {
+        if (patientIds.includes(p.id)) {
+          count++;
+          return {
+            ...p,
+            assignedDoctorId: doctorId,
+            assignedDoctor: doctorMeta ? { id: doctorMeta.id, name: doctorMeta.name, specialization: doctorMeta.specialization } : null,
+          };
+        }
+        return p;
+      });
+      return { success: true, count };
+    }
+  },
+
+  bulkUpdatePatientStatus: async (
+    patientIds: string[],
+    status: Patient["status"]
+  ): Promise<{ success: boolean; count: number }> => {
+    try {
+      const response = await apiClient.post<{ success: boolean; count: number }>("/patients/bulk-status", {
+        patientIds,
+        status,
+      });
+      return response.data;
+    } catch {
+      let count = 0;
+      mockPatients = mockPatients.map((p) => {
+        if (patientIds.includes(p.id)) {
+          count++;
+          return { ...p, status };
+        }
+        return p;
+      });
+      return { success: true, count };
+    }
+  },
+
   reassignDoctor: async (
     patientId: string,
     doctorId: string

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { doctorService } from "../services/doctor-service";
-import { DoctorFilterParams } from "../types";
+import { Doctor, DoctorFilterParams } from "../types";
 import { DoctorFormData } from "../schemas/doctor-schema";
 
 export function useDoctors(params: DoctorFilterParams = {}) {
@@ -45,6 +45,30 @@ export function useDeleteDoctor() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => doctorService.deleteDoctor(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctors"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+    },
+  });
+}
+
+export function useBulkDeleteDoctors() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => doctorService.bulkDeleteDoctors(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctors"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
+    },
+  });
+}
+
+export function useBulkUpdateDoctorStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, status }: { ids: string[]; status: Doctor["status"] }) =>
+      doctorService.bulkUpdateDoctorStatus(ids, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
