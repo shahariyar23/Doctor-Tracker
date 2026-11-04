@@ -5,6 +5,8 @@ export const metadata = {
   title: "Patients — Doctor Tracker",
 };
 
+export const instant = false;
+
 export default function PatientsPage() {
   return (
     <Suspense
