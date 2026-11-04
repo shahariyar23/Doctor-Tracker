@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Patient, PatientStats } from "../types";
 import { Doctor } from "@/features/doctors/types";
+import patientConditionOptions from "@/data/options/patient-conditions.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -70,13 +71,7 @@ interface PatientTableProps {
   availableDoctors?: Doctor[];
 }
 
-const CONDITION_OPTIONS = [
-  "All Conditions",
-  "Critical",
-  "Under Treatment",
-  "Stable",
-  "Recovering",
-];
+const CONDITION_OPTIONS = ["All Conditions", ...patientConditionOptions];
 
 const AVATAR_COLORS = [
   "bg-blue-100 text-blue-700",

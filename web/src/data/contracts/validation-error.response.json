@@ -1,0 +1,15 @@
+{
+  "success": false,
+  "message": "Validation failed on submitted request",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email address format"
+    },
+    {
+      "field": "phone",
+      "message": "Valid contact phone number is required"
+    }
+  ]
+}
+

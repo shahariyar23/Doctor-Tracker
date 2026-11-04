@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "User authenticated successfully",
+  "data": {
+    "user": {
+      "id": "admin-1",
+      "email": "admin@doctortracker.com",
+      "name": "Admin User",
+      "role": "admin"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "meta": null
+}
+

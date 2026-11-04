@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "Patient details retrieved successfully",
+  "data": {
+    "id": "pt-1",
+    "code": "#MRN-8492",
+    "name": "Elena Rostova",
+    "phone": "+1 (555) 111-2233",
+    "age": 42,
+    "gender": "Female",
+    "condition": "Critical",
+    "status": "Active",
+    "roomNumber": "ICU-04",
+    "assignedDoctorId": "doc-1",
+    "assignedDoctor": {
+      "id": "doc-1",
+      "name": "Dr. Marcus Vance",
+      "specialization": "Cardiology"
+    },
+    "createdAt": "2026-10-14T08:30:00Z"
+  },
+  "meta": null
+}
+

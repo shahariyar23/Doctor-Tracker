@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Resource created successfully",
+  "data": {
+    "id": "doc-1730729900000",
+    "name": "Dr. Sarah Connor",
+    "specialization": "Cardiology",
+    "hospital": "City Memorial Hospital",
+    "phone": "+1 (555) 019-2834",
+    "email": "s.connor@hospital.org",
+    "status": "Active",
+    "patientCount": 0,
+    "createdAt": "2026-11-04T14:20:00.000Z"
+  },
+  "meta": null
+}
+

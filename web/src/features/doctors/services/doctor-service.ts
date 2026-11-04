@@ -6,134 +6,13 @@ import {
   AssociatedPatient,
 } from "../types";
 import { DoctorFormData } from "../schemas/doctor-schema";
+import initialDoctors from "@/data/doctors.json";
+import initialDoctorPatients from "@/data/doctor-patients.json";
 
-let mockDoctors: Doctor[] = [
-  {
-    id: "doc-1",
-    code: "#DOC-1042",
-    name: "Dr. Marcus Vance",
-    specialization: "Cardiology",
-    hospital: "Central City Hospital",
-    phone: "+1 (555) 234-8910",
-    email: "marcus.vance@doctortracker.com",
-    status: "Active",
-    shift: "Morning",
-    patientCount: 32,
-    maxCapacity: 35,
-    createdAt: "2026-09-15T08:00:00Z",
-  },
-  {
-    id: "doc-2",
-    code: "#DOC-1088",
-    name: "Dr. Priya Patel",
-    specialization: "Neurology",
-    hospital: "St. Jude Medical Center",
-    phone: "+1 (555) 782-9901",
-    email: "priya.patel@doctortracker.com",
-    status: "Active",
-    shift: "Morning",
-    patientCount: 28,
-    maxCapacity: 35,
-    createdAt: "2026-09-18T09:30:00Z",
-  },
-  {
-    id: "doc-3",
-    code: "#DOC-1102",
-    name: "Dr. Aris Thorne",
-    specialization: "Oncology",
-    hospital: "Metro Health Institute",
-    phone: "+1 (555) 441-2094",
-    email: "aris.thorne@doctortracker.com",
-    status: "At Capacity",
-    shift: "Evening",
-    patientCount: 34,
-    maxCapacity: 35,
-    createdAt: "2026-09-22T11:15:00Z",
-  },
-  {
-    id: "doc-4",
-    code: "#DOC-1120",
-    name: "Dr. Rachel Green",
-    specialization: "Geriatrics",
-    hospital: "Pine Valley Hospital",
-    phone: "+1 (555) 567-8901",
-    email: "rachel.green@doctortracker.com",
-    status: "Active",
-    shift: "Morning",
-    patientCount: 24,
-    maxCapacity: 35,
-    createdAt: "2026-09-25T14:00:00Z",
-  },
-  {
-    id: "doc-5",
-    code: "#DOC-1135",
-    name: "Dr. Nathan Drake",
-    specialization: "Internal Medicine",
-    hospital: "Hope Memorial Hospital",
-    phone: "+1 (555) 678-9012",
-    email: "nathan.drake@doctortracker.com",
-    status: "On Leave",
-    shift: "Night",
-    patientCount: 0,
-    maxCapacity: 35,
-    createdAt: "2026-10-01T10:00:00Z",
-  },
-  {
-    id: "doc-6",
-    code: "#DOC-1148",
-    name: "Dr. Maya Lin",
-    specialization: "Pediatrics",
-    hospital: "Children's Health Hospital",
-    phone: "+1 (555) 789-0123",
-    email: "maya.lin@doctortracker.com",
-    status: "Available",
-    shift: "Morning",
-    patientCount: 19,
-    maxCapacity: 35,
-    createdAt: "2026-10-05T08:45:00Z",
-  },
-  {
-    id: "doc-7",
-    code: "#DOC-1160",
-    name: "Dr. Alistair Finch",
-    specialization: "Thoracic Surgery",
-    hospital: "University Surgical Center",
-    phone: "+1 (555) 890-1234",
-    email: "alistair.finch@doctortracker.com",
-    status: "Available",
-    shift: "Evening",
-    patientCount: 15,
-    maxCapacity: 35,
-    createdAt: "2026-10-10T13:20:00Z",
-  },
-];
+let mockDoctors: Doctor[] = [...(initialDoctors as Doctor[])];
 
 const mockDoctorPatients: Record<string, AssociatedPatient[]> = {
-  "doc-1": [
-    {
-      id: "pt-1",
-      name: "Elena Rostova",
-      condition: "Critical",
-      assignedDate: "Oct 14, 2026",
-      phone: "+1 (555) 111-2233",
-      notes: "Follow-up scheduled",
-    },
-    {
-      id: "pt-8",
-      name: "David Kim",
-      condition: "Under Treatment",
-      assignedDate: "Oct 18, 2026",
-      phone: "+1 (555) 222-3344",
-      notes: "Stable response to beta blockers",
-    },
-    {
-      id: "pt-9",
-      name: "Lucas Meyer",
-      condition: "Stable",
-      assignedDate: "Oct 22, 2026",
-      phone: "+1 (555) 333-7788",
-    },
-  ],
+  ...(initialDoctorPatients as Record<string, AssociatedPatient[]>),
 };
 
 export const doctorService = {
@@ -146,7 +25,7 @@ export const doctorService = {
       });
       return response.data;
     } catch {
-      // Fallback preview filtering
+      // Fallback preview filtering using centralized JSON data
       let filtered = [...mockDoctors];
       if (params.search) {
         const q = params.search.toLowerCase();

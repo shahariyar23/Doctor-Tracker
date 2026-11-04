@@ -21,6 +21,8 @@ import {
   Phone,
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
+import specialtyOptionsData from "@/data/options/specializations.json";
+import shiftOptionsData from "@/data/options/doctor-shifts.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -71,25 +73,9 @@ interface DoctorTableProps {
   onBulkStatusChange?: (status: Doctor["status"]) => void;
 }
 
-const SPECIALTY_OPTIONS = [
-  "All Specialties",
-  "Cardiology",
-  "Neurology",
-  "Oncology",
-  "Pediatrics",
-  "Internal Medicine",
-  "Geriatrics",
-  "Thoracic Surgery",
-  "Endocrinology",
-  "Orthopedics",
-];
+const SPECIALTY_OPTIONS = ["All Specialties", ...specialtyOptionsData];
 
-const SHIFT_OPTIONS = [
-  "All Shifts",
-  "Morning",
-  "Evening",
-  "Night",
-];
+const SHIFT_OPTIONS = shiftOptionsData;
 
 const AVATAR_COLORS = [
   "bg-blue-100 text-blue-700",

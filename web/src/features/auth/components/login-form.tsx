@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import authData from "@/data/auth.json";
 import {
   Shield,
   Stethoscope,
@@ -104,22 +105,24 @@ export function LoginForm() {
     const emailLower = data.email.trim().toLowerCase();
 
     // Check demo credentials fallback if backend service is local/offline
+    const matchedDemoUser = authData.demoUsers.find(
+      (u) => u.email.toLowerCase() === emailLower
+    );
     const isDemoAdmin =
-      (emailLower === "sarah.jenkins@doctortracker.com" ||
-        emailLower === "admin@doctortracker.com") &&
+      Boolean(matchedDemoUser) &&
       (data.password === "DoctorTracker#2026" || data.password === "admin123");
 
     try {
       const response = await authService.login(data);
       performLoginSuccess(response.user, response.token);
     } catch {
-      if (isDemoAdmin) {
+      if (isDemoAdmin && matchedDemoUser) {
         performLoginSuccess(
           {
-            id: "demo-admin-id",
-            name: "Admin User",
-            email: data.email,
-            role: "admin",
+            id: matchedDemoUser.id,
+            name: matchedDemoUser.name,
+            email: matchedDemoUser.email,
+            role: matchedDemoUser.role,
           },
           "demo-jwt-token-doctor-tracker"
         );

@@ -5,121 +5,9 @@ import {
   PaginatedPatientsResponse,
 } from "../types";
 import { PatientFormData } from "../schemas/patient-schema";
+import initialPatients from "@/data/patients.json";
 
-let mockPatients: Patient[] = [
-  {
-    id: "pt-1",
-    code: "#MRN-8492",
-    name: "Elena Rostova",
-    phone: "+1 (555) 111-2233",
-    age: 42,
-    gender: "Female",
-    condition: "Critical",
-    status: "Active",
-    roomNumber: "ICU-04",
-    assignedDoctorId: "doc-1",
-    assignedDoctor: { id: "doc-1", name: "Dr. Marcus Vance", specialization: "Cardiology" },
-    createdAt: "2026-10-14T08:30:00Z",
-  },
-  {
-    id: "pt-2",
-    code: "#MRN-8510",
-    name: "David Kim",
-    phone: "+1 (555) 222-3344",
-    age: 38,
-    gender: "Male",
-    condition: "Under Treatment",
-    status: "Active",
-    roomNumber: "Ward-202",
-    assignedDoctorId: "doc-2",
-    assignedDoctor: { id: "doc-2", name: "Dr. Priya Patel", specialization: "Neurology" },
-    createdAt: "2026-10-18T10:15:00Z",
-  },
-  {
-    id: "pt-3",
-    code: "#MRN-8534",
-    name: "Katherine Hawthorne",
-    phone: "+1 (555) 333-4455",
-    age: 61,
-    gender: "Female",
-    condition: "Stable",
-    status: "Active",
-    roomNumber: "Ward-110",
-    assignedDoctorId: "doc-3",
-    assignedDoctor: { id: "doc-3", name: "Dr. Aris Thorne", specialization: "Oncology" },
-    createdAt: "2026-10-20T11:45:00Z",
-  },
-  {
-    id: "pt-4",
-    code: "#MRN-8560",
-    name: "Marcus Vance Jr",
-    phone: "+1 (555) 444-5566",
-    age: 29,
-    gender: "Male",
-    condition: "Recovering",
-    status: "Active",
-    roomNumber: "Rehab-08",
-    assignedDoctorId: "doc-4",
-    assignedDoctor: { id: "doc-4", name: "Dr. Rachel Green", specialization: "Geriatrics" },
-    createdAt: "2026-10-22T14:20:00Z",
-  },
-  {
-    id: "pt-5",
-    code: "#MRN-8588",
-    name: "Arthur Pendelton",
-    phone: "+1 (555) 555-6677",
-    age: 55,
-    gender: "Male",
-    condition: "Stable",
-    status: "Active",
-    roomNumber: "Ward-305",
-    assignedDoctorId: "doc-5",
-    assignedDoctor: { id: "doc-5", name: "Dr. Nathan Drake", specialization: "Internal Medicine" },
-    createdAt: "2026-10-25T09:00:00Z",
-  },
-  {
-    id: "pt-6",
-    code: "#MRN-8612",
-    name: "Sarah Jenkins",
-    phone: "+1 (555) 666-7788",
-    age: 8,
-    gender: "Female",
-    condition: "Under Treatment",
-    status: "Active",
-    roomNumber: "Peds-12",
-    assignedDoctorId: "doc-6",
-    assignedDoctor: { id: "doc-6", name: "Dr. Maya Lin", specialization: "Pediatrics" },
-    createdAt: "2026-10-28T16:10:00Z",
-  },
-  {
-    id: "pt-7",
-    code: "#MRN-8640",
-    name: "James Wilson",
-    phone: "+1 (555) 777-8899",
-    age: 67,
-    gender: "Male",
-    condition: "Critical",
-    status: "Active",
-    roomNumber: "Surg-02",
-    assignedDoctorId: "doc-7",
-    assignedDoctor: { id: "doc-7", name: "Dr. Alistair Finch", specialization: "Thoracic Surgery" },
-    createdAt: "2026-10-30T13:40:00Z",
-  },
-  {
-    id: "pt-8",
-    code: "#MRN-8675",
-    name: "Chloe Bennett",
-    phone: "+1 (555) 888-9900",
-    age: 33,
-    gender: "Female",
-    condition: "Stable",
-    status: "Active",
-    roomNumber: "ER-01",
-    assignedDoctorId: null,
-    assignedDoctor: null,
-    createdAt: "2026-10-31T15:00:00Z",
-  },
-];
+let mockPatients: Patient[] = [...(initialPatients as Patient[])];
 
 export const patientService = {
   getPatients: async (
@@ -131,7 +19,7 @@ export const patientService = {
       });
       return response.data;
     } catch {
-      // Fallback preview filtering
+      // Fallback preview filtering using centralized JSON data
       let filtered = [...mockPatients];
       if (params.search) {
         const q = params.search.toLowerCase();
@@ -240,7 +128,7 @@ export const patientService = {
       return response.data;
     } catch {
       const initialLength = mockPatients.length;
-      mockPatients = mockPatients.filter((p) => !ids.includes(p.id));
+      mockPatients = mockPatients.filter((d) => !ids.includes(d.id));
       return { success: true, count: initialLength - mockPatients.length };
     }
   },

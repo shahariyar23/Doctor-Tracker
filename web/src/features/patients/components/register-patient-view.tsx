@@ -21,13 +21,11 @@ import { patientSchema, PatientFormData } from "../schemas/patient-schema";
 import { useCreatePatient } from "../hooks/use-patients";
 import { useDoctors } from "@/features/doctors/hooks/use-doctors";
 import { Button } from "@/components/ui/button";
+import patientConditionOptions from "@/data/options/patient-conditions.json";
 
-const CONDITION_OPTIONS: Array<"Critical" | "Under Treatment" | "Stable" | "Recovering"> = [
-  "Critical",
-  "Under Treatment",
-  "Stable",
-  "Recovering",
-];
+const CONDITION_OPTIONS = patientConditionOptions as Array<
+  "Critical" | "Under Treatment" | "Stable" | "Recovering"
+>;
 
 export function RegisterPatientView() {
   const router = useRouter();
