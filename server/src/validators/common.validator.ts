@@ -1,15 +1,19 @@
 import { z } from "zod";
+import { objectIdSchema } from "./common.validator.js";
+
+/**
+ * Common schema for routes taking an :id param
+ */
+export const idParamSchema = z.object({
+  id: objectIdSchema,
+});
+
+export type IdParamInput = z.infer<typeof idParamSchema>;
 
 /**
  * Reusable Mongo ObjectId validation helper
  */
-export const objectIdSchema = z
-  .string()
-  .trim()
-  .regex(
-    /^[0-9a-fA-F]{24}$/,
-    "Invalid ID format: must be a 24-character hex string",
-  );
+export { objectIdSchema };
 
 /**
  * Common pagination and date range query parameters schema

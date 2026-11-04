@@ -55,6 +55,13 @@ export class ApiError extends Error {
     return new ApiError(404, message, errors);
   }
 
+  static conflict(
+    message: string = "Conflict",
+    errors: unknown = null,
+  ): ApiError {
+    return new ApiError(409, message, errors);
+  }
+
   static unprocessableEntity(
     message: string = "Validation failed",
     errors: unknown = null,

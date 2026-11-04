@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import { config } from "./config/index.js";
 import apiRouter from "./routes/index.js";
 import { notFoundHandler } from "./middlewares/not-found.middleware.js";
@@ -29,6 +30,9 @@ app.use(
 if (config.env === "development") {
   app.use(morgan("dev"));
 }
+
+// Cookie parser middleware (must precede routes)
+app.use(cookieParser());
 
 // Body parsers
 app.use(express.json({ limit: "16kb" }));
