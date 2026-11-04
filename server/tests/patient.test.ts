@@ -214,4 +214,147 @@ describe('Phase 07, 08 & 10: Patient CRUD, Search & Integrity Test Suite', () =>
     expect(regexRes.status).toBe(200);
     expect(regexRes.body.data.length).toBe(0);
   });
+
+  it('should create an unassigned patient when assignedDoctorId is null or omitted', async () => {
+    // 1. Omitted assignedDoctorId
+    const res1 = await request(app).post('/api/v1/patients').set('Cookie', authCookie).send({
+      name: 'Unassigned Patient One',
+      condition: 'Under Treatment',
+      age: 28,
+      gender: 'male',
+      phone: '+1-555-0991',
+    });
+
+    expect(res1.status).toBe(201);
+    expect(res1.body.data.assignedDoctorId).toBeNull();
+    expect(res1.body.data.name).toBe('Unassigned Patient One');
+
+    // 2. Explicit null assignedDoctorId
+    const res2 = await request(app).post('/api/v1/patients').set('Cookie', authCookie).send({
+      name: 'Unassigned Patient Two',
+      condition: 'Stable',
+      age: 44,
+      gender: 'female',
+      phone: '+1-555-0992',
+      assignedDoctorId: null,
+    });
+
+    expect(res2.status).toBe(201);
+    expect(res2.body.data.assignedDoctorId).toBeNull();
+  });
+
+  it('should assign, reassign, and unassign a doctor via PATCH', async () => {
+    // Create another doctor
+    const secondDoctor = await Doctor.create({
+      name: 'Dr. James Wilson',
+      specialization: 'Oncology',
+      hospital: 'Princeton-Plainsboro',
+      phone: '+1-555-0188',
+      email: 'wilson@princeton.edu',
+    });
+
+    // 1. Create unassigned patient
+    const created = await Patient.create({
+      name: 'Floating Patient',
+      condition: 'Observation',
+      age: 30,
+      gender: 'other',
+      assignedDoctorId: null,
+    });
+
+    // 2. Assign first doctor
+    const assignRes = await request(app)
+      .patch(`/api/v1/patients/${created._id}`)
+      .set('Cookie', authCookie)
+      .send({ assignedDoctorId: sampleDoctor._id.toString() });
+
+    expect(assignRes.status).toBe(200);
+    const docObj1 = assignRes.body.data.assignedDoctorId;
+    const docId1 = typeof docObj1 === 'object' ? docObj1._id : docObj1;
+    expect(docId1.toString()).toBe(sampleDoctor._id.toString());
+
+    // 3. Reassign to second doctor
+    const reassignRes = await request(app)
+      .patch(`/api/v1/patients/${created._id}`)
+      .set('Cookie', authCookie)
+      .send({ assignedDoctorId: secondDoctor._id.toString() });
+
+    expect(reassignRes.status).toBe(200);
+    const docObj2 = reassignRes.body.data.assignedDoctorId;
+    const docId2 = typeof docObj2 === 'object' ? docObj2._id : docObj2;
+    expect(docId2.toString()).toBe(secondDoctor._id.toString());
+
+    // 4. Unassign (set to null)
+    const unassignRes = await request(app)
+      .patch(`/api/v1/patients/${created._id}`)
+      .set('Cookie', authCookie)
+      .send({ assignedDoctorId: null });
+
+    expect(unassignRes.status).toBe(200);
+    expect(unassignRes.body.data.assignedDoctorId).toBeNull();
+  });
+
+  it('should filter patients by doctorId or unassigned', async () => {
+    const unassignedPatient = await Patient.create({
+      name: 'Solo Patient',
+      condition: 'Checkup',
+      age: 25,
+      gender: 'female',
+      assignedDoctorId: null,
+    });
+
+    const assignedPatient = await Patient.create({
+      name: 'House Patient',
+      condition: 'Lupus',
+      age: 40,
+      gender: 'male',
+      assignedDoctorId: sampleDoctor._id,
+    });
+
+    // Query patients for sampleDoctor
+    const docFilterRes = await request(app)
+      .get(`/api/v1/patients?doctorId=${sampleDoctor._id}`)
+      .set('Cookie', authCookie);
+
+    expect(docFilterRes.status).toBe(200);
+    expect(docFilterRes.body.data.length).toBe(1);
+    expect(docFilterRes.body.data[0]._id.toString()).toBe(assignedPatient._id.toString());
+
+    // Query unassigned patients
+    const unassignedRes = await request(app)
+      .get('/api/v1/patients?doctorId=unassigned')
+      .set('Cookie', authCookie);
+
+    expect(unassignedRes.status).toBe(200);
+    expect(unassignedRes.body.data.length).toBe(1);
+    expect(unassignedRes.body.data[0]._id.toString()).toBe(unassignedPatient._id.toString());
+  });
+
+  it('should verify previously unassigned patients do not appear under a newly created doctor', async () => {
+    await Patient.create({
+      name: 'Orphan Patient',
+      condition: 'Stable',
+      age: 50,
+      gender: 'other',
+      assignedDoctorId: null,
+    });
+
+    // Create new doctor
+    const newDoc = await Doctor.create({
+      name: 'Dr. Allison Cameron',
+      specialization: 'Immunology',
+      hospital: 'Princeton-Plainsboro',
+      phone: '+1-555-0177',
+      email: 'cameron@princeton.edu',
+    });
+
+    // Query doctor's patients
+    const res = await request(app)
+      .get(`/api/v1/patients?doctorId=${newDoc._id}`)
+      .set('Cookie', authCookie);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBe(0);
+    expect(res.body.meta.total).toBe(0);
+  });
 });

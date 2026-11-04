@@ -54,21 +54,24 @@ export function PatientFormModal({
       age: 30,
       gender: "prefer_not_to_say",
       condition: "Stable",
-      status: "Active",
       assignedDoctorId: "",
     },
   });
 
   useEffect(() => {
     if (patientToEdit) {
+      const rawDocId =
+        patientToEdit.assignedDoctorId && typeof patientToEdit.assignedDoctorId === "object"
+          ? (patientToEdit.assignedDoctorId as any).id || (patientToEdit.assignedDoctorId as any)._id || ""
+          : (patientToEdit.assignedDoctorId as string) || "";
+
       reset({
         name: patientToEdit.name,
         phone: patientToEdit.phone || "",
         age: patientToEdit.age ?? 30,
         gender: patientToEdit.gender ?? "prefer_not_to_say",
         condition: patientToEdit.condition,
-        status: patientToEdit.status || "Active",
-        assignedDoctorId: patientToEdit.assignedDoctorId || "",
+        assignedDoctorId: rawDocId,
       });
     } else {
       reset({
@@ -77,7 +80,6 @@ export function PatientFormModal({
         age: 30,
         gender: "prefer_not_to_say",
         condition: "Stable",
-        status: "Active",
         assignedDoctorId: "",
       });
     }
@@ -212,53 +214,35 @@ export function PatientFormModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {/* Medical Condition */}
-              <div className="space-y-1.5">
-                <Label htmlFor="patient-condition" className="text-xs font-semibold">
-                  Medical Condition *
-                </Label>
-                <div className="relative">
-                  <Activity className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-                  <select
-                    id="patient-condition"
-                    {...register("condition")}
-                    className="h-8 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-                  >
-                    <option value="Stable">Stable</option>
-                    <option value="Under Treatment">Under Treatment</option>
-                    <option value="Recovering">Recovering</option>
-                    <option value="Critical">Critical</option>
-                  </select>
-                </div>
-                {errors.condition && (
-                  <p className="text-[11px] text-destructive">
-                    {errors.condition.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Record Status */}
-              <div className="space-y-1.5">
-                <Label htmlFor="patient-status" className="text-xs font-semibold">
-                  Record Status
-                </Label>
+            {/* Medical Condition */}
+            <div className="space-y-1.5">
+              <Label htmlFor="patient-condition" className="text-xs font-semibold">
+                Medical Condition *
+              </Label>
+              <div className="relative">
+                <Activity className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                 <select
-                  id="patient-status"
-                  {...register("status")}
-                  className="h-8 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                  id="patient-condition"
+                  {...register("condition")}
+                  className="h-8 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Archived">Archived</option>
+                  <option value="Stable">Stable</option>
+                  <option value="Under Treatment">Under Treatment</option>
+                  <option value="Recovering">Recovering</option>
+                  <option value="Critical">Critical</option>
                 </select>
               </div>
+              {errors.condition && (
+                <p className="text-[11px] text-destructive">
+                  {errors.condition.message}
+                </p>
+              )}
             </div>
 
             {/* Assigned Doctor */}
             <div className="space-y-1.5">
               <Label htmlFor="patient-doc" className="text-xs font-semibold">
-                Assigned Attending Doctor
+                Assigned Attending Doctor <span className="text-muted-foreground font-normal">(Optional)</span>
               </Label>
               <div className="relative">
                 <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
@@ -267,7 +251,7 @@ export function PatientFormModal({
                   {...register("assignedDoctorId")}
                   className="h-8 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
-                  <option value="">-- No doctor assigned (Unassigned) --</option>
+                  <option value="">-- No Doctor Assigned (Unassigned) --</option>
                   {doctors.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name} ({d.specialization}) - {d.hospital}

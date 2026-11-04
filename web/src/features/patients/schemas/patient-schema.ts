@@ -12,7 +12,8 @@ export const patientSchema = z.object({
     .min(2, "Condition is required (e.g. Critical, Stable, Under Treatment)"),
   assignedDoctorId: z
     .string()
-    .min(1, "Attending physician assignment is required"),
+    .optional()
+    .nullable(),
   age: z
     .number({ message: "Age is required" })
     .int("Age must be an integer")
@@ -26,7 +27,6 @@ export const patientSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  status: z.enum(["Active", "Inactive", "Archived"]).optional(),
 });
 
 export type PatientFormData = z.infer<typeof patientSchema>;

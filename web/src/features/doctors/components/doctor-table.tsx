@@ -78,7 +78,7 @@ const SPECIALTY_OPTIONS = ["All Specialties", ...specialtyOptionsData];
 const SHIFT_OPTIONS = shiftOptionsData;
 
 const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
+  "bg-teal-100 text-teal-700",
   "bg-indigo-100 text-indigo-700",
   "bg-amber-100 text-amber-700",
   "bg-emerald-100 text-emerald-700",
@@ -277,9 +277,9 @@ export function DoctorTable({
 
       {/* Bulk Action Bar */}
       {selectedDoctorIds.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 px-3 sm:px-4 py-2.5 text-xs text-blue-900 dark:text-blue-100 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 px-3 sm:px-4 py-2.5 text-xs text-teal-900 dark:text-teal-100 shadow-xs">
           <div className="flex items-center gap-2">
-            <CheckSquare className="h-4 w-4 text-blue-600" />
+            <CheckSquare className="h-4 w-4 text-primary" />
             <span className="font-semibold">
               {selectedDoctorIds.length} physician(s) selected
             </span>
@@ -293,7 +293,7 @@ export function DoctorTable({
                   variant="outline"
                   size="xs"
                   onClick={() => onBulkStatusChange("Active")}
-                  className="h-8 text-xs bg-white dark:bg-slate-900 border-blue-200 text-blue-700 dark:text-blue-300 hover:bg-blue-50"
+                  className="h-8 text-xs bg-white dark:bg-slate-900 border-teal-200 text-teal-700 dark:text-teal-300 hover:bg-teal-50"
                 >
                   <CheckCircle className="h-3.5 w-3.5 text-emerald-600 mr-1" />
                   Set Active
@@ -303,7 +303,7 @@ export function DoctorTable({
                   variant="outline"
                   size="xs"
                   onClick={() => onBulkStatusChange("On Leave")}
-                  className="h-8 text-xs bg-white dark:bg-slate-900 border-blue-200 text-blue-700 dark:text-blue-300 hover:bg-blue-50"
+                  className="h-8 text-xs bg-white dark:bg-slate-900 border-teal-200 text-teal-700 dark:text-teal-300 hover:bg-teal-50"
                 >
                   <Clock className="h-3.5 w-3.5 text-amber-600 mr-1" />
                   Set On Leave
@@ -367,7 +367,7 @@ export function DoctorTable({
                 key={doctor.id}
                 className={cn(
                   "p-4 border border-border/80 bg-card shadow-xs space-y-3 transition-colors",
-                  isSelected && "border-blue-500 bg-blue-50/20"
+                  isSelected && "border-teal-500 bg-teal-50/20"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -378,7 +378,7 @@ export function DoctorTable({
                         aria-label={`Select ${doctor.name}`}
                         checked={isSelected}
                         onChange={() => onToggleSelectDoctor(doctor.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
                       />
                     )}
                     <div
@@ -392,7 +392,7 @@ export function DoctorTable({
                     <div className="min-w-0">
                       <Link
                         href={`/doctors/${doctor.id}`}
-                        className="font-bold text-sm text-foreground hover:text-blue-600 transition-colors block truncate"
+                        className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
                       >
                         {doctor.name}
                       </Link>
@@ -439,13 +439,13 @@ export function DoctorTable({
                 <div className="space-y-1.5 pt-1 text-xs">
                   <div className="flex items-center justify-between text-muted-foreground">
                     <span>Caseload:</span>
-                    <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-blue-600")}>
+                    <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-primary")}>
                       {currentCount} / {maxCap} ({caseloadPercent}%)
                     </span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full transition-all", isOverloaded ? "bg-red-600" : "bg-blue-600")}
+                      className={cn("h-full rounded-full transition-all", isOverloaded ? "bg-red-600" : "bg-primary")}
                       style={{ width: `${caseloadPercent}%` }}
                     />
                   </div>
@@ -464,7 +464,7 @@ export function DoctorTable({
                   <button
                     type="button"
                     onClick={() => onViewPatients(doctor)}
-                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline shrink-0 text-xs cursor-pointer transition-colors"
+                    className="font-semibold text-primary hover:text-teal-700 hover:underline shrink-0 text-xs cursor-pointer transition-colors"
                   >
                     View Patients ({currentCount})
                   </button>
@@ -493,7 +493,7 @@ export function DoctorTable({
                             if (el) el.indeterminate = isSomeSelected;
                           }}
                           onChange={onToggleSelectAll}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                         />
                       )}
                     </TableHead>
@@ -544,7 +544,7 @@ export function DoctorTable({
                           key={doctor.id}
                           className={cn(
                             "hover:bg-muted/30 transition-colors",
-                            isSelected && "bg-blue-50/50 dark:bg-blue-950/20"
+                            isSelected && "bg-teal-50/50 dark:bg-teal-950/20"
                           )}
                         >
                           {/* SELECTION CHECKBOX */}
@@ -555,7 +555,7 @@ export function DoctorTable({
                                 aria-label={`Select ${doctor.name}`}
                                 checked={isSelected}
                                 onChange={() => onToggleSelectDoctor(doctor.id)}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                               />
                             )}
                           </TableCell>
@@ -574,7 +574,7 @@ export function DoctorTable({
                               <div className="flex flex-col">
                                 <Link
                                   href={`/doctors/${doctor.id}`}
-                                  className="font-bold text-foreground text-sm hover:text-blue-600 transition-colors leading-tight"
+                                  className="font-bold text-foreground text-sm hover:text-primary transition-colors leading-tight"
                                 >
                                   {doctor.name}
                                 </Link>
@@ -587,7 +587,7 @@ export function DoctorTable({
 
                           {/* SPECIALTY */}
                           <TableCell className="py-3 px-4">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/50 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/50 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900/50">
                               {doctor.specialization}
                             </span>
                           </TableCell>
@@ -610,7 +610,7 @@ export function DoctorTable({
                                 <span
                                   className={cn(
                                     "font-bold text-xs",
-                                    isOverloaded ? "text-red-600" : "text-blue-600"
+                                    isOverloaded ? "text-red-600" : "text-primary"
                                   )}
                                 >
                                   {caseloadPercent}%
@@ -620,7 +620,7 @@ export function DoctorTable({
                                 <div
                                   className={cn(
                                     "h-full rounded-full transition-all duration-300",
-                                    isOverloaded ? "bg-red-600" : "bg-blue-600"
+                                    isOverloaded ? "bg-red-600" : "bg-primary"
                                   )}
                                   style={{ width: `${caseloadPercent}%` }}
                                 />
@@ -656,7 +656,7 @@ export function DoctorTable({
                               <button
                                 type="button"
                                 onClick={() => onViewPatients(doctor)}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5 cursor-pointer transition-colors"
+                                className="text-xs font-semibold text-primary hover:text-teal-700 hover:underline px-1 py-0.5 cursor-pointer transition-colors"
                               >
                                 Patients
                               </button>
@@ -722,7 +722,7 @@ export function DoctorTable({
                   key={doctor.id}
                   className={cn(
                     "p-5 border border-border/80 shadow-xs space-y-4 transition-all",
-                    isSelected && "border-blue-500 bg-blue-50/20 ring-1 ring-blue-500/30"
+                    isSelected && "border-teal-500 bg-teal-50/20 ring-1 ring-primary/30"
                   )}
                 >
                   <div className="flex items-start justify-between">
@@ -733,7 +733,7 @@ export function DoctorTable({
                           aria-label={`Select ${doctor.name}`}
                           checked={isSelected}
                           onChange={() => onToggleSelectDoctor(doctor.id)}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
                         />
                       )}
                       <div
@@ -747,14 +747,14 @@ export function DoctorTable({
                       <div>
                         <Link
                           href={`/doctors/${doctor.id}`}
-                          className="font-bold text-sm text-foreground hover:text-blue-600 transition-colors"
+                          className="font-bold text-sm text-foreground hover:text-primary transition-colors"
                         >
                           {doctor.name}
                         </Link>
                         <p className="text-[11px] font-mono text-muted-foreground">{docCode}</p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
+                    <Badge variant="secondary" className="text-xs bg-teal-50 text-teal-700">
                       {doctor.specialization}
                     </Badge>
                   </div>
@@ -762,13 +762,13 @@ export function DoctorTable({
                   <div className="space-y-1.5 pt-2 border-t border-border/50 text-xs">
                     <div className="flex justify-between text-muted-foreground">
                       <span>Caseload:</span>
-                      <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-blue-600")}>
+                      <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-primary")}>
                         {currentCount} / {maxCap} ({caseloadPercent}%)
                       </span>
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                       <div
-                        className={cn("h-full rounded-full", isOverloaded ? "bg-red-600" : "bg-blue-600")}
+                        className={cn("h-full rounded-full", isOverloaded ? "bg-red-600" : "bg-primary")}
                         style={{ width: `${caseloadPercent}%` }}
                       />
                     </div>
@@ -779,7 +779,7 @@ export function DoctorTable({
                     <button
                       type="button"
                       onClick={() => onViewPatients(doctor)}
-                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer transition-colors"
+                      className="font-semibold text-primary hover:text-teal-700 hover:underline cursor-pointer transition-colors"
                     >
                       View Patients ({currentCount})
                     </button>

@@ -50,7 +50,6 @@ export function RegisterPatientView() {
       age: 30,
       gender: "prefer_not_to_say",
       condition: "Under Treatment",
-      status: "Active",
       assignedDoctorId: "",
     },
   });
@@ -100,8 +99,8 @@ export function RegisterPatientView() {
         };
       case "Recovering":
         return {
-          badge: "bg-blue-50 text-blue-700 border-blue-200/60",
-          dot: "bg-blue-500",
+          badge: "bg-teal-50 text-teal-700 border-teal-200/60",
+          dot: "bg-teal-600",
         };
       default:
         return {
@@ -116,7 +115,7 @@ export function RegisterPatientView() {
   return (
     <div className="relative w-full overflow-hidden space-y-6">
       {/* Ambient background glow accents */}
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute -top-32 -left-20 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-80 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Top Meta & Title Bar */}
@@ -133,8 +132,8 @@ export function RegisterPatientView() {
             </Link>
             <span>/</span>
             <span className="text-foreground font-semibold">Create Patient</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 font-medium text-[11px] ml-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/60 font-medium text-[11px] ml-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Proposed Form v1.0
             </span>
           </div>
@@ -159,15 +158,15 @@ export function RegisterPatientView() {
       </div>
 
       {/* Proposed Patient Data Schema Notice Banner */}
-      <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-start gap-3.5 shadow-xs">
-        <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+      <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-100 flex items-start gap-3.5 shadow-xs">
+        <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
           <Info className="w-4 h-4 stroke-[2.5]" />
         </div>
         <div className="flex flex-col flex-1">
-          <span className="text-xs font-bold text-blue-950">
+          <span className="text-xs font-bold text-teal-950">
             Proposed Patient Data Schema
           </span>
-          <p className="text-xs text-blue-800/90 mt-0.5 leading-relaxed">
+          <p className="text-xs text-teal-800/90 mt-0.5 leading-relaxed">
             Fields displayed below capture essential clinical triage and doctor assignment data according to the Doctor Tracker specification.
           </p>
         </div>
@@ -210,7 +209,7 @@ export function RegisterPatientView() {
                     type="text"
                     {...register("name")}
                     placeholder="Enter patient's full name (e.g. Amelia Chen)"
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                   />
                 </div>
                 {errors.name && (
@@ -235,7 +234,7 @@ export function RegisterPatientView() {
                     type="tel"
                     {...register("phone")}
                     placeholder="+1 (415) 890-2391"
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                   />
                 </div>
                 {errors.phone && (
@@ -260,7 +259,7 @@ export function RegisterPatientView() {
                   max={120}
                   {...register("age", { valueAsNumber: true })}
                   placeholder="e.g. 35"
-                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
+                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all"
                 />
                 {errors.age && (
                   <p className="text-xs text-destructive font-medium">
@@ -279,7 +278,7 @@ export function RegisterPatientView() {
                 <select
                   id="patientGender"
                   {...register("gender")}
-                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
+                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all cursor-pointer"
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -315,7 +314,7 @@ export function RegisterPatientView() {
                   <select
                     id="patientCondition"
                     {...register("condition")}
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all cursor-pointer"
                   >
                     {CONDITION_OPTIONS.map((c) => (
                       <option key={c} value={c}>
@@ -335,7 +334,7 @@ export function RegisterPatientView() {
                   htmlFor="assignedDoctor"
                   className="text-xs font-semibold text-foreground flex items-center gap-1"
                 >
-                  Assigned Doctor
+                  Assigned Doctor <span className="text-muted-foreground font-normal">(Optional)</span>
                 </label>
                 <div className="relative flex items-center">
                   <Stethoscope className="w-4 h-4 text-muted-foreground absolute left-3.5 pointer-events-none" />
@@ -343,15 +342,15 @@ export function RegisterPatientView() {
                     id="assignedDoctor"
                     value={watchedDoctorId || ""}
                     onChange={(e) => {
-                      setValue("assignedDoctorId", e.target.value);
+                      setValue("assignedDoctorId", e.target.value || null);
                     }}
                     disabled={isLoadingDoctors}
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all cursor-pointer"
                   >
-                    <option value="">-- Select Attending Physician * --</option>
+                    <option value="">-- No Doctor Assigned (Unassigned) --</option>
                     {doctors.map((doc) => (
                       <option key={doc.id} value={doc.id}>
-                        {doc.name} ({doc.specialization})
+                        {doc.name} ({doc.specialization}) - {doc.hospital}
                       </option>
                     ))}
                   </select>
@@ -374,7 +373,7 @@ export function RegisterPatientView() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/20 hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              className="h-10 px-5 rounded-xl bg-primary hover:bg-teal-800 text-white font-semibold text-xs shadow-md shadow-primary/20 hover:shadow-lg transition-all flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -396,15 +395,12 @@ export function RegisterPatientView() {
           <div className="bg-card rounded-2xl p-6 border border-border/80 shadow-sm flex flex-col gap-4">
             <div className="flex items-center justify-between pb-2 border-b border-border/60">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Schema Specification
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-[11px] font-semibold">
-                Active
+                Patient Summary
               </span>
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              This form captures essential administrative intake attributes without extraneous medical history or diagnostic coding requirements.
+              Verify the registered patient details and assigned physician before creating the medical record.
             </p>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-border/60 text-xs">
@@ -442,7 +438,7 @@ export function RegisterPatientView() {
           </div>
 
           <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3 text-xs text-muted-foreground">
-            <Shield className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               Unrequested fields such as complex insurance identifiers, secondary emergency contacts, and prescription records are omitted in accordance with the Doctor Tracker specification.
             </p>

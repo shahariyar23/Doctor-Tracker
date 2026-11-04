@@ -14,7 +14,7 @@ const CONDITION_COLORS: Record<string, string> = {
   Critical: "#dc2626", // Red-600
   "Under Treatment": "#f59e0b", // Amber-500
   Stable: "#0d9488", // Teal-600
-  Recovering: "#2563eb", // Blue-600
+  Recovering: "#059669", // Emerald-600 (Healthcare mint/green)
 };
 
 export function ConditionDonutChart({ data, className }: ConditionDonutChartProps) {

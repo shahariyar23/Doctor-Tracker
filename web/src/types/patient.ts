@@ -2,7 +2,17 @@ import { PaginationParams } from "./pagination";
 
 export type PatientGender = "male" | "female" | "other" | "prefer_not_to_say";
 export type PatientCondition = string;
-export type PatientStatus = "Active" | "Inactive" | "Archived";
+export type PatientStatus = "Active" | "Inactive" | "Archived" | string;
+
+export interface PatientDoctorReference {
+  id: string;
+  _id?: string;
+  name: string;
+  specialization?: string;
+  hospital?: string;
+  email?: string;
+  phone?: string;
+}
 
 export interface Patient {
   id: string;
@@ -14,15 +24,10 @@ export interface Patient {
   gender: PatientGender;
   condition: PatientCondition;
   status?: PatientStatus;
-  bloodGroup?: string;
   roomNumber?: string;
-  assignedDoctorId: string;
-  assignedDoctor?: {
-    id: string;
-    _id?: string;
-    name: string;
-    specialization?: string;
-  } | null;
+  bloodGroup?: string;
+  assignedDoctorId?: string | null | PatientDoctorReference;
+  assignedDoctor?: PatientDoctorReference | null;
   createdAt: string;
   updatedAt?: string;
 }

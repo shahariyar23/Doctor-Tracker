@@ -7,7 +7,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   LogOut,
-  Cross,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleSidebar, setMobileSidebarOpen } from "@/store/slices/ui-slice";
@@ -15,6 +14,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NAV_ITEMS } from "./nav-config";
+import { Logo } from "@/components/brand/logo";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -62,17 +62,12 @@ export function Sidebar() {
               className="flex items-center gap-3 overflow-hidden cursor-pointer group"
               onClick={() => dispatch(setMobileSidebarOpen(false))}
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <Cross className="h-5 w-5 rotate-45 stroke-[2.5]" />
-              </div>
-              <div className={cn("flex flex-col", collapsed && "lg:hidden")}>
-                <span className="font-bold text-foreground leading-tight tracking-tight text-base">
-                  Doctor Tracker
-                </span>
-                <span className="text-[11px] text-muted-foreground font-medium">
-                  Clinical Portal
-                </span>
-              </div>
+              <Logo
+                variant={collapsed ? "icon-only" : "compact"}
+                size="md"
+                showBadge={true}
+                badgeText="Admin"
+              />
             </Link>
 
             {/* Mobile close button */}

@@ -78,8 +78,8 @@ export function RegistrationTrendsChart({
             >
               <defs>
                 <linearGradient id="regGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#0f766e" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#0f766e" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -114,7 +114,7 @@ export function RegistrationTrendsChart({
                 type="monotone"
                 dataKey="count"
                 name="Registrations"
-                stroke="#2563eb"
+                stroke="#0f766e"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#regGradient)"

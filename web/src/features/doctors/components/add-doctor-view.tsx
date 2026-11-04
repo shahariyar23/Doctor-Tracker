@@ -97,7 +97,7 @@ export function AddDoctorView() {
   return (
     <div className="relative w-full overflow-hidden space-y-6">
       {/* Ambient background glow accents */}
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute -top-32 -left-20 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-80 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Header Section */}
@@ -114,8 +114,8 @@ export function AddDoctorView() {
             </Link>
             <span>/</span>
             <span className="text-foreground font-semibold">Create Doctor</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 font-medium text-[11px] ml-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/60 font-medium text-[11px] ml-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               System Directory Form
             </span>
           </div>
@@ -150,7 +150,7 @@ export function AddDoctorView() {
             {/* Form Section Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-semibold border border-blue-100">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 text-primary flex items-center justify-center font-semibold border border-teal-100">
                   <UserPlus className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div>
@@ -189,7 +189,7 @@ export function AddDoctorView() {
                     type="text"
                     {...register("name")}
                     placeholder="Enter doctor's full name (e.g. Dr. Alexander Vance)"
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                   />
                 </div>
                 {errors.name ? (
@@ -216,7 +216,7 @@ export function AddDoctorView() {
                   <select
                     id="input-doctor-spec"
                     {...register("specialization")}
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all cursor-pointer"
                   >
                     <option value="" disabled>
                       Select specialization
@@ -254,7 +254,7 @@ export function AddDoctorView() {
                     type="text"
                     {...register("hospital")}
                     placeholder="Enter hospital name (e.g. St. Jude Memorial Hospital)"
-                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                    className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                   />
                 </div>
                 {errors.hospital ? (
@@ -285,7 +285,7 @@ export function AddDoctorView() {
                       type="tel"
                       {...register("phone")}
                       placeholder="+1 (555) 019-2834"
-                      className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                      className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                     />
                   </div>
                   {errors.phone ? (
@@ -314,7 +314,7 @@ export function AddDoctorView() {
                       type="email"
                       {...register("email")}
                       placeholder="a.vance@hospital.org"
-                      className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-muted-foreground"
+                      className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                     />
                   </div>
                   {errors.email ? (
@@ -341,7 +341,7 @@ export function AddDoctorView() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/20 hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="h-10 px-5 rounded-xl bg-primary hover:bg-teal-800 text-white font-semibold text-xs shadow-md shadow-primary/20 hover:shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -373,7 +373,7 @@ export function AddDoctorView() {
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#123B63] to-[#2563EB] text-white flex items-center justify-center text-lg font-bold shadow-md shadow-blue-900/10 shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-800 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-teal-900/10 shrink-0">
                 {getInitials(watchedName)}
               </div>
               <div className="flex flex-col min-w-0">
@@ -381,7 +381,7 @@ export function AddDoctorView() {
                   {watchedName.trim() || "Dr. Alexander Vance"}
                 </h3>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="inline-flex px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/60 text-xs font-semibold rounded-lg">
+                  <span className="inline-flex px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200/60 text-xs font-semibold rounded-lg">
                     {watchedSpec}
                   </span>
                 </div>
@@ -415,16 +415,16 @@ export function AddDoctorView() {
                   <Mail className="w-4 h-4 text-muted-foreground" />
                   Email
                 </span>
-                <span className="text-blue-600 truncate text-right pl-2 font-medium max-w-[200px]">
+                <span className="text-primary truncate text-right pl-2 font-medium max-w-[200px]">
                   {watchedEmail}
                 </span>
               </div>
             </div>
 
             {/* Verified Note Box */}
-            <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-950 leading-relaxed">
+            <div className="p-3.5 rounded-xl bg-teal-50/70 border border-teal-100 flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-teal-950 leading-relaxed">
                 This record will be immediately added to the physician directory and available for patient assignments.
               </p>
             </div>

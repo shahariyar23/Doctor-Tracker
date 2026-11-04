@@ -204,7 +204,7 @@ export function DoctorsView() {
             </h1>
             <Badge
               variant="secondary"
-              className="bg-blue-100 text-blue-700 hover:bg-blue-100 font-semibold px-2.5 py-0.5 rounded-full text-xs border border-blue-200/60"
+              className="bg-teal-100 text-teal-700 hover:bg-teal-100 font-semibold px-2.5 py-0.5 rounded-full text-xs border border-teal-200/60"
             >
               {stats.totalDoctors} Physicians
             </Badge>
@@ -229,7 +229,7 @@ export function DoctorsView() {
             href="/doctors/new"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+              "flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3.5 bg-primary hover:bg-teal-800 text-white text-xs font-semibold shadow-xs transition-all"
             )}
           >
             <UserPlus className="h-3.5 w-3.5" />
@@ -246,7 +246,7 @@ export function DoctorsView() {
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Total Doctors
             </span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-teal-50 text-primary dark:bg-teal-950/40">
               <Stethoscope className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>

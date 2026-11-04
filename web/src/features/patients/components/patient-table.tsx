@@ -52,8 +52,6 @@ interface PatientTableProps {
   onSearchChange: (search: string) => void;
   selectedCondition: string;
   onConditionChange: (condition: string) => void;
-  selectedStatus?: string;
-  onStatusChange?: (status: string) => void;
   startDate: string;
   onStartDateChange: (date: string) => void;
   endDate: string;
@@ -66,7 +64,6 @@ interface PatientTableProps {
   onToggleSelectPatient?: (id: string) => void;
   onToggleSelectAll?: () => void;
   onBulkDelete?: () => void;
-  onBulkStatusChange?: (status: Patient["status"]) => void;
   onBulkReassign?: (doctorId: string) => void;
   availableDoctors?: Doctor[];
 }
@@ -74,7 +71,7 @@ interface PatientTableProps {
 const CONDITION_OPTIONS = ["All Conditions", ...patientConditionOptions];
 
 const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
+  "bg-teal-100 text-teal-700",
   "bg-teal-100 text-teal-700",
   "bg-purple-100 text-purple-700",
   "bg-amber-100 text-amber-700",
@@ -93,8 +90,6 @@ export function PatientTable({
   onSearchChange,
   selectedCondition,
   onConditionChange,
-  selectedStatus = "",
-  onStatusChange,
   startDate,
   onStartDateChange,
   endDate,
@@ -129,13 +124,6 @@ export function PatientTable({
     return clean.slice(0, 2).toUpperCase();
   };
 
-  const getPatientMrn = (patient: Patient, index: number) => {
-    return (
-      patient.code ||
-      `#MRN-${String(index + 2045).padStart(5, "0")}`
-    );
-  };
-
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
@@ -146,7 +134,7 @@ export function PatientTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by patient name, MRN, phone, or doctor..."
+              placeholder="Search by patient name, condition, or phone..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl"
@@ -167,20 +155,6 @@ export function PatientTable({
                 </option>
               ))}
             </select>
-
-            {/* Status Select */}
-            {onStatusChange && (
-              <select
-                value={selectedStatus}
-                onChange={(e) => onStatusChange(e.target.value)}
-                className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-              >
-                <option value="">All Statuses</option>
-                <option value="Admitted">Admitted</option>
-                <option value="Observation">Observation</option>
-                <option value="Discharged">Discharged</option>
-              </select>
-            )}
 
             {/* Date Filter Toggle */}
             <Button
@@ -224,7 +198,7 @@ export function PatientTable({
         {/* Expandable Date-wise Filter */}
         {showDatePicker && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50 text-xs">
-            <span className="text-muted-foreground font-medium">Admitted:</span>
+            <span className="text-muted-foreground font-medium">Registered:</span>
             <Input
               type="date"
               title="Start Date"
@@ -260,9 +234,9 @@ export function PatientTable({
 
       {/* Bulk Action Bar */}
       {selectedPatientIds.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 px-3 sm:px-4 py-2.5 text-xs text-blue-900 dark:text-blue-100 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 px-3 sm:px-4 py-2.5 text-xs text-teal-900 dark:text-teal-100 shadow-xs">
           <div className="flex items-center gap-2">
-            <CheckSquare className="h-4 w-4 text-blue-600" />
+            <CheckSquare className="h-4 w-4 text-primary" />
             <span className="font-semibold">
               {selectedPatientIds.length} patient(s) selected
             </span>
@@ -274,7 +248,7 @@ export function PatientTable({
                 <select
                   value={reassignDoctorId}
                   onChange={(e) => setReassignDoctorId(e.target.value)}
-                  className="h-8 rounded-lg border border-blue-200 bg-white dark:bg-slate-900 px-2 text-xs text-foreground cursor-pointer"
+                  className="h-8 rounded-lg border border-teal-200 bg-white dark:bg-slate-900 px-2 text-xs text-foreground cursor-pointer"
                 >
                   <option value="">Transfer to Doctor...</option>
                   {availableDoctors.map((doc) => (
@@ -293,7 +267,7 @@ export function PatientTable({
                       setReassignDoctorId("");
                     }
                   }}
-                  className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                  className="h-8 bg-primary hover:bg-teal-800 text-white text-xs"
                 >
                   Assign
                 </Button>
@@ -352,7 +326,7 @@ export function PatientTable({
                 key={patient.id}
                 className={cn(
                   "p-4 border border-border/80 bg-card shadow-xs space-y-3 transition-colors",
-                  isSelected && "border-blue-500 bg-blue-50/20"
+                  isSelected && "border-teal-500 bg-teal-50/20"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -363,7 +337,7 @@ export function PatientTable({
                         aria-label={`Select ${patient.name}`}
                         checked={isSelected}
                         onChange={() => onToggleSelectPatient(patient.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
                       />
                     )}
                     <div
@@ -377,7 +351,7 @@ export function PatientTable({
                     <div className="min-w-0">
                       <p
                         onClick={() => onViewPatient && onViewPatient(patient)}
-                        className="font-bold text-sm text-foreground hover:text-blue-600 transition-colors cursor-pointer truncate"
+                        className="font-bold text-sm text-foreground hover:text-primary transition-colors cursor-pointer truncate"
                       >
                         {patient.name}
                       </p>
@@ -432,7 +406,7 @@ export function PatientTable({
                       variant="ghost"
                       size="xs"
                       onClick={() => onViewPatient && onViewPatient(patient)}
-                      className="text-xs text-blue-600 hover:text-blue-700"
+                      className="text-xs text-primary hover:text-teal-700"
                     >
                       <Eye className="h-3.5 w-3.5 mr-1" />
                       Details
@@ -481,7 +455,7 @@ export function PatientTable({
                             if (el) el.indeterminate = isSomeSelected;
                           }}
                           onChange={onToggleSelectAll}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                         />
                       )}
                     </TableHead>
@@ -529,7 +503,7 @@ export function PatientTable({
                           key={patient.id}
                           className={cn(
                             "hover:bg-muted/30 transition-colors",
-                            isSelected && "bg-blue-50/50 dark:bg-blue-950/20"
+                            isSelected && "bg-teal-50/50 dark:bg-teal-950/20"
                           )}
                         >
                           {/* SELECTION CHECKBOX */}
@@ -540,7 +514,7 @@ export function PatientTable({
                                 aria-label={`Select ${patient.name}`}
                                 checked={isSelected}
                                 onChange={() => onToggleSelectPatient(patient.id)}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                               />
                             )}
                           </TableCell>
@@ -559,7 +533,7 @@ export function PatientTable({
                               <div className="flex flex-col">
                                 <span
                                   onClick={() => onViewPatient && onViewPatient(patient)}
-                                  className="font-bold text-foreground text-sm hover:text-blue-600 transition-colors cursor-pointer leading-tight"
+                                  className="font-bold text-foreground text-sm hover:text-primary transition-colors cursor-pointer leading-tight"
                                 >
                                   {patient.name}
                                 </span>
@@ -631,7 +605,7 @@ export function PatientTable({
                           {/* STATUS */}
                           <TableCell className="py-3 px-4">
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                               <span>{patient.status || "Admitted"}</span>
                             </span>
                           </TableCell>
@@ -644,7 +618,7 @@ export function PatientTable({
                                 variant="ghost"
                                 size="xs"
                                 onClick={() => onViewPatient && onViewPatient(patient)}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5"
+                                className="text-xs font-semibold text-primary hover:text-teal-700 hover:underline px-1 py-0.5"
                               >
                                 View
                               </Button>
@@ -704,7 +678,7 @@ export function PatientTable({
                   key={patient.id}
                   className={cn(
                     "p-5 border border-border/80 shadow-xs space-y-4 transition-all",
-                    isSelected && "border-blue-500 bg-blue-50/20 ring-1 ring-blue-500/30"
+                    isSelected && "border-teal-500 bg-teal-50/20 ring-1 ring-primary/30"
                   )}
                 >
                   <div className="flex items-start justify-between">
@@ -715,7 +689,7 @@ export function PatientTable({
                           aria-label={`Select ${patient.name}`}
                           checked={isSelected}
                           onChange={() => onToggleSelectPatient(patient.id)}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                          className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer shrink-0"
                         />
                       )}
                       <div
@@ -729,7 +703,7 @@ export function PatientTable({
                       <div>
                         <p
                           onClick={() => onViewPatient && onViewPatient(patient)}
-                          className="font-bold text-sm text-foreground hover:text-blue-600 transition-colors cursor-pointer"
+                          className="font-bold text-sm text-foreground hover:text-primary transition-colors cursor-pointer"
                         >
                           {patient.name}
                         </p>
@@ -755,7 +729,7 @@ export function PatientTable({
                     <button
                       type="button"
                       onClick={() => onViewPatient && onViewPatient(patient)}
-                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer transition-colors"
+                      className="font-semibold text-primary hover:text-teal-700 hover:underline cursor-pointer transition-colors"
                     >
                       View Details
                     </button>

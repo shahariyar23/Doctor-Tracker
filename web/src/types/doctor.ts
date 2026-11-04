@@ -52,8 +52,10 @@ export interface PaginatedDoctorsResponse {
 export interface AssociatedPatient {
   id: string;
   name: string;
-  phone?: string;
-  condition?: string;
+  phone?: string | null;
+  condition: string;
   status?: string;
+  age?: number;
+  gender?: string;
   assignedDate?: string;
 }

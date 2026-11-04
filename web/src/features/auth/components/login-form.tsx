@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Stethoscope,
   Mail,
   Lock,
   Eye,
@@ -24,6 +23,7 @@ import {
 import { loginSchema, LoginFormData } from "../schemas/login-schema";
 import { useAuth } from "../hooks/use-auth";
 import { getErrorMessage } from "@/lib/api-client";
+import { Logo } from "@/components/brand/logo";
 
 export function LoginForm() {
   const { login, isLoggingIn } = useAuth();
@@ -66,24 +66,7 @@ export function LoginForm() {
       >
         {/* Top Header / Branding */}
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-emerald-700 text-white shadow-md shadow-teal-700/15 ring-1 ring-teal-600/30">
-              <Stethoscope className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold tracking-tight text-slate-900">
-                  Doctor Tracker
-                </span>
-                <span className="inline-flex items-center rounded-md border border-teal-200/80 bg-teal-50 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-teal-800 uppercase">
-                  Admin
-                </span>
-              </div>
-              <p className="text-[12px] font-medium text-slate-500">
-                Healthcare Resource & Patient Administration
-              </p>
-            </div>
-          </div>
+          <Logo variant="full" size="md" showBadge={true} badgeText="Admin" />
         </header>
 
         {/* Center Content: Login Form Card */}
