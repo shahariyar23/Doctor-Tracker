@@ -5,10 +5,9 @@ const FALLBACK_DASHBOARD_DATA: DashboardData = {
   metrics: {
     totalDoctors: 148,
     totalPatients: 3842,
+    patientsPerDoctor: 25.9,
     assignedPatients: 3718,
     unassignedPatients: 124,
-    doctorGrowthRate: 6.2,
-    patientGrowthRate: 3.2,
   },
   trends: [
     { date: "Oct 01", count: 85 },
@@ -24,7 +23,7 @@ const FALLBACK_DASHBOARD_DATA: DashboardData = {
     { id: "doc-1", name: "Dr. Marcus Vance", specialty: "Cardiology", patientCount: 32 },
     { id: "doc-2", name: "Dr. Priya Patel", specialty: "Neurology", patientCount: 28 },
     { id: "doc-3", name: "Dr. Aris Thorne", specialty: "Oncology", patientCount: 26 },
-    { id: "doc-4", name: "Dr. Rachel Green", specialty: "Geriatrics", patientCount: 24 },
+    { id: "doc-4", name: "Dr. Rachel Green", specialty: "Pediatrics", patientCount: 24 },
     { id: "doc-5", name: "Dr. Colin Drake", specialty: "Internal Medicine", patientCount: 21 },
   ],
   conditions: [
@@ -60,7 +59,7 @@ const FALLBACK_DASHBOARD_DATA: DashboardData = {
       name: "Marcus Vance Jr",
       registeredDate: "Nov 01, 2026",
       condition: "Recovering",
-      assignedDoctor: { id: "doc-4", name: "Dr. Rachel Green", specialty: "Geriatrics" },
+      assignedDoctor: { id: "doc-4", name: "Dr. Rachel Green", specialty: "Pediatrics" },
     },
     {
       id: "pt-5",

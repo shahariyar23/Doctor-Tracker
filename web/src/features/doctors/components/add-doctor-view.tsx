@@ -16,8 +16,6 @@ import {
   ShieldCheck,
   AlertCircle,
   Loader2,
-  Sparkles,
-  ChevronRight,
 } from "lucide-react";
 import { doctorSchema, DoctorFormData } from "../schemas/doctor-schema";
 import { useCreateDoctor } from "../hooks/use-doctors";

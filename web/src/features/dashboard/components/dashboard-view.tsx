@@ -77,9 +77,16 @@ export function DashboardView() {
   const metrics = data?.metrics || {
     totalDoctors: 0,
     totalPatients: 0,
+    patientsPerDoctor: 0,
     assignedPatients: 0,
     unassignedPatients: 0,
   };
+
+  const calculatedAvg =
+    metrics.patientsPerDoctor ||
+    (metrics.totalDoctors > 0
+      ? Number((metrics.totalPatients / metrics.totalDoctors).toFixed(1))
+      : 0);
 
   return (
     <div className="space-y-6">
@@ -123,51 +130,33 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* 4 Core KPI Cards */}
+      {/* 4 Core KPI Cards (PDF §3: Total Doctors, Total Patients, Patients per Doctor, Date-based Statistics) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Total Doctors"
           value={metrics.totalDoctors}
           subtitle="Registered physicians"
           icon={Stethoscope}
-          trend={
-            metrics.doctorGrowthRate !== undefined
-              ? {
-                  value: metrics.doctorGrowthRate,
-                  label: "this month",
-                  positive: metrics.doctorGrowthRate >= 0,
-                }
-              : undefined
-          }
         />
         <KpiCard
           title="Total Patients"
           value={metrics.totalPatients}
-          subtitle="Medical records"
+          subtitle="Registered patient records"
           icon={Users}
-          trend={
-            metrics.patientGrowthRate !== undefined
-              ? {
-                  value: metrics.patientGrowthRate,
-                  label: "this month",
-                  positive: metrics.patientGrowthRate >= 0,
-                }
-              : undefined
-          }
         />
         <KpiCard
-          title="Assigned Patients"
-          value={metrics.assignedPatients}
-          subtitle="Under active care"
+          title="Patients per Doctor"
+          value={calculatedAvg}
+          subtitle="Average distribution"
           icon={UserCheck}
           variant="success"
         />
         <KpiCard
-          title="Unassigned Patients"
-          value={metrics.unassignedPatients}
-          subtitle="Needs attending doctor"
+          title="Assigned Patients"
+          value={metrics.assignedPatients || 0}
+          subtitle="Under doctor care"
           icon={AlertTriangle}
-          variant={metrics.unassignedPatients > 0 ? "warning" : "default"}
+          variant="default"
         />
       </div>
 

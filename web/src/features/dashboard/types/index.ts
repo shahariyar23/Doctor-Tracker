@@ -1,10 +1,9 @@
 export interface DashboardMetrics {
   totalDoctors: number;
   totalPatients: number;
-  assignedPatients: number;
-  unassignedPatients: number;
-  doctorGrowthRate?: number;
-  patientGrowthRate?: number;
+  patientsPerDoctor: number;
+  assignedPatients?: number;
+  unassignedPatients?: number;
 }
 
 export interface RegistrationTrendItem {
@@ -17,7 +16,6 @@ export interface DoctorWorkloadItem {
   name: string;
   specialty: string;
   patientCount: number;
-  capacity?: number;
 }
 
 export interface ConditionDistributionItem {
@@ -30,7 +28,7 @@ export interface RecentPatientItem {
   id: string;
   name: string;
   registeredDate: string;
-  condition: "Critical" | "Under Treatment" | "Stable" | "Recovering";
+  condition: string;
   assignedDoctor: {
     id: string;
     name: string;

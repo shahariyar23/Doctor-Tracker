@@ -27,8 +27,6 @@ import { authService } from "../services/auth-service";
 import { useAppDispatch } from "@/store";
 import { setCredentials } from "@/store/slices/auth-slice";
 
-type RoleType = "admin" | "physician";
-
 interface ToastState {
   show: boolean;
   title: string;
@@ -40,7 +38,6 @@ export function LoginForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const [role, setRole] = useState<RoleType>("admin");
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,13 +51,12 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     getValues,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "sarah.jenkins@doctortracker.com",
+      email: "admin@doctortracker.com",
       password: "DoctorTracker#2026",
       rememberMe: true,
     },
@@ -82,16 +78,8 @@ export function LoginForm() {
     }, 4500);
   };
 
-  const handleRoleChange = (newRole: RoleType) => {
-    setRole(newRole);
-    setApiError(null);
-    if (newRole === "admin") {
-      setValue("email", "sarah.jenkins@doctortracker.com");
-      setValue("password", "DoctorTracker#2026");
-    } else {
-      setValue("email", "dr.jenkins@doctortracker.com");
-      setValue("password", "DoctorTracker#2026");
-    }
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, show: false }));
   };
 
   const performLoginSuccess = (
@@ -100,13 +88,13 @@ export function LoginForm() {
   ) => {
     dispatch(setCredentials({ user, token }));
     showToastNotification(
-      `Welcome, ${user.role === "admin" ? "Administrator" : "Physician"}!`,
-      "Successfully authenticated. Launching your clinic dashboard...",
+      "Welcome, Administrator!",
+      "Successfully authenticated. Launching Doctor Tracker portal...",
       "success"
     );
     setTimeout(() => {
       router.push("/dashboard");
-    }, 700);
+    }, 600);
   };
 
   const onSubmit = async (data: LoginFormData) => {
@@ -121,10 +109,6 @@ export function LoginForm() {
         emailLower === "admin@doctortracker.com") &&
       (data.password === "DoctorTracker#2026" || data.password === "admin123");
 
-    const isDemoPhysician =
-      emailLower === "dr.jenkins@doctortracker.com" &&
-      (data.password === "DoctorTracker#2026" || data.password === "admin123");
-
     try {
       const response = await authService.login(data);
       performLoginSuccess(response.user, response.token);
@@ -133,25 +117,15 @@ export function LoginForm() {
         performLoginSuccess(
           {
             id: "demo-admin-id",
-            name: "Dr. Sarah Jenkins",
+            name: "Admin User",
             email: data.email,
             role: "admin",
           },
           "demo-jwt-token-doctor-tracker"
         );
-      } else if (isDemoPhysician) {
-        performLoginSuccess(
-          {
-            id: "demo-physician-id",
-            name: "Dr. Sarah Jenkins",
-            email: data.email,
-            role: "physician",
-          },
-          "demo-jwt-token-doctor-tracker"
-        );
       } else {
         setApiError(
-          "Invalid email or password combination. Please check your credentials or select an account role above."
+          "Invalid email or password combination. Please enter valid administrative credentials."
         );
         setIsSubmitting(false);
       }
@@ -456,65 +430,15 @@ export function LoginForm() {
             <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/60 p-7 sm:p-9 transition-all">
               {/* Card Header */}
               <div className="mb-6">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60 mb-3">
+                  <Shield className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Administrative Portal</span>
+                </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
                   Welcome Back
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  Sign in to access your workspace.
-                </p>
-              </div>
-
-              {/* Role Selection Tabs */}
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    Account Role
-                  </label>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full transition-all ${
-                      role === "admin"
-                        ? "text-blue-600 bg-blue-50"
-                        : "text-cyan-700 bg-cyan-50"
-                    }`}
-                  >
-                    {role === "admin"
-                      ? "Full system access"
-                      : "Restricted clinical view"}
-                  </span>
-                </div>
-
-                <div className="p-1 bg-slate-100/90 rounded-xl grid grid-cols-2 gap-1 border border-slate-200/60">
-                  <button
-                    type="button"
-                    onClick={() => handleRoleChange("admin")}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      role === "admin"
-                        ? "bg-white text-slate-900 shadow-sm border border-slate-200/50"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    <Shield className="w-4 h-4 text-blue-600" />
-                    <span>Admin Management</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRoleChange("physician")}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      role === "physician"
-                        ? "bg-white text-slate-900 shadow-sm border border-slate-200/50"
-                        : "text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    <Stethoscope className="w-4 h-4 text-cyan-600" />
-                    <span>Physician Portal</span>
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-500 mt-2 px-1">
-                  {role === "admin"
-                    ? "Full access to doctors, patients, schedules & system analytics."
-                    : "Assigned patient records, active ward handovers & read-only access."}
+                  Sign in with your administrative credentials.
                 </p>
               </div>
 

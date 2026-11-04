@@ -16,7 +16,6 @@ import {
   Shield,
   AlertCircle,
   Loader2,
-  CheckCircle2,
 } from "lucide-react";
 import { patientSchema, PatientFormData } from "../schemas/patient-schema";
 import { useCreatePatient } from "../hooks/use-patients";

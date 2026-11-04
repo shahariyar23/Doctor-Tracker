@@ -28,6 +28,20 @@ export function Header() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Mac: Command + K (metaKey), Windows: Windows key + K (metaKey) or Ctrl + K (ctrlKey)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const routeInfo = ROUTE_TITLES[pathname] || {
     title: "Doctor Tracker",
@@ -65,6 +79,7 @@ export function Header() {
         <div className="relative hidden md:block w-64 lg:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
           <Input
+            ref={searchInputRef}
             type="text"
             placeholder="Search doctors, patients... (⌘K)"
             className="pl-9 h-9 text-xs bg-muted/50 focus:bg-background"
