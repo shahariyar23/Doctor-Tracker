@@ -64,7 +64,6 @@ export function DoctorFormModal({
       hospital: "",
       phone: "",
       email: "",
-      status: "Active",
     },
   });
 
@@ -76,7 +75,6 @@ export function DoctorFormModal({
         hospital: doctorToEdit.hospital || "",
         phone: doctorToEdit.phone,
         email: doctorToEdit.email,
-        status: doctorToEdit.status || "Active",
       });
     } else {
       reset({
@@ -85,7 +83,6 @@ export function DoctorFormModal({
         hospital: "",
         phone: "",
         email: "",
-        status: "Active",
       });
     }
   }, [doctorToEdit, reset, isOpen]);
@@ -243,22 +240,6 @@ export function DoctorFormModal({
               {errors.email && (
                 <p className="text-[11px] text-destructive">{errors.email.message}</p>
               )}
-            </div>
-
-            {/* Status Selection */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="doc-status" className="text-xs font-semibold">
-                Operational Status
-              </Label>
-              <select
-                id="doc-status"
-                {...register("status")}
-                className="h-8 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-              >
-                <option value="Active">Active (On Duty)</option>
-                <option value="Available">Available (Accepting Patients)</option>
-                <option value="On Leave">On Leave</option>
-              </select>
             </div>
           </div>
 

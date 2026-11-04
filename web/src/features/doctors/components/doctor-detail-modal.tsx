@@ -41,8 +41,6 @@ export function DoctorDetailModal({
   const [selectedCondition, setSelectedCondition] = useState("All Conditions");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
-  const [maxLimit, setMaxLimit] = useState(35);
-  const [isAdjustingLimit, setIsAdjustingLimit] = useState(false);
 
   // Quick Inline Add Patient state
   const [isAddingPatient, setIsAddingPatient] = useState(false);
@@ -51,6 +49,10 @@ export function DoctorDetailModal({
     "Critical" | "Under Treatment" | "Stable" | "Recovering"
   >("Stable");
   const [newPatientPhone, setNewPatientPhone] = useState("");
+  const [newPatientAge, setNewPatientAge] = useState<number | "">("");
+  const [newPatientGender, setNewPatientGender] = useState<
+    "male" | "female" | "other" | "prefer_not_to_say"
+  >("male");
   const [addError, setAddError] = useState<string | null>(null);
 
   const { data: patients = [], isLoading, refetch } = useDoctorPatients(
@@ -73,7 +75,7 @@ export function DoctorDetailModal({
     return matchesSearch && matchesCondition;
   });
 
-  // Pagination (5 per page as shown in Stitch design)
+  // Pagination (5 per page)
   const pageSize = 5;
   const totalPages = Math.ceil(filteredPatients.length / pageSize) || 1;
   const paginatedPatients = filteredPatients.slice(
@@ -81,14 +83,7 @@ export function DoctorDetailModal({
     currentPage * pageSize
   );
 
-  // Calculations for Caseload & Condition Breakdown
-  const totalPatientsCount = patients.length;
-  const capacityPercent = Math.min(
-    100,
-    Math.round((totalPatientsCount / maxLimit) * 100)
-  );
-  const isNearCapacity = capacityPercent >= 85;
-  const slotsRemaining = Math.max(0, maxLimit - totalPatientsCount);
+  const totalPatientsCount = doctor.patientCount ?? patients.length;
 
   const criticalCount = patients.filter((p) => p.condition === "Critical").length;
   const underTreatmentCount = patients.filter(
@@ -202,12 +197,16 @@ export function DoctorDetailModal({
         doctorId: doctor.id,
         patientData: {
           name: newPatientName.trim(),
-          phone: newPatientPhone.trim() || "+1 (555) 000-0000",
+          age: typeof newPatientAge === "number" ? newPatientAge : 30,
+          gender: newPatientGender,
           condition: newPatientCondition,
+          ...(newPatientPhone.trim() ? { phone: newPatientPhone.trim() } : {}),
         },
       });
       setNewPatientName("");
       setNewPatientPhone("");
+      setNewPatientAge("");
+      setNewPatientGender("male");
       setIsAddingPatient(false);
     } catch (err: unknown) {
       const error = err as {
@@ -254,24 +253,8 @@ export function DoctorDetailModal({
                 <span className="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/60 text-xs font-semibold">
                   {doctor.specialization}
                 </span>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-                    isNearCapacity
-                      ? "bg-red-50 text-red-700 border border-red-200/60"
-                      : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      isNearCapacity ? "bg-red-500" : "bg-emerald-500"
-                    }`}
-                  />
-                  {isNearCapacity
-                    ? `Near Capacity (${capacityPercent}%)`
-                    : `Active (${capacityPercent}%)`}
-                </span>
-                <span className="text-xs font-mono text-slate-400">
-                  #DOC-{doctor.id.slice(0, 4).toUpperCase()}
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                  {totalPatientsCount} Assigned {totalPatientsCount === 1 ? "Patient" : "Patients"}
                 </span>
               </div>
 
@@ -288,8 +271,7 @@ export function DoctorDetailModal({
                 </span>
                 <span className="text-slate-300">•</span>
                 <span className="flex items-center gap-1.5 text-slate-600">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  Day Shift ({doctor.hospital})
+                  {doctor.hospital}
                 </span>
               </div>
             </div>
@@ -354,7 +336,7 @@ export function DoctorDetailModal({
                 <div className="text-xs text-red-600 font-medium">{addError}</div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <input
                   type="text"
                   placeholder="Patient Full Name *"
@@ -364,26 +346,51 @@ export function DoctorDetailModal({
                   className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <input
+                  type="number"
+                  placeholder="Age *"
+                  value={newPatientAge}
+                  onChange={(e) => setNewPatientAge(e.target.value ? Number(e.target.value) : "")}
+                  required
+                  min={0}
+                  max={120}
+                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <select
+                  value={newPatientGender}
+                  onChange={(e) =>
+                    setNewPatientGender(
+                      e.target.value as "male" | "female" | "other" | "prefer_not_to_say"
+                    )
+                  }
+                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+                <input
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (optional)"
                   value={newPatientPhone}
                   onChange={(e) => setNewPatientPhone(e.target.value)}
                   className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <select
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder="Medical Condition *"
                   value={newPatientCondition}
                   onChange={(e) =>
                     setNewPatientCondition(
                       e.target.value as "Critical" | "Under Treatment" | "Stable" | "Recovering"
                     )
                   }
+                  required
                   className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="Critical">Critical</option>
-                  <option value="Under Treatment">Under Treatment</option>
-                  <option value="Stable">Stable</option>
-                  <option value="Recovering">Recovering</option>
-                </select>
+                />
               </div>
 
               <div className="flex justify-end gap-2">
@@ -398,140 +405,18 @@ export function DoctorDetailModal({
             </form>
           )}
 
-          {/* Section: Caseload Saturation & Capacity Card */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  Caseload Saturation &amp; Capacity
-                </span>
-                <div className="flex items-baseline gap-2.5 mt-0.5">
-                  <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                    {totalPatientsCount} / {maxLimit} Patients
-                  </span>
-                  <span
-                    className={`text-xs font-bold ${
-                      isNearCapacity ? "text-red-600" : "text-primary"
-                    }`}
-                  >
-                    ({capacityPercent}% Assigned)
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    Threshold: {maxLimit} max
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {isAdjustingLimit ? (
-                  <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                    <span className="text-xs text-slate-500">Max:</span>
-                    <input
-                      type="number"
-                      value={maxLimit}
-                      min={1}
-                      max={100}
-                      onChange={(e) =>
-                        setMaxLimit(Math.max(1, parseInt(e.target.value) || 1))
-                      }
-                      className="w-14 h-6 text-xs text-center border rounded font-semibold"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setIsAdjustingLimit(false)}
-                      className="text-xs text-primary hover:text-teal-700 font-semibold cursor-pointer transition-colors"
-                    >
-                      Done
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsAdjustingLimit(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200/80 shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Settings2 className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Adjust Max Limit</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Capacity Progress Bar */}
-            <div className="w-full flex flex-col gap-1.5">
-              <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    capacityPercent >= 85
-                      ? "bg-red-600"
-                      : capacityPercent >= 60
-                      ? "bg-primary"
-                      : "bg-emerald-500"
-                  }`}
-                  style={{ width: `${capacityPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[11px] text-slate-500">
-                <span>{slotsRemaining} slots remaining before strict overload lock</span>
-                <span className={isNearCapacity ? "text-red-600 font-semibold" : ""}>
-                  {isNearCapacity ? "Warning threshold reached (>85%)" : "Within normal capacity limit"}
-                </span>
-              </div>
-            </div>
-
-            {/* 4 Condition Metric Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-              {/* Active Patients */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Active Patients
-                </span>
-                <span className="text-xl font-bold text-slate-900 mt-1">
-                  {totalPatientsCount}
-                </span>
-                <span className="text-[11px] text-emerald-600 font-medium mt-0.5">
-                  Active care
-                </span>
-              </div>
-
-              {/* Critical Condition */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-                <span className="text-[11px] text-red-600 font-medium">
-                  Critical Condition
-                </span>
-                <span className="text-xl font-bold text-red-600 mt-1">
-                  {criticalCount}
-                </span>
-                <span className="text-[11px] text-red-600/80 font-medium mt-0.5">
-                  Requires monitoring
-                </span>
-              </div>
-
-              {/* Under Treatment */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Under Treatment
-                </span>
-                <span className="text-xl font-bold text-primary mt-1">
-                  {underTreatmentCount}
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium mt-0.5">
-                  Routine therapy
-                </span>
-              </div>
-
-              {/* Stable / Recovering */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Stable / Recovering
-                </span>
-                <span className="text-xl font-bold text-emerald-700 mt-1">
-                  {stableRecoveringCount}
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium mt-0.5">
-                  Discharge ready
-                </span>
-              </div>
+          {/* Real Patient Count Summary Header */}
+          <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 flex flex-col gap-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Caseload Summary
+            </span>
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {totalPatientsCount} Assigned {totalPatientsCount === 1 ? "Patient" : "Patients"}
+              </span>
+              <span className="text-xs text-slate-500">
+                Registered under Dr. {doctor.name}
+              </span>
             </div>
           </div>
 
@@ -594,11 +479,11 @@ export function DoctorDetailModal({
                           className="rounded text-primary border-slate-300 focus:ring-0 cursor-pointer"
                         />
                       </th>
-                      <th className="px-4 font-semibold">Patient Name &amp; MRN</th>
+                      <th className="px-4 font-semibold">Patient Name</th>
                       <th className="px-4 font-semibold">Demographics</th>
-                      <th className="px-4 font-semibold">Condition Status</th>
+                      <th className="px-4 font-semibold">Medical Condition</th>
+                      <th className="px-4 font-semibold">Contact</th>
                       <th className="px-4 font-semibold">Assigned Date</th>
-                      <th className="px-4 font-semibold">Clinical Note</th>
                       <th className="px-4 font-semibold text-right">Actions</th>
                     </tr>
                   </thead>
@@ -618,6 +503,13 @@ export function DoctorDetailModal({
                     ) : (
                       paginatedPatients.map((patient) => {
                         const isSelected = selectedPatientIds.includes(patient.id);
+                        const demoStr = [
+                          patient.age !== undefined ? `${patient.age} yrs` : null,
+                          patient.gender ? patient.gender.replace("_", " ") : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "—";
+
                         return (
                           <tr
                             key={patient.id}
@@ -634,39 +526,20 @@ export function DoctorDetailModal({
                               />
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-slate-900 leading-tight">
-                                  {patient.name}
-                                </span>
-                                <span className="text-[11px] text-slate-400 font-mono mt-0.5">
-                                  #PT-{patient.id.slice(0, 5).toUpperCase()}
-                                </span>
-                              </div>
+                              <span className="font-semibold text-slate-900 leading-tight">
+                                {patient.name}
+                              </span>
                             </td>
-                            <td className="px-4 py-3 text-slate-500">
-                              {patient.phone ? patient.phone : "Clinical Record"}
+                            <td className="px-4 py-3 text-slate-600 capitalize">
+                              {demoStr}
                             </td>
                             <td className="px-4 py-3">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-                                  patient.condition === "Critical"
-                                    ? "bg-red-50 text-red-700 border-red-200/60"
-                                    : patient.condition === "Under Treatment"
-                                    ? "bg-teal-50 text-teal-700 border-teal-200/60"
-                                    : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-                                }`}
-                              >
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
-                                    patient.condition === "Critical"
-                                      ? "bg-red-500"
-                                      : patient.condition === "Under Treatment"
-                                      ? "bg-teal-600"
-                                      : "bg-emerald-500"
-                                  }`}
-                                />
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/60">
                                 {patient.condition}
                               </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {patient.phone ? patient.phone : "Not provided"}
                             </td>
                             <td className="px-4 py-3 text-slate-600">
                               {patient.assignedDate
@@ -679,11 +552,6 @@ export function DoctorDetailModal({
                                     }
                                   )
                                 : "Active"}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className="text-slate-600 truncate max-w-[180px] inline-block">
-                                Routine clinical therapy
-                              </span>
                             </td>
                             <td className="px-4 py-3 text-right">
                               <button

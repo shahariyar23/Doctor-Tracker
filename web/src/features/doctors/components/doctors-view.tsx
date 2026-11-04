@@ -9,18 +9,17 @@ import {
   RefreshCw,
   AlertCircle,
   Stethoscope,
-  CheckCircle2,
   Users,
-  AlertTriangle,
-  TrendingUp,
+  UserCheck,
+  UserMinus,
 } from "lucide-react";
-import { Doctor, DoctorStats } from "../types";
+import { Doctor } from "../types";
 import {
   useDoctors,
   useDeleteDoctor,
   useBulkDeleteDoctors,
-  useBulkUpdateDoctorStatus,
 } from "../hooks/use-doctors";
+import { useDashboardOverview } from "@/features/dashboard/hooks/use-dashboard";
 import { DoctorTable } from "./doctor-table";
 import { DoctorFormModal } from "./doctor-form-modal";
 import { DoctorDetailModal } from "./doctor-detail-modal";
@@ -36,8 +35,6 @@ export function DoctorsView() {
   // Filter & Pagination States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedShift, setSelectedShift] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,17 +50,16 @@ export function DoctorsView() {
   const { data, isLoading, isError, error, refetch } = useDoctors({
     search: searchQuery || undefined,
     specialty: selectedSpecialty || undefined,
-    status: selectedStatus || undefined,
-    shift: selectedShift || undefined,
     startDate: startDate || undefined,
     endDate: endDate || undefined,
     page: currentPage,
     limit: 10,
   });
 
+  const { data: overview } = useDashboardOverview();
+
   const deleteMutation = useDeleteDoctor();
   const bulkDeleteMutation = useBulkDeleteDoctors();
-  const bulkUpdateStatusMutation = useBulkUpdateDoctorStatus();
 
   const handleToggleSelectDoctor = (id: string) => {
     setSelectedDoctorIds((prev) =>
@@ -100,19 +96,6 @@ export function DoctorsView() {
     }
   };
 
-  const handleBulkStatusChange = async (status: Doctor["status"]) => {
-    if (selectedDoctorIds.length === 0) return;
-    try {
-      await bulkUpdateStatusMutation.mutateAsync({
-        ids: selectedDoctorIds,
-        status,
-      });
-      setSelectedDoctorIds([]);
-    } catch {
-      alert("Failed to update status for selected doctors.");
-    }
-  };
-
   const handleEdit = (doctor: Doctor) => {
     setDoctorToEdit(doctor);
     setIsFormModalOpen(true);
@@ -132,52 +115,35 @@ export function DoctorsView() {
     }
   };
 
-  // Derive Doctor Directory Stats
+  // Derive Real Doctor Directory Stats from Database Records
   const doctorsList = data?.doctors || [];
-  const activeCount = doctorsList.filter((d) => d.status === "Active" || !d.status).length;
-  const atCapCount = doctorsList.filter((d) => {
-    const current = d.patientCount || 0;
-    const max = d.maxCapacity || 35;
-    return (current / max) >= 0.9;
-  }).length;
-  const totalPatientsServed = doctorsList.reduce((acc, d) => acc + (d.patientCount || 0), 0);
-
-  const stats: DoctorStats = {
-    totalDoctors: data?.total || doctorsList.length,
-    activeOnDuty: activeCount,
-    availabilityRate: doctorsList.length > 0 ? Math.round((activeCount / doctorsList.length) * 100) : 0,
-    avgCaseload: doctorsList.length > 0 ? Math.round(totalPatientsServed / doctorsList.length) : 0,
-    atCapacity: atCapCount,
-    onLeave: doctorsList.filter((d) => d.status === "On Leave").length,
-    acceptingPatients: doctorsList.filter((d) => d.status === "Available").length,
-  };
+  const totalDoctorsCount = overview?.totalDoctors ?? (data?.total || doctorsList.length);
+  const totalPatientsCount = overview?.totalPatients ?? 0;
+  const unassignedPatientsCount = overview?.unassignedPatients ?? 0;
+  const totalAssignedPatientsCount = Math.max(0, totalPatientsCount - unassignedPatientsCount);
 
   const handleExportCsv = () => {
     if (!doctorsList.length) return;
     const headers = [
-      "Doctor ID",
+      "ID",
       "Name",
       "Specialty",
       "Hospital",
       "Phone",
       "Email",
-      "Status",
-      "Shift",
-      "Patient Count",
-      "Max Capacity",
+      "Assigned Patients",
+      "Registered",
     ];
 
-    const rows = doctorsList.map((d, index) => [
-      d.code || `#DOC-${1042 + index}`,
+    const rows = doctorsList.map((d) => [
+      `"${d.id}"`,
       `"${d.name}"`,
       `"${d.specialization}"`,
       `"${d.hospital}"`,
       `"${d.phone}"`,
       `"${d.email}"`,
-      d.status || "Active",
-      d.shift || "Morning",
       d.patientCount || 0,
-      d.maxCapacity || 35,
+      `"${d.createdAt ? new Date(d.createdAt).toISOString() : ""}"`,
     ]);
 
     const csvContent =
@@ -206,11 +172,11 @@ export function DoctorsView() {
               variant="secondary"
               className="bg-teal-100 text-teal-700 hover:bg-teal-100 font-semibold px-2.5 py-0.5 rounded-full text-xs border border-teal-200/60"
             >
-              {stats.totalDoctors} Physicians
+              {totalDoctorsCount} Physicians
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl">
-            Manage doctors, view assigned caseload capacities, track specialties, and monitor physician availability.
+            Manage doctors, monitor assigned patient workloads, and track hospital affiliations.
           </p>
         </div>
 
@@ -238,8 +204,8 @@ export function DoctorsView() {
         </div>
       </div>
 
-      {/* Top 4 Stat Indicator Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {/* Real Statistics derived from database records */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Doctors */}
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
@@ -252,10 +218,7 @@ export function DoctorsView() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {stats.totalDoctors}
-            </span>
-            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center">
-              <TrendingUp className="h-3 w-3 mr-0.5" /> Active
+              {totalDoctorsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
@@ -263,72 +226,43 @@ export function DoctorsView() {
           </p>
         </Card>
 
-        {/* Active on Shift */}
+        {/* Total Assigned Patients */}
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              On Duty
+              Total Assigned Patients
             </span>
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
-              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {stats.activeOnDuty}
-            </span>
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
-              ({stats.totalDoctors > 0 ? Math.round((stats.activeOnDuty / stats.totalDoctors) * 100) : 0}%)
+              {totalAssignedPatientsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Available for consults
+            Patients under physician care
           </p>
         </Card>
 
-        {/* Patients Under Care */}
+        {/* Unassigned Patients */}
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Avg Caseload
-            </span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {stats.avgCaseload}
-            </span>
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
-              pts/doc
-            </span>
-          </div>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Active patient caseloads
-          </p>
-        </Card>
-
-        {/* At Capacity Physicians */}
-        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between pb-1 sm:pb-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Near Capacity
+              Unassigned Patients
             </span>
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40">
-              <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <UserMinus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {stats.atCapacity}
-            </span>
-            <span className="text-[10px] sm:text-xs font-semibold text-amber-600">
-              &gt;90% load
+              {unassignedPatientsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Physicians requiring relief
+            Awaiting physician assignment
           </p>
         </Card>
       </div>
@@ -374,16 +308,6 @@ export function DoctorsView() {
           setSelectedSpecialty(s);
           setCurrentPage(1);
         }}
-        selectedStatus={selectedStatus}
-        onStatusChange={(status) => {
-          setSelectedStatus(status);
-          setCurrentPage(1);
-        }}
-        selectedShift={selectedShift}
-        onShiftChange={(shift) => {
-          setSelectedShift(shift);
-          setCurrentPage(1);
-        }}
         startDate={startDate}
         onStartDateChange={(d) => {
           setStartDate(d);
@@ -394,7 +318,6 @@ export function DoctorsView() {
           setEndDate(d);
           setCurrentPage(1);
         }}
-        stats={stats}
         onViewPatients={setSelectedDoctorForPatients}
         onEditDoctor={handleEdit}
         onDeleteDoctor={handleDelete}
@@ -402,7 +325,6 @@ export function DoctorsView() {
         onToggleSelectDoctor={handleToggleSelectDoctor}
         onToggleSelectAll={handleToggleSelectAll}
         onBulkDelete={handleBulkDelete}
-        onBulkStatusChange={handleBulkStatusChange}
       />
 
       {/* Add / Edit Doctor Modal */}

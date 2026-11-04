@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
 import specialtyOptionsData from "@/data/options/specializations.json";
-import shiftOptionsData from "@/data/options/doctor-shifts.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -54,10 +53,6 @@ interface DoctorTableProps {
   onSearchChange: (search: string) => void;
   selectedSpecialty: string;
   onSpecialtyChange: (specialty: string) => void;
-  selectedStatus: string;
-  onStatusChange: (status: string) => void;
-  selectedShift: string;
-  onShiftChange: (shift: string) => void;
   startDate: string;
   onStartDateChange: (date: string) => void;
   endDate: string;
@@ -70,12 +65,9 @@ interface DoctorTableProps {
   onToggleSelectDoctor?: (id: string) => void;
   onToggleSelectAll?: () => void;
   onBulkDelete?: () => void;
-  onBulkStatusChange?: (status: Doctor["status"]) => void;
 }
 
 const SPECIALTY_OPTIONS = ["All Specialties", ...specialtyOptionsData];
-
-const SHIFT_OPTIONS = shiftOptionsData;
 
 const AVATAR_COLORS = [
   "bg-teal-100 text-teal-700",
@@ -97,10 +89,6 @@ export function DoctorTable({
   onSearchChange,
   selectedSpecialty,
   onSpecialtyChange,
-  selectedStatus,
-  onStatusChange,
-  selectedShift,
-  onShiftChange,
   startDate,
   onStartDateChange,
   endDate,
@@ -112,7 +100,6 @@ export function DoctorTable({
   onToggleSelectDoctor,
   onToggleSelectAll,
   onBulkDelete,
-  onBulkStatusChange,
 }: DoctorTableProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -134,13 +121,6 @@ export function DoctorTable({
     return clean.slice(0, 2).toUpperCase();
   };
 
-  const getDoctorCode = (doctor: Doctor, index: number) => {
-    return (
-      doctor.code ||
-      `#DOC-${String(index + 1042).padStart(4, "0")}`
-    );
-  };
-
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
@@ -151,7 +131,7 @@ export function DoctorTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by physician name, specialty, email, or ID..."
+              placeholder="Search by physician name, specialty, email, or hospital..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl"
@@ -169,32 +149,6 @@ export function DoctorTable({
               {SPECIALTY_OPTIONS.map((opt) => (
                 <option key={opt} value={opt === "All Specialties" ? "" : opt}>
                   {opt}
-                </option>
-              ))}
-            </select>
-
-            {/* Status Select */}
-            <select
-              value={selectedStatus}
-              onChange={(e) => onStatusChange(e.target.value)}
-              className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-            >
-              <option value="">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="At Capacity">At Capacity</option>
-              <option value="On Leave">On Leave</option>
-              <option value="Available">Available (Accepting)</option>
-            </select>
-
-            {/* Shift Select */}
-            <select
-              value={selectedShift}
-              onChange={(e) => onShiftChange(e.target.value)}
-              className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-            >
-              {SHIFT_OPTIONS.map((shift) => (
-                <option key={shift} value={shift === "All Shifts" ? "" : shift}>
-                  {shift}
                 </option>
               ))}
             </select>
@@ -286,31 +240,6 @@ export function DoctorTable({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {onBulkStatusChange && (
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={() => onBulkStatusChange("Active")}
-                  className="h-8 text-xs bg-white dark:bg-slate-900 border-teal-200 text-teal-700 dark:text-teal-300 hover:bg-teal-50"
-                >
-                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600 mr-1" />
-                  Set Active
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={() => onBulkStatusChange("On Leave")}
-                  className="h-8 text-xs bg-white dark:bg-slate-900 border-teal-200 text-teal-700 dark:text-teal-300 hover:bg-teal-50"
-                >
-                  <Clock className="h-3.5 w-3.5 text-amber-600 mr-1" />
-                  Set On Leave
-                </Button>
-              </div>
-            )}
-
             {onBulkDelete && (
               <Button
                 type="button"
@@ -354,12 +283,8 @@ export function DoctorTable({
         ) : (
           doctors.map((doctor, index) => {
             const initials = getInitials(doctor.name);
-            const docCode = getDoctorCode(doctor, index);
             const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
             const currentCount = doctor.patientCount || 0;
-            const maxCap = doctor.maxCapacity || 35;
-            const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
-            const isOverloaded = caseloadPercent >= 90;
             const isSelected = selectedDoctorIds.includes(doctor.id);
 
             return (
@@ -396,8 +321,8 @@ export function DoctorTable({
                       >
                         {doctor.name}
                       </Link>
-                      <p className="text-[11px] font-mono text-muted-foreground">
-                        {docCode} · {doctor.specialization}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {doctor.specialization} · {doctor.hospital}
                       </p>
                     </div>
                   </div>
@@ -435,25 +360,10 @@ export function DoctorTable({
                   </DropdownMenu>
                 </div>
 
-                {/* Caseload indicator */}
-                <div className="space-y-1.5 pt-1 text-xs">
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>Caseload:</span>
-                    <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-primary")}>
-                      {currentCount} / {maxCap} ({caseloadPercent}%)
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all", isOverloaded ? "bg-red-600" : "bg-primary")}
-                      style={{ width: `${caseloadPercent}%` }}
-                    />
-                  </div>
-                </div>
-
                 {/* Contact and Quick Action */}
                 <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
-                  <div className="flex items-center gap-3 text-muted-foreground text-[11px] truncate">
+                  <div className="flex flex-col text-muted-foreground text-[11px] truncate">
+                    <span>{doctor.email}</span>
                     {doctor.phone && (
                       <span className="flex items-center gap-1">
                         <Phone className="h-3 w-3" />
@@ -466,7 +376,7 @@ export function DoctorTable({
                     onClick={() => onViewPatients(doctor)}
                     className="font-semibold text-primary hover:text-teal-700 hover:underline shrink-0 text-xs cursor-pointer transition-colors"
                   >
-                    View Patients ({currentCount})
+                    {currentCount} {currentCount === 1 ? "Patient" : "Patients"}
                   </button>
                 </div>
               </Card>
@@ -497,18 +407,19 @@ export function DoctorTable({
                         />
                       )}
                     </TableHead>
-                    <TableHead className="py-3 px-4">PHYSICIAN & ID</TableHead>
-                    <TableHead className="py-3 px-4">SPECIALTY</TableHead>
-                    <TableHead className="py-3 px-4">CONTACT DETAILS</TableHead>
-                    <TableHead className="py-3 px-4 min-w-[170px]">CASELOAD CAPACITY</TableHead>
-                    <TableHead className="py-3 px-4">STATUS</TableHead>
+                    <TableHead className="py-3 px-4">DOCTOR</TableHead>
+                    <TableHead className="py-3 px-4">SPECIALIZATION</TableHead>
+                    <TableHead className="py-3 px-4">HOSPITAL</TableHead>
+                    <TableHead className="py-3 px-4">CONTACT</TableHead>
+                    <TableHead className="py-3 px-4 text-center">ASSIGNED PATIENTS</TableHead>
+                    <TableHead className="py-3 px-4">REGISTERED</TableHead>
                     <TableHead className="py-3 px-5 text-right">ACTIONS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-52 text-center">
+                      <TableCell colSpan={8} className="h-52 text-center">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                           <span className="text-xs text-muted-foreground">
@@ -519,7 +430,7 @@ export function DoctorTable({
                     </TableRow>
                   ) : doctors.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-52 text-center">
+                      <TableCell colSpan={8} className="h-52 text-center">
                         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                           <Stethoscope className="h-8 w-8 text-muted-foreground/40" />
                           <span className="text-xs font-semibold">
@@ -531,13 +442,16 @@ export function DoctorTable({
                   ) : (
                     doctors.map((doctor, index) => {
                       const initials = getInitials(doctor.name);
-                      const docCode = getDoctorCode(doctor, index);
                       const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
                       const currentCount = doctor.patientCount || 0;
-                      const maxCap = doctor.maxCapacity || 35;
-                      const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
-                      const isOverloaded = caseloadPercent >= 90;
                       const isSelected = selectedDoctorIds.includes(doctor.id);
+                      const regDate = doctor.createdAt
+                        ? new Date(doctor.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "—";
 
                       return (
                         <TableRow
@@ -560,7 +474,7 @@ export function DoctorTable({
                             )}
                           </TableCell>
 
-                          {/* PHYSICIAN & ID */}
+                          {/* DOCTOR */}
                           <TableCell className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               <div
@@ -578,21 +492,25 @@ export function DoctorTable({
                                 >
                                   {doctor.name}
                                 </Link>
-                                <span className="text-[11px] font-mono text-muted-foreground">
-                                  {docCode}
-                                </span>
                               </div>
                             </div>
                           </TableCell>
 
-                          {/* SPECIALTY */}
+                          {/* SPECIALIZATION */}
                           <TableCell className="py-3 px-4">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200/50 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-900/50">
                               {doctor.specialization}
                             </span>
                           </TableCell>
 
-                          {/* CONTACT DETAILS */}
+                          {/* HOSPITAL */}
+                          <TableCell className="py-3 px-4">
+                            <span className="text-xs text-foreground font-medium">
+                              {doctor.hospital}
+                            </span>
+                          </TableCell>
+
+                          {/* CONTACT */}
                           <TableCell className="py-3 px-4">
                             <div className="flex flex-col text-xs leading-relaxed">
                               <span className="font-medium text-foreground">{doctor.email}</span>
@@ -600,66 +518,39 @@ export function DoctorTable({
                             </div>
                           </TableCell>
 
-                          {/* CASELOAD CAPACITY */}
-                          <TableCell className="py-3 px-4">
-                            <div className="w-full max-w-[160px] space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-semibold text-foreground">
-                                  {currentCount} <span className="text-muted-foreground font-normal">/ {maxCap}</span>
-                                </span>
-                                <span
-                                  className={cn(
-                                    "font-bold text-xs",
-                                    isOverloaded ? "text-red-600" : "text-primary"
-                                  )}
-                                >
-                                  {caseloadPercent}%
-                                </span>
-                              </div>
-                              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                                <div
-                                  className={cn(
-                                    "h-full rounded-full transition-all duration-300",
-                                    isOverloaded ? "bg-red-600" : "bg-primary"
-                                  )}
-                                  style={{ width: `${caseloadPercent}%` }}
-                                />
-                              </div>
-                            </div>
+                          {/* ASSIGNED PATIENTS */}
+                          <TableCell className="py-3 px-4 text-center">
+                            <button
+                              type="button"
+                              onClick={() => onViewPatients(doctor)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200/60 transition-colors cursor-pointer"
+                            >
+                              <span>{currentCount}</span>
+                              <span className="text-[11px] font-normal text-muted-foreground">
+                                {currentCount === 1 ? "patient" : "patients"}
+                              </span>
+                            </button>
                           </TableCell>
 
-                          {/* STATUS */}
+                          {/* REGISTERED */}
                           <TableCell className="py-3 px-4">
-                            {doctor.status === "At Capacity" ? (
-                              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-50 text-red-600 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50">
-                                At Capacity
-                              </span>
-                            ) : doctor.status === "On Leave" ? (
-                              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400">
-                                On Leave
-                              </span>
-                            ) : doctor.status === "Available" ? (
-                              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-400">
-                                Accepting Patients
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-                                <span>Active</span>
-                              </span>
-                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {regDate}
+                            </span>
                           </TableCell>
 
                           {/* ACTIONS */}
                           <TableCell className="py-3 px-5 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <button
+                              <Button
                                 type="button"
-                                onClick={() => onViewPatients(doctor)}
-                                className="text-xs font-semibold text-primary hover:text-teal-700 hover:underline px-1 py-0.5 cursor-pointer transition-colors"
+                                variant="ghost"
+                                size="xs"
+                                onClick={() => router.push(`/doctors/${doctor.id}`)}
+                                className="text-xs font-medium text-primary hover:text-teal-700"
                               >
-                                Patients
-                              </button>
+                                View
+                              </Button>
 
                               <DropdownMenu>
                                 <DropdownMenuTrigger
@@ -670,9 +561,7 @@ export function DoctorTable({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                   <DropdownMenuItem
-                                    onClick={() => {
-                                      router.push(`/doctors/${doctor.id}`);
-                                    }}
+                                    onClick={() => router.push(`/doctors/${doctor.id}`)}
                                     className="flex items-center gap-2 cursor-pointer text-xs"
                                   >
                                     <ExternalLink className="h-3.5 w-3.5" />
@@ -709,13 +598,16 @@ export function DoctorTable({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {doctors.map((doctor, index) => {
               const initials = getInitials(doctor.name);
-              const docCode = getDoctorCode(doctor, index);
               const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
               const currentCount = doctor.patientCount || 0;
-              const maxCap = doctor.maxCapacity || 35;
-              const caseloadPercent = Math.min(Math.round((currentCount / maxCap) * 100), 100);
-              const isOverloaded = caseloadPercent >= 90;
               const isSelected = selectedDoctorIds.includes(doctor.id);
+              const regDate = doctor.createdAt
+                ? new Date(doctor.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "—";
 
               return (
                 <Card
@@ -751,7 +643,7 @@ export function DoctorTable({
                         >
                           {doctor.name}
                         </Link>
-                        <p className="text-[11px] font-mono text-muted-foreground">{docCode}</p>
+                        <p className="text-xs text-muted-foreground">{doctor.hospital}</p>
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs bg-teal-50 text-teal-700">
@@ -759,18 +651,14 @@ export function DoctorTable({
                     </Badge>
                   </div>
 
-                  <div className="space-y-1.5 pt-2 border-t border-border/50 text-xs">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Caseload:</span>
-                      <span className={cn("font-bold", isOverloaded ? "text-red-600" : "text-primary")}>
-                        {currentCount} / {maxCap} ({caseloadPercent}%)
-                      </span>
+                  <div className="space-y-1.5 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Assigned Patients:</span>
+                      <span className="font-semibold text-foreground">{currentCount}</span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", isOverloaded ? "bg-red-600" : "bg-primary")}
-                        style={{ width: `${caseloadPercent}%` }}
-                      />
+                    <div className="flex justify-between">
+                      <span>Registered:</span>
+                      <span>{regDate}</span>
                     </div>
                   </div>
 

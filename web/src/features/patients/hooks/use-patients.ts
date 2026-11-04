@@ -96,16 +96,6 @@ export function useBulkReassignPatients() {
   });
 }
 
-export function useBulkUpdatePatientStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (_payload: { patientIds: string[]; status: Patient["status"] }) => Promise.resolve(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
-    },
-  });
-}
-
 export function useReassignPatient() {
   const queryClient = useQueryClient();
   return useMutation({

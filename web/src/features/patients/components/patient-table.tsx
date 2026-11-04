@@ -66,7 +66,6 @@ interface PatientTableProps {
   onToggleSelectPatient?: (id: string) => void;
   onToggleSelectAll?: () => void;
   onBulkDelete?: () => void;
-  onBulkStatusChange?: (status: Patient["status"]) => void;
   onBulkReassign?: (doctorId: string) => void;
   availableDoctors?: Doctor[];
 }
@@ -127,13 +126,6 @@ export function PatientTable({
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return clean.slice(0, 2).toUpperCase();
-  };
-
-  const getPatientMrn = (patient: Patient, index: number) => {
-    return (
-      patient.code ||
-      `#MRN-${String(index + 2045).padStart(5, "0")}`
-    );
   };
 
   return (
@@ -343,7 +335,6 @@ export function PatientTable({
         ) : (
           patients.map((patient, index) => {
             const initials = getInitials(patient.name);
-            const mrn = getPatientMrn(patient, index);
             const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
             const isSelected = selectedPatientIds.includes(patient.id);
 
@@ -381,8 +372,8 @@ export function PatientTable({
                       >
                         {patient.name}
                       </p>
-                      <p className="text-[11px] font-mono text-muted-foreground">
-                        {mrn} · {patient.roomNumber || "Main Ward"}
+                      <p className="text-[11px] text-muted-foreground">
+                        Age {patient.age} · {patient.gender ? patient.gender.replace(/_/g, " ") : "—"}
                       </p>
                     </div>
                   </div>
@@ -401,7 +392,7 @@ export function PatientTable({
                   </span>
                 </div>
 
-                {/* Assigned Doctor and Status Row */}
+                {/* Assigned Doctor Row */}
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-border/50">
                   <div className="flex items-center gap-1.5 text-muted-foreground truncate">
                     <Stethoscope className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -411,8 +402,8 @@ export function PatientTable({
                       )}
                     </span>
                   </div>
-                  <span className="text-[11px] font-medium text-muted-foreground shrink-0">
-                    {patient.status || "Admitted"}
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : "—"}
                   </span>
                 </div>
 
@@ -681,7 +672,6 @@ export function PatientTable({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {patients.map((patient, index) => {
               const initials = getInitials(patient.name);
-              const mrn = getPatientMrn(patient, index);
               const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
               const isSelected = selectedPatientIds.includes(patient.id);
 

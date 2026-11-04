@@ -49,20 +49,19 @@ export function AddDoctorView() {
   } = useForm<DoctorFormData>({
     resolver: zodResolver(doctorSchema),
     defaultValues: {
-      name: "Dr. Alexander Vance",
-      specialization: "Cardiology",
-      hospital: "St. Jude Memorial Hospital",
-      phone: "+1 (555) 019-2834",
-      email: "a.vance@hospital.org",
-      status: "Active",
+      name: "",
+      specialization: "",
+      hospital: "",
+      phone: "",
+      email: "",
     },
   });
 
   // Watch fields for live preview card synchronization
   const watchedName = watch("name") || "";
-  const watchedSpec = watch("specialization") || "Cardiology";
-  const watchedHospital = watch("hospital") || "Hospital Name";
-  const watchedPhone = watch("phone") || "Phone Number";
+  const watchedSpec = watch("specialization") || "Specialization";
+  const watchedHospital = watch("hospital") || "Hospital";
+  const watchedPhone = watch("phone") || "Not provided";
   const watchedEmail = watch("email") || "Email Address";
 
   // Derive initials for avatar
@@ -366,10 +365,6 @@ export function AddDoctorView() {
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Doctor Card Preview
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Active
-              </span>
             </div>
 
             <div className="flex items-start gap-4">
@@ -378,7 +373,7 @@ export function AddDoctorView() {
               </div>
               <div className="flex flex-col min-w-0">
                 <h3 className="text-base font-bold text-foreground truncate leading-tight">
-                  {watchedName.trim() || "Dr. Alexander Vance"}
+                  {watchedName.trim() || "Doctor Name"}
                 </h3>
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="inline-flex px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200/60 text-xs font-semibold rounded-lg">

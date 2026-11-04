@@ -20,7 +20,6 @@ import {
   useDeletePatient,
   useBulkDeletePatients,
   useBulkReassignPatients,
-  useBulkUpdatePatientStatus,
 } from "../hooks/use-patients";
 import { useDoctors } from "@/features/doctors/hooks/use-doctors";
 import { PatientTable } from "./patient-table";
@@ -38,7 +37,6 @@ export function PatientsView() {
   // Filter & Pagination States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCondition, setSelectedCondition] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +56,6 @@ export function PatientsView() {
   const { data, isLoading, isError, error, refetch } = usePatients({
     search: searchQuery || undefined,
     condition: selectedCondition || undefined,
-    status: selectedStatus || undefined,
     startDate: startDate || undefined,
     endDate: endDate || undefined,
     page: currentPage,
@@ -68,7 +65,6 @@ export function PatientsView() {
   const deleteMutation = useDeletePatient();
   const bulkDeleteMutation = useBulkDeletePatients();
   const bulkReassignMutation = useBulkReassignPatients();
-  const bulkUpdateStatusMutation = useBulkUpdatePatientStatus();
 
   const handleToggleSelectPatient = (id: string) => {
     setSelectedPatientIds((prev) =>
@@ -102,19 +98,6 @@ export function PatientsView() {
       } catch {
         alert("Failed to delete selected patients.");
       }
-    }
-  };
-
-  const handleBulkStatusChange = async (status: Patient["status"]) => {
-    if (selectedPatientIds.length === 0) return;
-    try {
-      await bulkUpdateStatusMutation.mutateAsync({
-        patientIds: selectedPatientIds,
-        status,
-      });
-      setSelectedPatientIds([]);
-    } catch {
-      alert("Failed to update status for selected patients.");
     }
   };
 
@@ -168,26 +151,22 @@ export function PatientsView() {
     if (!patientsList.length) return;
     const headers = [
       "Patient ID",
-      "MRN",
       "Name",
       "Age",
       "Gender",
       "Condition",
-      "Room",
-      "Status",
+      "Phone",
       "Assigned Doctor",
-      "Admitted Date",
+      "Registered Date",
     ];
 
-    const rows = patientsList.map((p, index) => [
+    const rows = patientsList.map((p) => [
       p.id,
-      p.code || `#MRN-${2045 + index}`,
       `"${p.name}"`,
-      p.age || "—",
+      p.age ?? "—",
       p.gender || "—",
       p.condition,
-      p.roomNumber || "Main Ward",
-      p.status,
+      p.phone || "Not provided",
       `"${p.assignedDoctor?.name || 'Unassigned'}"`,
       new Date(p.createdAt).toISOString(),
     ]);
@@ -218,11 +197,11 @@ export function PatientsView() {
               variant="secondary"
               className="bg-teal-100 text-teal-700 hover:bg-teal-100 font-semibold px-2.5 py-0.5 rounded-full text-xs border border-teal-200/60"
             >
-              {stats.totalPatients} Active Patients
+              {stats.totalPatients} Registered Patients
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl">
-            Track medical admissions, monitor clinical condition statuses, and manage physician assignments.
+            Track patient medical records, monitor conditions, and manage attending physician assignments.
           </p>
         </div>
 
@@ -256,7 +235,7 @@ export function PatientsView() {
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Total Admissions
+              Total Patients
             </span>
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-teal-50 text-primary dark:bg-teal-950/40">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -266,12 +245,9 @@ export function PatientsView() {
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {stats.totalPatients}
             </span>
-            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center">
-              <TrendingUp className="h-3 w-3 mr-0.5" /> Live
-            </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Active hospital census
+            Registered patient records
           </p>
         </Card>
 
@@ -279,7 +255,7 @@ export function PatientsView() {
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Critical Care
+              Critical Condition
             </span>
             <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40">
               <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -289,12 +265,9 @@ export function PatientsView() {
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-red-600">
               {stats.criticalCare}
             </span>
-            <span className="text-[10px] sm:text-xs text-red-600 font-semibold">
-              Immediate
-            </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            ICU &amp; unstable patients
+            Critical condition patients
           </p>
         </Card>
 
@@ -312,16 +285,13 @@ export function PatientsView() {
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {stats.underTreatment}
             </span>
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
-              in therapy
-            </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Stable therapeutic care
+            Active therapeutic care
           </p>
         </Card>
 
-        {/* Unassigned Admissions */}
+        {/* Unassigned Patients */}
         <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between pb-1 sm:pb-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -335,12 +305,9 @@ export function PatientsView() {
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {stats.unassigned}
             </span>
-            <span className="text-[10px] sm:text-xs font-semibold text-amber-600">
-              Awaiting Doctor
-            </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Requires physician triage
+            No attending doctor assigned
           </p>
         </Card>
       </div>
@@ -386,11 +353,6 @@ export function PatientsView() {
           setSelectedCondition(c);
           setCurrentPage(1);
         }}
-        selectedStatus={selectedStatus}
-        onStatusChange={(s) => {
-          setSelectedStatus(s);
-          setCurrentPage(1);
-        }}
         startDate={startDate}
         onStartDateChange={(d) => {
           setStartDate(d);
@@ -409,7 +371,6 @@ export function PatientsView() {
         onToggleSelectPatient={handleToggleSelectPatient}
         onToggleSelectAll={handleToggleSelectAll}
         onBulkDelete={handleBulkDelete}
-        onBulkStatusChange={handleBulkStatusChange}
         onBulkReassign={handleBulkReassign}
         availableDoctors={doctors}
       />

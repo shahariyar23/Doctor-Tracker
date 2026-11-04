@@ -69,19 +69,6 @@ export function useBulkDeleteDoctors() {
   });
 }
 
-export function useBulkUpdateDoctorStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (_payload: { ids: string[]; status: any }) => {
-      // Backend does not maintain status flags
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["doctors"] });
-    },
-  });
-}
-
 export function useDoctorPatients(doctorId: string | null) {
   return useQuery<AssociatedPatient[]>({
     queryKey: ["doctor-patients", doctorId],
@@ -112,7 +99,7 @@ export function useAddPatientToDoctor() {
       doctorId: string;
       patientData: {
         name: string;
-        phone: string;
+        phone?: string;
         condition: string;
         age?: number;
         gender?: "male" | "female" | "other" | "prefer_not_to_say";

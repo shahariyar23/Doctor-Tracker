@@ -412,7 +412,7 @@ export function LoginForm() {
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-slate-200">Doctor Management</h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">Specializations & shifts</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Specializations & affiliations</p>
               </div>
             </div>
 
@@ -432,7 +432,7 @@ export function LoginForm() {
               </div>
               <div>
                 <h3 className="text-xs font-semibold text-slate-200">Clinical Analytics</h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">Intake trends & capacity</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Registration trends & caseloads</p>
               </div>
             </div>
           </div>

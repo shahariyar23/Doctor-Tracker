@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import type { Types } from 'mongoose';
 import { Doctor, type IDoctor } from '../models/doctor.model.js';
 import { Patient } from '../models/patient.model.js';
 import { asyncHandler } from '../utils/async-handler.js';
@@ -93,11 +94,28 @@ export const getAllDoctorsHandler = asyncHandler(
       Doctor.countDocuments(filter),
     ]);
 
+    // Calculate actual assigned patient counts for each doctor using MongoDB aggregation
+    const doctorIds = doctors.map((d) => d._id);
+    const patientCounts = await Patient.aggregate<{ _id: Types.ObjectId; count: number }>([
+      { $match: { assignedDoctorId: { $in: doctorIds } } },
+      { $group: { _id: '$assignedDoctorId', count: { $sum: 1 } } },
+    ]);
+
+    const countMap = new Map<string, number>();
+    for (const item of patientCounts) {
+      countMap.set(item._id.toString(), item.count);
+    }
+
+    const doctorsWithCount = doctors.map((doc) => ({
+      ...doc,
+      patientCount: countMap.get(doc._id.toString()) ?? 0,
+    }));
+
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
     ApiResponse.success(res, {
       message: 'Doctors retrieved successfully',
-      data: doctors,
+      data: doctorsWithCount,
       meta: {
         page,
         limit,
@@ -116,14 +134,21 @@ export const getDoctorByIdHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = (req.validated?.params ?? req.params) as IdParamInput;
 
-    const doctor = await Doctor.findById(id);
+    const [doctor, patientCount] = await Promise.all([
+      Doctor.findById(id).lean(),
+      Patient.countDocuments({ assignedDoctorId: id }),
+    ]);
+
     if (!doctor) {
       throw ApiError.notFound('Doctor not found');
     }
 
     ApiResponse.success(res, {
       message: 'Doctor retrieved successfully',
-      data: doctor,
+      data: {
+        ...doctor,
+        patientCount,
+      },
     });
   },
 );

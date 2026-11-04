@@ -79,8 +79,8 @@ export function PatientDetailModal({
         };
       case "Recovering":
         return {
-          badge: "bg-teal-50 text-teal-700 border-teal-200/60",
-          dot: "bg-teal-600",
+          badge: "bg-blue-50 text-blue-700 border-blue-200/60",
+          dot: "bg-blue-500",
         };
       default:
         return {
@@ -126,7 +126,7 @@ export function PatientDetailModal({
         {/* Modal Header */}
         <div className="px-6 py-5 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-teal-100 text-teal-700 font-bold text-base flex items-center justify-center shrink-0 ring-2 ring-primary/20 shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-bold text-base flex items-center justify-center shrink-0 ring-2 ring-blue-500/20 shadow-xs">
               {getInitials(patient.name)}
             </div>
             <div className="flex flex-col">
@@ -185,7 +185,7 @@ export function PatientDetailModal({
               type="button"
               size="sm"
               onClick={() => setIsReassigning(!isReassigning)}
-              className="gap-1.5 h-8 bg-primary hover:bg-teal-800 text-white text-xs font-semibold shadow-xs"
+              className="gap-1.5 h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span>Reassign Doctor</span>
@@ -207,11 +207,11 @@ export function PatientDetailModal({
           {isReassigning && (
             <form
               onSubmit={handleReassignSubmit}
-              className="p-4 rounded-xl bg-teal-50/70 border border-teal-200 flex flex-col gap-3 animate-in fade-in duration-150"
+              className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col gap-3 animate-in fade-in duration-150"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-teal-950 flex items-center gap-1.5">
-                  <Stethoscope className="w-4 h-4 text-primary" /> Reassign Attending Physician
+                <span className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                  <Stethoscope className="w-4 h-4 text-blue-600" /> Reassign Attending Physician
                 </span>
                 <button
                   type="button"
@@ -232,7 +232,7 @@ export function PatientDetailModal({
                 <select
                   value={selectedDoctorId}
                   onChange={(e) => setSelectedDoctorId(e.target.value)}
-                  className="flex-1 h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary font-medium"
+                  className="flex-1 h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
                 >
                   <option value="">-- No Doctor Assigned (Unassign) --</option>
                   {doctors.map((doc) => (
@@ -245,7 +245,7 @@ export function PatientDetailModal({
                 <Button
                   type="submit"
                   size="sm"
-                  className="h-9 bg-primary hover:bg-teal-800 text-white text-xs font-semibold px-4"
+                  className="h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4"
                 >
                   Save Assignment
                 </Button>
@@ -259,7 +259,7 @@ export function PatientDetailModal({
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Clinical Overview &amp; Attending Care
               </span>
-              <span className="text-xs font-semibold text-primary bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200/60">
+              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/60">
                 Active Tracking
               </span>
             </div>
@@ -298,7 +298,7 @@ export function PatientDetailModal({
                   Attending Physician
                 </span>
                 <div className="flex items-center gap-2 mt-1">
-                  <Stethoscope className="w-4 h-4 text-primary shrink-0" />
+                  <Stethoscope className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="text-sm font-bold text-slate-900 truncate">
                     {patient.assignedDoctor?.name || "Unassigned"}
                   </span>
@@ -346,7 +346,7 @@ export function PatientDetailModal({
               <div className="flex flex-col gap-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Doctor Name</span>
-                  <span className="font-semibold text-primary truncate max-w-[180px]">
+                  <span className="font-semibold text-blue-600 truncate max-w-[180px]">
                     {patient.assignedDoctor ? (
                       <Link
                         href={`/doctors`}
@@ -373,7 +373,7 @@ export function PatientDetailModal({
         {/* Modal Bottom Footer */}
         <div className="px-4 sm:px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-500 text-center sm:text-left">
-            <Shield className="w-4 h-4 text-primary shrink-0" />
+            <Shield className="w-4 h-4 text-blue-600 shrink-0" />
             <span>Encrypted clinical chart compliant with Doctor Tracker specification.</span>
           </div>
 
