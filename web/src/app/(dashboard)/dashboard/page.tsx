@@ -1,7 +1,9 @@
+import { DashboardView } from "@/features/dashboard/components/dashboard-view";
+
+export const metadata = {
+  title: "Dashboard — Doctor Tracker",
+};
+
 export default function DashboardPage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
-    </div>
-  );
+  return <DashboardView />;
 }

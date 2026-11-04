@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DoctorDetailView } from "@/features/doctors/components/doctor-detail-view";
 
 interface DoctorDetailPageProps {
   params: Promise<{
@@ -6,21 +7,22 @@ interface DoctorDetailPageProps {
   }>;
 }
 
-async function DoctorDetailContent({
-  params,
-}: {
-  params: Promise<{ doctorId: string }>;
-}) {
-  const { doctorId } = await params;
-  return <h1 className="text-xl font-semibold">Doctor Details: {doctorId}</h1>;
-}
+export const metadata = {
+  title: "Doctor Profile — Doctor Tracker",
+};
 
-export default function DoctorDetailPage({ params }: DoctorDetailPageProps) {
+export default async function DoctorDetailPage({ params }: DoctorDetailPageProps) {
+  const { doctorId } = await params;
+
   return (
-    <div className="p-6">
-      <Suspense fallback={<div>Loading doctor details...</div>}>
-        <DoctorDetailContent params={params} />
-      </Suspense>
-    </div>
+    <Suspense
+      fallback={
+        <div className="flex h-48 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <DoctorDetailView doctorId={doctorId} />
+    </Suspense>
   );
 }

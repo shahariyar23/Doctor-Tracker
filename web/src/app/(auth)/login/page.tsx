@@ -1,7 +1,9 @@
+import { LoginForm } from "@/features/auth/components/login-form";
+
+export const metadata = {
+  title: "Sign In — Doctor Tracker",
+};
+
 export default function LoginPage() {
-  return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <h1 className="text-xl font-semibold">Login</h1>
-    </main>
-  );
+  return <LoginForm />;
 }

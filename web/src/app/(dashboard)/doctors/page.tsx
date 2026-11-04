@@ -1,7 +1,20 @@
+import { Suspense } from "react";
+import { DoctorsView } from "@/features/doctors/components/doctors-view";
+
+export const metadata = {
+  title: "Doctors — Doctor Tracker",
+};
+
 export default function DoctorsPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold">Doctors</h1>
-    </div>
+    <Suspense
+      fallback={
+        <div className="flex h-48 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <DoctorsView />
+    </Suspense>
   );
 }

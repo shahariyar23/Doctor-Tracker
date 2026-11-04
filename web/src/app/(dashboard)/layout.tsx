@@ -1,13 +1,10 @@
 import React from "react";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">{children}</main>
-    </div>
-  );
+  return <AppShell>{children}</AppShell>;
 }
