@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { UserPlus, Download, RefreshCw, AlertCircle } from "lucide-react";
 import { Patient } from "../types";
@@ -112,15 +113,13 @@ export function PatientsView() {
             <Download className="h-4 w-4 text-muted-foreground" />
             <span>Export CSV</span>
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleOpenAdd}
-            className="gap-1.5"
+          <Link
+            href="/patients/new"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all shadow-xs"
           >
             <UserPlus className="h-4 w-4" />
             <span>Register New Patient</span>
-          </Button>
+          </Link>
         </div>
       </div>
 

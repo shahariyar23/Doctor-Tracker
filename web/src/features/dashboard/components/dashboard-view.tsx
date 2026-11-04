@@ -107,14 +107,14 @@ export function DashboardView() {
             <span>View All Patients</span>
           </Link>
           <Link
-            href="/doctors?action=add"
+            href="/doctors/new"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
           >
             <UserPlus className="h-4 w-4 text-primary" />
             <span>Add Doctor</span>
           </Link>
           <Link
-            href="/patients?action=register"
+            href="/patients/new"
             className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
           >
             <PlusCircle className="h-4 w-4" />
