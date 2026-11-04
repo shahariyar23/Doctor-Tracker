@@ -1,4 +1,4 @@
-import mongoose, { Model, HydratedDocument } from "mongoose";
+import mongoose, { Model, HydratedDocument } from 'mongoose';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -17,22 +17,22 @@ const adminSchema = new mongoose.Schema<IAdmin, AdminModel>(
   {
     name: {
       type: String,
-      required: [true, "Admin name is required"],
+      required: [true, 'Admin name is required'],
       trim: true,
-      minlength: [2, "Name must be at least 2 characters"],
-      maxlength: [100, "Name cannot exceed 100 characters"],
+      minlength: [2, 'Name must be at least 2 characters'],
+      maxlength: [100, 'Name cannot exceed 100 characters'],
     },
     email: {
       type: String,
-      required: [true, "Admin email is required"],
+      required: [true, 'Admin email is required'],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [emailRegex, "Please provide a valid email address"],
+      match: [emailRegex, 'Please provide a valid email address'],
     },
     passwordHash: {
       type: String,
-      required: [true, "Password hash is required"],
+      required: [true, 'Password hash is required'],
       select: false,
     },
   },
@@ -50,7 +50,6 @@ const adminSchema = new mongoose.Schema<IAdmin, AdminModel>(
 
 // Prevent model recompilation in watch/dev environments
 export const Admin =
-  (mongoose.models.Admin as AdminModel) ||
-  mongoose.model<IAdmin, AdminModel>("Admin", adminSchema);
+  (mongoose.models.Admin as AdminModel) || mongoose.model<IAdmin, AdminModel>('Admin', adminSchema);
 
 export default Admin;

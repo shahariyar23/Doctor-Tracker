@@ -1,8 +1,8 @@
-import jwt, { type SignOptions } from "jsonwebtoken";
-import { config } from "../config/index.js";
+import jwt, { type SignOptions } from 'jsonwebtoken';
+import { config } from '../config/index.js';
 
-export const JWT_ISSUER = "doctor-tracker-api";
-export const JWT_AUDIENCE = "doctor-tracker-client";
+export const JWT_ISSUER = 'doctor-tracker-api';
+export const JWT_AUDIENCE = 'doctor-tracker-client';
 
 export interface TokenPayload {
   sub: string;
@@ -14,7 +14,7 @@ export interface TokenPayload {
  */
 export function signAccessToken(adminId: string): string {
   const options: SignOptions = {
-    algorithm: "HS256",
+    algorithm: 'HS256',
     issuer: JWT_ISSUER,
     audience: JWT_AUDIENCE,
     expiresIn: config.jwtExpiresIn as unknown as number, // jsonwebtoken accepts string formats like '1h'
@@ -30,15 +30,14 @@ export function signAccessToken(adminId: string): string {
  */
 export function verifyAccessToken(token: string): TokenPayload {
   const decoded = jwt.verify(token, config.jwtSecret, {
-    algorithms: ["HS256"],
+    algorithms: ['HS256'],
     issuer: JWT_ISSUER,
     audience: JWT_AUDIENCE,
   });
 
-  if (typeof decoded !== "object" || !decoded || !("sub" in decoded)) {
-    throw new Error("Invalid token payload structure");
+  if (typeof decoded !== 'object' || !decoded || !('sub' in decoded)) {
+    throw new Error('Invalid token payload structure');
   }
 
   return { sub: (decoded as { sub: string }).sub };
 }
-

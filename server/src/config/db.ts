@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { config } from "./index.js";
+import mongoose from 'mongoose';
+import { config } from './index.js';
 
 export const connectDB = async (): Promise<typeof mongoose> => {
   try {
@@ -9,8 +9,7 @@ export const connectDB = async (): Promise<typeof mongoose> => {
     console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Unknown connection error";
+    const message = error instanceof Error ? error.message : 'Unknown connection error';
     console.error(`[Database Error] Connection failed: ${message}`);
     throw error;
   }

@@ -26,7 +26,7 @@ export function MobileBottomNav() {
               key={item.title}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center min-w-[56px] py-1 transition-colors text-xs font-medium",
+                "flex flex-col items-center justify-center min-w-[56px] py-1 transition-colors text-xs font-medium cursor-pointer",
                 isActive
                   ? "text-primary font-semibold"
                   : "text-muted-foreground hover:text-foreground"

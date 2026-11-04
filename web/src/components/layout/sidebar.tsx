@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleSidebar, setMobileSidebarOpen } from "@/store/slices/ui-slice";
-import { logout } from "@/store/slices/auth-slice";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NAV_ITEMS } from "./nav-config";
@@ -19,9 +19,9 @@ import { NAV_ITEMS } from "./nav-config";
 export function Sidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const { logout, user } = useAuth();
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const mobileOpen = useAppSelector((state) => state.ui.mobileSidebarOpen);
-  const user = useAppSelector((state) => state.auth.user);
 
   // Close mobile sidebar on route change
   React.useEffect(() => {
@@ -36,7 +36,7 @@ export function Sidebar() {
           role="button"
           tabIndex={0}
           aria-label="Close navigation backdrop"
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity cursor-pointer lg:hidden"
           onClick={() => dispatch(setMobileSidebarOpen(false))}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === "Escape") {
@@ -59,7 +59,7 @@ export function Sidebar() {
           <div className="flex h-16 items-center justify-between border-b border-border px-4">
             <Link
               href="/dashboard"
-              className="flex items-center gap-3 overflow-hidden"
+              className="flex items-center gap-3 overflow-hidden cursor-pointer group"
               onClick={() => dispatch(setMobileSidebarOpen(false))}
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
@@ -110,7 +110,7 @@ export function Sidebar() {
                     href={item.href}
                     onClick={() => dispatch(setMobileSidebarOpen(false))}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer",
                       isActive
                         ? "bg-accent text-accent-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -185,9 +185,9 @@ export function Sidebar() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => {
+              onClick={async () => {
                 dispatch(setMobileSidebarOpen(false));
-                dispatch(logout());
+                await logout();
               }}
               className="flex items-center gap-2 text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive w-full lg:w-auto justify-center lg:justify-start"
               title="Log out"

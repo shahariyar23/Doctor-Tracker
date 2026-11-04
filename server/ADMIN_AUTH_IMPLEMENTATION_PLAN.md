@@ -9,6 +9,7 @@
 ## 1. Existing Architecture & Dependency Audit
 
 ### 1.1 Existing Source & Module Audit
+
 - **Admin Model** ([`src/models/admin.model.ts`](file:///home/shahariyar/Documents/Doctor_Tracker/server/src/models/admin.model.ts)):
   - Fields: `name` (required string, 2–100 chars), `email` (required, lowercase, trimmed, unique index, regex validation), `passwordHash` (required string, `select: false`).
   - Security serialization: `toJSON` transform explicitly strips `ret.passwordHash`.
@@ -24,6 +25,7 @@
   - Standard error envelope: `{ success: false, message: string, errors: unknown }`.
 
 ### 1.2 Installed Dependencies Check
+
 - Currently installed in [`server/package.json`](file:///home/shahariyar/Documents/Doctor_Tracker/server/package.json):
   - `express`, `cors`, `helmet`, `dotenv`, `mongoose`, `zod`
   - devDependencies: `typescript`, `tsx`, `@types/node`, `@types/express`, `@types/cors`, `@types/morgan`, `morgan`
@@ -37,6 +39,7 @@
 ## 2. Security Architecture Decisions & Token Delivery
 
 ### 2.1 Token Delivery Strategy: HTTP-Only Cookie Exclusive
+
 - **No Token in Response Body**: The JWT access token is **never returned in the JSON response payload**.
 - **Delivery Vector**: Delivered exclusively via an `httpOnly` cookie (`token`).
 - **Response Content**: The login response returns **only the safe Admin profile** (`id`, `name`, `email`).
@@ -46,15 +49,16 @@
 
 ### 2.2 Deployment Topology & Cookie Configuration
 
-| Topology | Frontend / Backend Origin | Cookie Attributes | CSRF Defense Strategy |
-| :--- | :--- | :--- | :--- |
-| **Local Dev & Same-Site Production** | `localhost:3000` / `localhost:5000` (or `portal.domain.com` / `api.domain.com`) | `httpOnly: true`<br>`secure: NODE_ENV === "production"`<br>`sameSite: "lax"`<br>`path: "/"`<br>`maxAge: 3600000` (1h) | Browser Lax policy blocks cross-site POST/PUT/DELETE requests initiated by third parties. |
-| **Cross-Site Production** | Independent third-party domains (e.g. `client.vercel.app` / `api.onrender.com`) | `httpOnly: true`<br>`secure: true`<br>`sameSite: "none"`<br>`path: "/"`<br>`maxAge: 3600000` (1h) | **Mandatory CSRF Protection**: Custom header verification (e.g. `X-Requested-With: XMLHttpRequest` or custom anti-CSRF header) for all state-changing mutations (`POST`, `PUT`, `PATCH`, `DELETE`). |
+| Topology                             | Frontend / Backend Origin                                                       | Cookie Attributes                                                                                                     | CSRF Defense Strategy                                                                                                                                                                               |
+| :----------------------------------- | :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Local Dev & Same-Site Production** | `localhost:3000` / `localhost:5000` (or `portal.domain.com` / `api.domain.com`) | `httpOnly: true`<br>`secure: NODE_ENV === "production"`<br>`sameSite: "lax"`<br>`path: "/"`<br>`maxAge: 3600000` (1h) | Browser Lax policy blocks cross-site POST/PUT/DELETE requests initiated by third parties.                                                                                                           |
+| **Cross-Site Production**            | Independent third-party domains (e.g. `client.vercel.app` / `api.onrender.com`) | `httpOnly: true`<br>`secure: true`<br>`sameSite: "none"`<br>`path: "/"`<br>`maxAge: 3600000` (1h)                     | **Mandatory CSRF Protection**: Custom header verification (e.g. `X-Requested-With: XMLHttpRequest` or custom anti-CSRF header) for all state-changing mutations (`POST`, `PUT`, `PATCH`, `DELETE`). |
 
 > **CSRF Threat Model Notice**:  
 > HTTP-only cookies protect against client-side XSS token theft, but browsers automatically attach cookies to cross-origin requests. HTTP-only cookies **alone do NOT prevent CSRF**. Under same-site deployments, `SameSite=Lax` mitigates cross-site state changes. Under cross-site (`SameSite=None`), origin verification (`Origin` / `Referer` matching `CLIENT_URL`) and custom anti-CSRF header checks must be enforced on all non-GET endpoints.
 
 ### 2.3 JWT Lifecycle & Statelessness
+
 - **Access Token Duration**: **1 Hour** (`JWT_EXPIRES_IN=1h` / `3600s`).
 - **No Refresh Tokens / No Session Table**: To keep the system robust and avoid premature database write contention for an assessment admin portal, refresh tokens and session collections are omitted in this phase.
 - **Logout Behavior**:
@@ -68,6 +72,7 @@
 ## 3. Password Security & Anti-Enumeration
 
 ### 3.1 Password Hashing & Strict 72-Byte UTF-8 Boundary
+
 - **Algorithm**: `bcrypt` (cost factor: **`12`**).
 - **Password Length & Bcrypt UTF-8 Byte Limit**:
   - Minimum length: **8 characters**.
@@ -75,16 +80,14 @@
   - Zod Validation Rule: Enforced via a custom refinement checking actual byte length:
     ```typescript
     z.string()
-      .min(8, "Password must be at least 8 characters long")
-      .refine(
-        (val) => Buffer.byteLength(val, "utf8") <= 72,
-        "Password cannot exceed 72 bytes",
-      );
+      .min(8, 'Password must be at least 8 characters long')
+      .refine((val) => Buffer.byteLength(val, 'utf8') <= 72, 'Password cannot exceed 72 bytes');
     ```
   - This guarantees that inputs exceeding 72 bytes are rejected outright rather than silently truncated by bcrypt.
 - **Zero Secret Logging**: Plaintext passwords and password hashes must never be logged to console, file, or APM.
 
 ### 3.2 Anti-Enumeration & Valid Constant-Time Dummy Verification
+
 - **Generic Error Response**: If the email does not exist OR the password is incorrect, the server returns the exact same response:
   - HTTP `401 Unauthorized`
   - Body: `{ "success": false, "message": "Invalid email or password combination", "errors": null }`
@@ -92,21 +95,22 @@
   - When an admin email is not found in MongoDB, execute a constant-time bcrypt comparison against a **valid pre-generated bcrypt hash with cost factor 12**:
     ```typescript
     // Valid pre-generated bcrypt hash (cost factor 12) initialized once at application startup
-    const DUMMY_HASH = "$2b$12$K14kLwR61R6cZqL54x08teN32vF69f6P4fF1QJv4d0k5f1jK87t9m";
+    const DUMMY_HASH = '$2b$12$K14kLwR61R6cZqL54x08teN32vF69f6P4fF1QJv4d0k5f1jK87t9m';
     await bcrypt.compare(password, DUMMY_HASH);
     ```
   - **Rule**: Never generate a new bcrypt hash on every failed request (which would double CPU load). Use the verified static/pre-initialized hash.
   - This ensures that non-existent email requests consume ~250ms of CPU time, matching the response timing of existent accounts and preventing user enumeration.
 
 ### 3.3 Brute-Force Rate Limiting (Failed Attempts Only)
+
 - **Policy**: Maximum **5 failed login attempts per 15 minutes per IP**.
 - **Accurate Counting**:
   - Only responses with HTTP status codes indicating failed authentication (e.g. 401) increment the failure counter.
   - Successful logins (HTTP 200) do **not** increment the counter and reset any accumulated failure count for that IP.
 - **Store Architecture & Limitations**:
   - Single-instance / evaluation: In-memory sliding window store.
-  - *Limitation*: In-memory counters do not persist across server restarts and are per-instance in multi-process clusters.
-  - *Production path*: Can be backed by Redis via `rate-limit-redis`.
+  - _Limitation_: In-memory counters do not persist across server restarts and are per-instance in multi-process clusters.
+  - _Production path_: Can be backed by Redis via `rate-limit-redis`.
 - **Enumeration Prevention**: Rate limit responses return HTTP `429 Too Many Requests` with `{ "success": false, "message": "Too many failed login attempts. Please try again after 15 minutes.", "errors": null }` without disclosing account status.
 
 ---
@@ -114,6 +118,7 @@
 ## 4. JWT Structure, Verification & Secret Entropy
 
 ### 4.1 JWT Payload & Signing
+
 - **Algorithm**: Explicitly enforce **`HS256`** in both `jwt.sign()` and `jwt.verify()`. Reject tokens with `alg: "none"` or unexpected algorithms.
 - **Minimal, Secure Claims**:
   - `sub`: Admin `_id.toString()` (the primary key identifier).
@@ -121,20 +126,22 @@
   - `aud`: `"doctor-tracker-client"`.
   - `iat`: Timestamp issued.
   - `exp`: Timestamp expiration (1 hour from issue).
-  - *Note*: Email is **not** stored in the JWT payload. The authentication middleware verifies the token and retrieves the current Admin record from MongoDB using `sub`.
+  - _Note_: Email is **not** stored in the JWT payload. The authentication middleware verifies the token and retrieves the current Admin record from MongoDB using `sub`.
 
 ### 4.2 Strict Cryptographic Verification
+
 - When protecting routes, `jwt.verify` must explicitly validate:
   ```typescript
   jwt.verify(token, config.jwtSecret, {
-    algorithms: ["HS256"],
-    issuer: "doctor-tracker-api",
-    audience: "doctor-tracker-client",
+    algorithms: ['HS256'],
+    issuer: 'doctor-tracker-api',
+    audience: 'doctor-tracker-client',
   });
   ```
 - Any token with mismatched issuer, audience, expired timestamp, or forged signature immediately throws and is handled as HTTP 401 Unauthorized.
 
 ### 4.3 Secret Entropy & Management
+
 - **Generation Command**:
   ```bash
   openssl rand -base64 32
@@ -149,6 +156,7 @@
 The current `Admin` model does **not** feature an `isActive` status flag. Per project rules, we do not invent or add unauthorized fields to the Admin schema.
 
 ### Middleware Authorization Logic (`src/middlewares/auth.middleware.ts`):
+
 1. Extract token from `req.cookies.token`. If missing, throw `ApiError.unauthorized("Authentication required. Please log in.")`.
 2. Verify token signature, `HS256`, `iss`, `aud`, and `exp`. If invalid/expired, throw `ApiError.unauthorized("Invalid or expired authentication token.")`.
 3. Extract `sub` (adminId).
@@ -165,6 +173,7 @@ The current `Admin` model does **not** feature an `isActive` status flag. Per pr
 Public admin registration is strictly prohibited. Admin accounts must be created out-of-band.
 
 ### 6.1 Script Architecture (`src/scripts/seed-admin.ts`)
+
 - **Execution**: Run manually or via deployment hooks: `pnpm seed:admin`.
 - **Do Not Run in Docker Build**: Must only be executed during container runtime deployment (when MongoDB is reachable), never during `docker build`.
 - **Configuration Loading**: Loads environment variables using the application's central `dotenv` and `config` module.
@@ -183,6 +192,7 @@ Public admin registration is strictly prohibited. Admin accounts must be created
 ## 7. Proposed API Contracts
 
 ### 7.1 Admin Login
+
 - **Method & Path**: `POST /api/v1/auth/login`
 - **Request Body (Zod Validated)**:
   ```json
@@ -225,9 +235,7 @@ Public admin registration is strictly prohibited. Admin accounts must be created
     {
       "success": false,
       "message": "Validation failed",
-      "errors": [
-        { "field": "body.email", "message": "Please provide a valid email address" }
-      ]
+      "errors": [{ "field": "body.email", "message": "Please provide a valid email address" }]
     }
     ```
   - `429 Too Many Requests`:
@@ -240,6 +248,7 @@ Public admin registration is strictly prohibited. Admin accounts must be created
     ```
 
 ### 7.2 Current Admin Profile
+
 - **Method & Path**: `GET /api/v1/auth/me`
 - **Authentication**: Required (`authenticate` middleware reads `req.cookies.token`).
 - **Success Response (`200 OK`)**:
@@ -268,6 +277,7 @@ Public admin registration is strictly prohibited. Admin accounts must be created
     ```
 
 ### 7.3 Admin Logout
+
 - **Method & Path**: `POST /api/v1/auth/logout`
 - **Cookie Clearing**: Issues `Set-Cookie: token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax` (matching the creation domain, path, and options).
 - **Success Response (`200 OK`)**:
@@ -285,14 +295,14 @@ Public admin registration is strictly prohibited. Admin accounts must be created
 ## 8. Accepted Security Trade-offs
 
 1. **Stateless Access Token Without Revocation Blacklist**:
-   - *Trade-off*: If an access token cookie is intercepted, it remains valid until its 1-hour expiration, even if the admin logs out.
-   - *Rationale*: For an administrative portal with single/few administrators, adding Redis or MongoDB session blacklists creates unnecessary operational complexity and database round-trips on every request. The 1-hour short lifespan effectively limits exposure.
+   - _Trade-off_: If an access token cookie is intercepted, it remains valid until its 1-hour expiration, even if the admin logs out.
+   - _Rationale_: For an administrative portal with single/few administrators, adding Redis or MongoDB session blacklists creates unnecessary operational complexity and database round-trips on every request. The 1-hour short lifespan effectively limits exposure.
 2. **In-Memory Rate Limiting for Single-Instance Evaluation**:
-   - *Trade-off*: In a multi-instance auto-scaled cluster, in-memory rate limiting applies per-instance rather than globally.
-   - *Rationale*: Avoids introducing a mandatory Redis infrastructure dependency for local evaluation. The architecture is designed to swap to `rate-limit-redis` when multi-container clustering is deployed.
+   - _Trade-off_: In a multi-instance auto-scaled cluster, in-memory rate limiting applies per-instance rather than globally.
+   - _Rationale_: Avoids introducing a mandatory Redis infrastructure dependency for local evaluation. The architecture is designed to swap to `rate-limit-redis` when multi-container clustering is deployed.
 3. **Bcrypt 72-Byte Rejection vs. SHA-256 Pre-Hashing**:
-   - *Trade-off*: Passwords exceeding 72 bytes are rejected by Zod validation rather than pre-hashed via SHA-256 before bcrypt.
-   - *Rationale*: A 72-byte password provides >400 bits of entropy, which is more than sufficient for any administrative system, while avoiding dual-hashing complexity.
+   - _Trade-off_: Passwords exceeding 72 bytes are rejected by Zod validation rather than pre-hashed via SHA-256 before bcrypt.
+   - _Rationale_: A 72-byte password provides >400 bits of entropy, which is more than sufficient for any administrative system, while avoiding dual-hashing complexity.
 
 ---
 
@@ -365,11 +375,11 @@ When approved, Phase 05 will be implemented in this exact modular order:
 ## 11. Risks & Rollback Strategy
 
 - **Risk**: Existing frontend client in `web/` was initially mocked to expect a token in the JSON response (`response.data.token`).
-  - *Mitigation*: When the frontend integration phase begins, the frontend `apiClient` will enable `withCredentials: true` and rely on the automatic browser cookie handling, while extracting user info from `response.data.user`.
+  - _Mitigation_: When the frontend integration phase begins, the frontend `apiClient` will enable `withCredentials: true` and rely on the automatic browser cookie handling, while extracting user info from `response.data.user`.
 - **Rollback Strategy**:
   - The entire phase is isolated to new auth files (`src/routes/auth.route.ts`, `src/controllers/auth.controller.ts`, `src/middlewares/auth.middleware.ts`, `src/validators/auth.validator.ts`, `src/scripts/seed-admin.ts`).
   - Reverting the Git commit restoring Phase 04 cleanly rolls back the backend without database corruption or breaking changes.
 
 ---
 
-*This document is stored at [`server/ADMIN_AUTH_IMPLEMENTATION_PLAN.md`](file:///home/shahariyar/Documents/Doctor_Tracker/server/ADMIN_AUTH_IMPLEMENTATION_PLAN.md).*
+_This document is stored at [`server/ADMIN_AUTH_IMPLEMENTATION_PLAN.md`](file:///home/shahariyar/Documents/Doctor_Tracker/server/ADMIN_AUTH_IMPLEMENTATION_PLAN.md)._

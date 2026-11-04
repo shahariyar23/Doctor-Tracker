@@ -344,7 +344,7 @@ export function DoctorDetailModal({
                 <button
                   type="button"
                   onClick={() => setIsAddingPatient(false)}
-                  className="text-xs text-slate-500 hover:text-slate-800"
+                  className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
@@ -439,7 +439,7 @@ export function DoctorDetailModal({
                     <button
                       type="button"
                       onClick={() => setIsAdjustingLimit(false)}
-                      className="text-xs text-blue-600 font-semibold"
+                      className="text-xs text-blue-600 hover:text-blue-700 font-semibold cursor-pointer transition-colors"
                     >
                       Done
                     </button>
@@ -721,7 +721,7 @@ export function DoctorDetailModal({
                     type="button"
                     disabled={currentPage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 transition-colors cursor-pointer"
+                    className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -743,7 +743,7 @@ export function DoctorDetailModal({
                     type="button"
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 transition-colors cursor-pointer"
+                    className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>

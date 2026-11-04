@@ -50,7 +50,7 @@ paths:
                   minLength: 8
                   maxLength: 72
                   description: UTF-8 password string (maximum 72 bytes).
-                  example: "AdminPassword#2026"
+                  example: 'AdminPassword#2026'
       responses:
         '200':
           description: Successfully authenticated. HTTP-only cookie set.
@@ -213,7 +213,7 @@ paths:
   /patients:
     get:
       summary: List all patients
-      description: Retrieves patients sorted by `createdAt: -1` with pagination, search, exact condition, and date filters.
+      description: 'Retrieves patients sorted by `createdAt: -1` with pagination, search, exact condition, and date filters.'
       security:
         - cookieAuth: []
       parameters:
@@ -424,7 +424,7 @@ components:
           example: Princeton-Plainsboro
         phone:
           type: string
-          example: "+1-555-0199"
+          example: '+1-555-0199'
         email:
           type: string
           format: email
@@ -471,7 +471,7 @@ components:
         phone:
           type: string
           nullable: true
-          example: "+1-555-9876"
+          example: '+1-555-9876'
 
     UpdatePatientInput:
       type: object
@@ -494,4 +494,3 @@ components:
         phone:
           type: string
           nullable: true
-

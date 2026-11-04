@@ -651,7 +651,7 @@ export function PatientTable({
 
                               <DropdownMenu>
                                 <DropdownMenuTrigger
-                                  className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
                                   aria-label="Open patient menu"
                                 >
                                   <MoreVertical className="h-4 w-4" />
@@ -755,7 +755,7 @@ export function PatientTable({
                     <button
                       type="button"
                       onClick={() => onViewPatient && onViewPatient(patient)}
-                      className="font-semibold text-blue-600 hover:underline"
+                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer transition-colors"
                     >
                       View Details
                     </button>

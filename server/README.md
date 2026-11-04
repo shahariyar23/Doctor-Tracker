@@ -86,17 +86,17 @@ cp .env.example .env
 
 Configure your environment variables:
 
-| Variable | Description | Example |
-|---|---|---|
-| `PORT` | HTTP port | `5000` |
-| `NODE_ENV` | Environment | `development` / `production` |
-| `CLIENT_URL` | Allowed frontend origin for CORS | `http://localhost:3000` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/doctor_tracker` |
-| `JWT_SECRET` | Secret key (min 32 characters) | `openssl rand -base64 32` |
-| `JWT_EXPIRES_IN` | Token lifespan | `1h` |
-| `ADMIN_NAME` | Initial administrator name | `System Administrator` |
-| `ADMIN_EMAIL` | Initial administrator email | `admin@doctortracker.com` |
-| `ADMIN_PASSWORD` | Initial administrator password | `"AdminPassword#2026"` |
+| Variable         | Description                      | Example                                    |
+| ---------------- | -------------------------------- | ------------------------------------------ |
+| `PORT`           | HTTP port                        | `5000`                                     |
+| `NODE_ENV`       | Environment                      | `development` / `production`               |
+| `CLIENT_URL`     | Allowed frontend origin for CORS | `http://localhost:3000`                    |
+| `MONGODB_URI`    | MongoDB connection string        | `mongodb://localhost:27017/doctor_tracker` |
+| `JWT_SECRET`     | Secret key (min 32 characters)   | `openssl rand -base64 32`                  |
+| `JWT_EXPIRES_IN` | Token lifespan                   | `1h`                                       |
+| `ADMIN_NAME`     | Initial administrator name       | `System Administrator`                     |
+| `ADMIN_EMAIL`    | Initial administrator email      | `admin@doctortracker.com`                  |
+| `ADMIN_PASSWORD` | Initial administrator password   | `"AdminPassword#2026"`                     |
 
 > **Security Note**: Never commit `.env` or production credentials. In production (`NODE_ENV=production`), application startup will fail immediately if `JWT_SECRET` is missing, under 32 characters, or contains insecure placeholders like `"secret"` or `"changeme"`.
 
@@ -107,7 +107,8 @@ Public admin registration is disabled. Create the initial administrator out-of-b
 ```bash
 pnpm seed:admin
 ```
-*(Idempotent: exits cleanly if the administrator already exists).*
+
+_(Idempotent: exits cleanly if the administrator already exists)._
 
 ---
 
@@ -149,7 +150,7 @@ pnpm test:coverage
 pnpm test:watch
 ```
 
-*Note: Tests connect to an isolated database (`doctor_tracker_vitest`) and do not touch development or production data.*
+_Note: Tests connect to an isolated database (`doctor_tracker_vitest`) and do not touch development or production data._
 
 ---
 
@@ -157,26 +158,26 @@ pnpm test:watch
 
 All routes are mounted under the `/api/v1` prefix.
 
-| Module | Method | Endpoint | Description | Auth Required |
-|---|---|---|---|:---:|
-| **Health** | `GET` | `/api/v1/health` | Uptime & health check | No |
-| **Auth** | `POST` | `/api/v1/auth/login` | Administrator login (sets cookie) | No |
-| **Auth** | `GET` | `/api/v1/auth/me` | Current admin profile | **Yes** |
-| **Auth** | `POST` | `/api/v1/auth/logout` | Clears auth cookie | **Yes** |
-| **Doctors** | `POST` | `/api/v1/doctors` | Create doctor | **Yes** |
-| **Doctors** | `GET` | `/api/v1/doctors` | List doctors (search, date filter, pagination) | **Yes** |
-| **Doctors** | `GET` | `/api/v1/doctors/:id` | Get single doctor by ID | **Yes** |
-| **Doctors** | `PATCH` | `/api/v1/doctors/:id` | Partial update doctor | **Yes** |
-| **Doctors** | `DELETE` | `/api/v1/doctors/:id` | Delete doctor (guarded against assigned patients) | **Yes** |
-| **Patients** | `POST` | `/api/v1/patients` | Create patient (validates doctor existence) | **Yes** |
-| **Patients** | `GET` | `/api/v1/patients` | List patients (search, condition, date, pagination) | **Yes** |
-| **Patients** | `GET` | `/api/v1/patients/:id` | Get single patient by ID | **Yes** |
-| **Patients** | `PATCH` | `/api/v1/patients/:id` | Partial update patient | **Yes** |
-| **Patients** | `DELETE` | `/api/v1/patients/:id` | Delete patient | **Yes** |
-| **Dashboard** | `GET` | `/api/v1/dashboard/overview` | Summary stats, doctor load & insights | **Yes** |
-| **Dashboard** | `GET` | `/api/v1/dashboard/patient-trends` | Continuous time-series registration trend | **Yes** |
-| **Dashboard** | `GET` | `/api/v1/dashboard/patients-by-doctor` | Patient count per doctor (sorted desc) | **Yes** |
-| **Dashboard** | `GET` | `/api/v1/dashboard/conditions` | Patient condition breakdown (sorted desc) | **Yes** |
+| Module        | Method   | Endpoint                               | Description                                         | Auth Required |
+| ------------- | -------- | -------------------------------------- | --------------------------------------------------- | :-----------: |
+| **Health**    | `GET`    | `/api/v1/health`                       | Uptime & health check                               |      No       |
+| **Auth**      | `POST`   | `/api/v1/auth/login`                   | Administrator login (sets cookie)                   |      No       |
+| **Auth**      | `GET`    | `/api/v1/auth/me`                      | Current admin profile                               |    **Yes**    |
+| **Auth**      | `POST`   | `/api/v1/auth/logout`                  | Clears auth cookie                                  |    **Yes**    |
+| **Doctors**   | `POST`   | `/api/v1/doctors`                      | Create doctor                                       |    **Yes**    |
+| **Doctors**   | `GET`    | `/api/v1/doctors`                      | List doctors (search, date filter, pagination)      |    **Yes**    |
+| **Doctors**   | `GET`    | `/api/v1/doctors/:id`                  | Get single doctor by ID                             |    **Yes**    |
+| **Doctors**   | `PATCH`  | `/api/v1/doctors/:id`                  | Partial update doctor                               |    **Yes**    |
+| **Doctors**   | `DELETE` | `/api/v1/doctors/:id`                  | Delete doctor (guarded against assigned patients)   |    **Yes**    |
+| **Patients**  | `POST`   | `/api/v1/patients`                     | Create patient (validates doctor existence)         |    **Yes**    |
+| **Patients**  | `GET`    | `/api/v1/patients`                     | List patients (search, condition, date, pagination) |    **Yes**    |
+| **Patients**  | `GET`    | `/api/v1/patients/:id`                 | Get single patient by ID                            |    **Yes**    |
+| **Patients**  | `PATCH`  | `/api/v1/patients/:id`                 | Partial update patient                              |    **Yes**    |
+| **Patients**  | `DELETE` | `/api/v1/patients/:id`                 | Delete patient                                      |    **Yes**    |
+| **Dashboard** | `GET`    | `/api/v1/dashboard/overview`           | Summary stats, doctor load & insights               |    **Yes**    |
+| **Dashboard** | `GET`    | `/api/v1/dashboard/patient-trends`     | Continuous time-series registration trend           |    **Yes**    |
+| **Dashboard** | `GET`    | `/api/v1/dashboard/patients-by-doctor` | Patient count per doctor (sorted desc)              |    **Yes**    |
+| **Dashboard** | `GET`    | `/api/v1/dashboard/conditions`         | Patient condition breakdown (sorted desc)           |    **Yes**    |
 
 Detailed OpenAPI 3.1 documentation is available in [`docs/openapi.yaml`](./docs/openapi.yaml).
 
@@ -187,6 +188,7 @@ Detailed OpenAPI 3.1 documentation is available in [`docs/openapi.yaml`](./docs/
 All API endpoints strictly follow the standard JSON response envelopes:
 
 ### Success Envelope
+
 ```json
 {
   "success": true,
@@ -202,6 +204,7 @@ All API endpoints strictly follow the standard JSON response envelopes:
 ```
 
 ### Error Envelope
+
 ```json
 {
   "success": false,
@@ -216,6 +219,7 @@ All API endpoints strictly follow the standard JSON response envelopes:
 ```
 
 ### HTTP Status Codes
+
 - `200 OK`: Successful retrieval, update, or deletion.
 - `201 Created`: Resource successfully created.
 - `400 Bad Request`: Invalid input or non-existent referenced doctor.
@@ -225,4 +229,3 @@ All API endpoints strictly follow the standard JSON response envelopes:
 - `422 Unprocessable Entity`: Zod input validation failure.
 - `429 Too Many Requests`: Brute-force rate limit reached.
 - `500 Internal Server Error`: Server error (stack traces strictly suppressed in production).
-

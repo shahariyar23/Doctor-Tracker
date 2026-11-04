@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Strict calendar date regex YYYY-MM-DD
@@ -10,17 +10,13 @@ const CALENDAR_DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
  */
 export function isValidCalendarDate(dateStr: string): boolean {
   if (!CALENDAR_DATE_REGEX.test(dateStr)) return false;
-  const [yearStr, monthStr, dayStr] = dateStr.split("-");
+  const [yearStr, monthStr, dayStr] = dateStr.split('-');
   const year = parseInt(yearStr!, 10);
   const month = parseInt(monthStr!, 10);
   const day = parseInt(dayStr!, 10);
 
   const d = new Date(Date.UTC(year, month - 1, day));
-  return (
-    d.getUTCFullYear() === year &&
-    d.getUTCMonth() === month - 1 &&
-    d.getUTCDate() === day
-  );
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
 }
 
 /**
@@ -29,10 +25,9 @@ export function isValidCalendarDate(dateStr: string): boolean {
 export const calendarDateSchema = z
   .string()
   .trim()
-  .refine(
-    (val) => isValidCalendarDate(val),
-    { message: "Invalid calendar date. Expected a valid YYYY-MM-DD calendar date." },
-  );
+  .refine((val) => isValidCalendarDate(val), {
+    message: 'Invalid calendar date. Expected a valid YYYY-MM-DD calendar date.',
+  });
 
 /**
  * Reusable Mongo ObjectId validation helper
@@ -40,10 +35,7 @@ export const calendarDateSchema = z
 export const objectIdSchema = z
   .string()
   .trim()
-  .regex(
-    /^[0-9a-fA-F]{24}$/,
-    "Invalid ID format: must be a 24-character hex string",
-  );
+  .regex(/^[0-9a-fA-F]{24}$/, 'Invalid ID format: must be a 24-character hex string');
 
 /**
  * Common schema for routes taking an :id param
@@ -58,7 +50,7 @@ export type IdParamInput = z.infer<typeof idParamSchema>;
  * Helper to escape user input string for safe usage in RegExp
  */
 export function escapeRegex(text: string): string {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
 /**
@@ -74,7 +66,7 @@ export const dateStringSchema = z
       const timestamp = Date.parse(val);
       return !isNaN(timestamp);
     },
-    { message: "Invalid date format. Expected a valid ISO date string." },
+    { message: 'Invalid date format. Expected a valid ISO date string.' },
   );
 
 /**
@@ -106,20 +98,14 @@ export const paginationQuerySchema = z.object({
   page: z
     .string()
     .optional()
-    .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 1))
-    .refine(
-      (val) => !isNaN(val) && val >= 1,
-      "Page must be a positive integer",
-    ),
+    .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 1))
+    .refine((val) => !isNaN(val) && val >= 1, 'Page must be a positive integer'),
   limit: z
     .string()
     .optional()
-    .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 10))
-    .refine(
-      (val) => !isNaN(val) && val >= 1 && val <= 100,
-      "Limit must be between 1 and 100",
-    ),
-  search: z.string().trim().max(100, "Search term cannot exceed 100 characters").optional(),
+    .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 10))
+    .refine((val) => !isNaN(val) && val >= 1 && val <= 100, 'Limit must be between 1 and 100'),
+  search: z.string().trim().max(100, 'Search term cannot exceed 100 characters').optional(),
   from: dateStringSchema.optional(),
   to: dateStringSchema.optional(),
 });

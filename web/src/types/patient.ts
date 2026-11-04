@@ -1,23 +1,25 @@
 import { PaginationParams } from "./pagination";
 
-export type PatientCondition = "Critical" | "Under Treatment" | "Stable" | "Recovering";
-
+export type PatientGender = "male" | "female" | "other" | "prefer_not_to_say";
+export type PatientCondition = string;
 export type PatientStatus = "Active" | "Inactive" | "Archived";
 
 export interface Patient {
   id: string;
+  _id?: string;
   code?: string;
   name: string;
-  phone: string;
-  age?: number;
-  gender?: "Male" | "Female" | "Other";
+  phone?: string | null;
+  age: number;
+  gender: PatientGender;
   condition: PatientCondition;
-  status: PatientStatus;
+  status?: PatientStatus;
   bloodGroup?: string;
   roomNumber?: string;
-  assignedDoctorId?: string | null;
+  assignedDoctorId: string;
   assignedDoctor?: {
     id: string;
+    _id?: string;
     name: string;
     specialization?: string;
   } | null;
@@ -26,8 +28,11 @@ export interface Patient {
 }
 
 export interface PatientFilterParams extends PaginationParams {
+  search?: string;
   condition?: string;
   status?: string;
+  from?: string;
+  to?: string;
   doctorId?: string;
 }
 

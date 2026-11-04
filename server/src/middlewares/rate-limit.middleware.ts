@@ -1,5 +1,5 @@
-import rateLimit from "express-rate-limit";
-import type { Request, Response } from "express";
+import rateLimit from 'express-rate-limit';
+import type { Request, Response } from 'express';
 
 /**
  * Strict rate limiter for Admin login attempts.
@@ -20,8 +20,7 @@ export const loginRateLimiter = rateLimit({
   handler: (_req: Request, res: Response) => {
     res.status(429).json({
       success: false,
-      message:
-        "Too many failed login attempts. Please try again after 15 minutes.",
+      message: 'Too many failed login attempts. Please try again after 15 minutes.',
       errors: null,
     });
   },

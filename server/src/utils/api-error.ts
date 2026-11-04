@@ -11,9 +11,9 @@ export class ApiError extends Error {
    */
   constructor(
     statusCode: number,
-    message: string = "Something went wrong",
+    message: string = 'Something went wrong',
     errors: unknown = null,
-    stack: string = "",
+    stack: string = '',
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -27,52 +27,34 @@ export class ApiError extends Error {
     }
   }
 
-  static badRequest(
-    message: string = "Bad request",
-    errors: unknown = null,
-  ): ApiError {
+  static badRequest(message: string = 'Bad request', errors: unknown = null): ApiError {
     return new ApiError(400, message, errors);
   }
 
-  static unauthorized(
-    message: string = "Unauthorized access",
-    errors: unknown = null,
-  ): ApiError {
+  static unauthorized(message: string = 'Unauthorized access', errors: unknown = null): ApiError {
     return new ApiError(401, message, errors);
   }
 
-  static forbidden(
-    message: string = "Forbidden",
-    errors: unknown = null,
-  ): ApiError {
+  static forbidden(message: string = 'Forbidden', errors: unknown = null): ApiError {
     return new ApiError(403, message, errors);
   }
 
-  static notFound(
-    message: string = "Resource not found",
-    errors: unknown = null,
-  ): ApiError {
+  static notFound(message: string = 'Resource not found', errors: unknown = null): ApiError {
     return new ApiError(404, message, errors);
   }
 
-  static conflict(
-    message: string = "Conflict",
-    errors: unknown = null,
-  ): ApiError {
+  static conflict(message: string = 'Conflict', errors: unknown = null): ApiError {
     return new ApiError(409, message, errors);
   }
 
   static unprocessableEntity(
-    message: string = "Validation failed",
+    message: string = 'Validation failed',
     errors: unknown = null,
   ): ApiError {
     return new ApiError(422, message, errors);
   }
 
-  static internal(
-    message: string = "Internal server error",
-    errors: unknown = null,
-  ): ApiError {
+  static internal(message: string = 'Internal server error', errors: unknown = null): ApiError {
     return new ApiError(500, message, errors);
   }
 }

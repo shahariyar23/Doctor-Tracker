@@ -5,6 +5,7 @@ export type DoctorShift = "Morning" | "Evening" | "Night" | "All Shifts";
 
 export interface Doctor {
   id: string;
+  _id?: string;
   code?: string;
   name: string;
   specialization: string;
@@ -20,6 +21,9 @@ export interface Doctor {
 }
 
 export interface DoctorFilterParams extends PaginationParams {
+  search?: string;
+  from?: string;
+  to?: string;
   specialty?: string;
   hospital?: string;
   status?: string;
@@ -49,8 +53,7 @@ export interface AssociatedPatient {
   id: string;
   name: string;
   phone?: string;
-  condition: "Critical" | "Under Treatment" | "Stable" | "Recovering";
-  assignedDate: string;
-  mrn?: string;
-  notes?: string;
+  condition?: string;
+  status?: string;
+  assignedDate?: string;
 }

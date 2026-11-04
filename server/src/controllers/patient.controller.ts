@@ -1,36 +1,30 @@
-import type { Request, Response } from "express";
-import { Patient, type IPatient } from "../models/patient.model.js";
-import { Doctor } from "../models/doctor.model.js";
-import { asyncHandler } from "../utils/async-handler.js";
-import { ApiError } from "../utils/api-error.js";
-import { ApiResponse } from "../utils/api-response.js";
+import type { Request, Response } from 'express';
+import { Patient, type IPatient } from '../models/patient.model.js';
+import { Doctor } from '../models/doctor.model.js';
+import { asyncHandler } from '../utils/async-handler.js';
+import { ApiError } from '../utils/api-error.js';
+import { ApiResponse } from '../utils/api-response.js';
 import type {
   CreatePatientInput,
   UpdatePatientInput,
   PatientQueryInput,
-} from "../validators/patient.validator.js";
-import type { IdParamInput } from "../validators/common.validator.js";
-import {
-  escapeRegex,
-  parseDateFrom,
-  parseDateTo,
-} from "../validators/common.validator.js";
+} from '../validators/patient.validator.js';
+import type { IdParamInput } from '../validators/common.validator.js';
+import { escapeRegex, parseDateFrom, parseDateTo } from '../validators/common.validator.js';
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
  */
 function handleDuplicateKeyError(error: unknown): never {
   if (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error !== null &&
-    "code" in error &&
+    'code' in error &&
     (error as { code: number }).code === 11000
   ) {
     const keyPattern = (error as { keyPattern?: Record<string, number> }).keyPattern;
-    const duplicateField = keyPattern ? Object.keys(keyPattern)[0] : "field";
-    throw ApiError.conflict(
-      `A patient with this ${duplicateField} already exists.`,
-    );
+    const duplicateField = keyPattern ? Object.keys(keyPattern)[0] : 'field';
+    throw ApiError.conflict(`A patient with this ${duplicateField} already exists.`);
   }
   throw error;
 }
@@ -43,25 +37,26 @@ export const createPatientHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const data = (req.validated?.body ?? req.body) as CreatePatientInput;
 
-    // Verify assigned doctor exists before creation
-    const doctorExists = await Doctor.exists({ _id: data.assignedDoctorId });
-    if (!doctorExists) {
-      throw ApiError.badRequest(
-        `Referenced doctor with ID "${data.assignedDoctorId}" does not exist.`,
-      );
+    // If assignedDoctorId is provided (not null/undefined), verify doctor exists
+    if (data.assignedDoctorId) {
+      const doctorExists = await Doctor.exists({ _id: data.assignedDoctorId });
+      if (!doctorExists) {
+        throw ApiError.badRequest(
+          `Referenced doctor with ID "${data.assignedDoctorId}" does not exist.`,
+        );
+      }
+    } else {
+      data.assignedDoctorId = null;
     }
 
     try {
       const patient = await Patient.create(data);
 
-      ApiResponse.success(
-        res,
-        {
-          statusCode: 201,
-          message: "Patient created successfully",
-          data: patient,
-        },
-      );
+      ApiResponse.success(res, {
+        statusCode: 201,
+        message: 'Patient created successfully',
+        data: patient,
+      });
     } catch (error) {
       handleDuplicateKeyError(error);
     }
@@ -83,18 +78,23 @@ export const getAllPatientsHandler = asyncHandler(
 
     // Search condition across patient name, condition, and phone
     if (query.search && query.search.trim().length > 0) {
-      const searchRegex = new RegExp(escapeRegex(query.search.trim()), "i");
-      filter.$or = [
-        { name: searchRegex },
-        { condition: searchRegex },
-        { phone: searchRegex },
-      ];
+      const searchRegex = new RegExp(escapeRegex(query.search.trim()), 'i');
+      filter.$or = [{ name: searchRegex }, { condition: searchRegex }, { phone: searchRegex }];
     }
 
     // Condition exact match (case-insensitive)
     if (query.condition && query.condition.trim().length > 0) {
-      const conditionRegex = new RegExp(`^${escapeRegex(query.condition.trim())}$`, "i");
+      const conditionRegex = new RegExp(`^${escapeRegex(query.condition.trim())}$`, 'i');
       filter.condition = conditionRegex;
+    }
+
+    // Doctor filter (exact doctor ObjectId or 'unassigned')
+    if (query.doctorId && query.doctorId.trim().length > 0) {
+      if (query.doctorId.trim().toLowerCase() === 'unassigned') {
+        filter.assignedDoctorId = null;
+      } else {
+        filter.assignedDoctorId = query.doctorId.trim();
+      }
     }
 
     // Date range condition on createdAt
@@ -112,6 +112,7 @@ export const getAllPatientsHandler = asyncHandler(
     // Run query and count concurrently
     const [patients, total] = await Promise.all([
       Patient.find(filter)
+        .populate('assignedDoctorId', 'name specialization hospital email phone')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -121,19 +122,16 @@ export const getAllPatientsHandler = asyncHandler(
 
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Patients retrieved successfully",
-        data: patients,
-        meta: {
-          page,
-          limit,
-          total,
-          totalPages,
-        },
+    ApiResponse.success(res, {
+      message: 'Patients retrieved successfully',
+      data: patients,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
       },
-    );
+    });
   },
 );
 
@@ -145,18 +143,18 @@ export const getPatientByIdHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = (req.validated?.params ?? req.params) as IdParamInput;
 
-    const patient = await Patient.findById(id);
+    const patient = await Patient.findById(id).populate(
+      'assignedDoctorId',
+      'name specialization hospital email phone',
+    );
     if (!patient) {
-      throw ApiError.notFound("Patient not found");
+      throw ApiError.notFound('Patient not found');
     }
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Patient retrieved successfully",
-        data: patient,
-      },
-    );
+    ApiResponse.success(res, {
+      message: 'Patient retrieved successfully',
+      data: patient,
+    });
   },
 );
 
@@ -169,7 +167,7 @@ export const updatePatientHandler = asyncHandler(
     const { id } = (req.validated?.params ?? req.params) as IdParamInput;
     const updateData = (req.validated?.body ?? req.body) as UpdatePatientInput;
 
-    // If assignedDoctorId is provided in update, verify target doctor exists
+    // If assignedDoctorId is provided in update, verify target doctor exists (or allow null to unassign)
     if (updateData.assignedDoctorId) {
       const doctorExists = await Doctor.exists({ _id: updateData.assignedDoctorId });
       if (!doctorExists) {
@@ -184,22 +182,19 @@ export const updatePatientHandler = asyncHandler(
         id,
         { $set: updateData },
         {
-          returnDocument: "after",
+          returnDocument: 'after',
           runValidators: true,
         },
-      );
+      ).populate('assignedDoctorId', 'name specialization hospital email phone');
 
       if (!updatedPatient) {
-        throw ApiError.notFound("Patient not found");
+        throw ApiError.notFound('Patient not found');
       }
 
-      ApiResponse.success(
-        res,
-        {
-          message: "Patient updated successfully",
-          data: updatedPatient,
-        },
-      );
+      ApiResponse.success(res, {
+        message: 'Patient updated successfully',
+        data: updatedPatient,
+      });
     } catch (error) {
       handleDuplicateKeyError(error);
     }
@@ -216,15 +211,12 @@ export const deletePatientHandler = asyncHandler(
 
     const deletedPatient = await Patient.findByIdAndDelete(id);
     if (!deletedPatient) {
-      throw ApiError.notFound("Patient not found");
+      throw ApiError.notFound('Patient not found');
     }
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Patient deleted successfully",
-        data: {},
-      },
-    );
+    ApiResponse.success(res, {
+      message: 'Patient deleted successfully',
+      data: {},
+    });
   },
 );

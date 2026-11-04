@@ -1,36 +1,46 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import type { ApiResponse, ApiErrorResponse } from "@/types/api-response";
+
+/**
+ * Base URL for the Express backend API.
+ * Defaults to http://localhost:5000/api/v1
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: BASE_URL,
+  withCredentials: true, // Required for HTTP-only cookie exchange
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+/**
+ * Extracts a user-friendly error message from an unknown error or API error response.
+ */
+export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<ApiErrorResponse>;
+    if (axiosError.response?.data?.message) {
+      return axiosError.response.data.message;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+    if (axiosError.message) {
+      if (axiosError.code === "ECONNABORTED" || axiosError.code === "ERR_NETWORK") {
+        return "Backend server is currently unreachable. Please ensure the backend is running.";
+      }
+      return axiosError.message;
+    }
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "An unexpected error occurred. Please try again.";
+}
 
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (typeof window !== "undefined" && error.response?.status === 401) {
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("auth_user");
-      if (!window.location.pathname.startsWith("/login")) {
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-        window.location.href = "/login";
-      }
-    }
+    // Graceful handling of network / 401 errors
     return Promise.reject(error);
   }
 );

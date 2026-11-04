@@ -1,6 +1,6 @@
-import { Request, Response, RequestHandler } from "express";
-import { ApiResponse } from "../utils/api-response.js";
-import { asyncHandler } from "../utils/async-handler.js";
+import { Request, Response, RequestHandler } from 'express';
+import { ApiResponse } from '../utils/api-response.js';
+import { asyncHandler } from '../utils/async-handler.js';
 
 interface HealthData {
   uptime: number;
@@ -14,13 +14,13 @@ export const getHealthStatus: RequestHandler = asyncHandler(
     const healthData: HealthData = {
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      service: "Doctor Tracker API",
-      status: "healthy",
+      service: 'Doctor Tracker API',
+      status: 'healthy',
     };
 
     return ApiResponse.success<HealthData>(res, {
       statusCode: 200,
-      message: "Doctor Tracker API is up and running",
+      message: 'Doctor Tracker API is up and running',
       data: healthData,
       meta: null,
     });

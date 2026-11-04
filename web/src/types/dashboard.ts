@@ -1,11 +1,56 @@
-export interface DashboardMetrics {
+export interface DashboardOverviewData {
   totalDoctors: number;
   totalPatients: number;
-  patientsPerDoctor: number;
-  assignedPatients?: number;
-  unassignedPatients?: number;
+  newDoctors: number;
+  newPatients: number;
+  patientsPerDoctor: Array<{
+    doctorId: string;
+    doctorName: string;
+    specialization: string;
+    patientCount: number;
+  }>;
+  unassignedPatients: number;
+  topConditions: Array<{
+    condition: string;
+    count: number;
+  }>;
+  registrationSummary: {
+    periodStart: string;
+    periodEnd: string;
+    newPatients: number;
+    newDoctors: number;
+  };
+  insights: string[];
 }
 
+export interface PatientTrendsData {
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+  }>;
+}
+
+export interface PatientsByDoctorItem {
+  doctorId: string;
+  doctorName: string;
+  specialization: string;
+  patientCount: number;
+}
+
+export interface ConditionDistributionItem {
+  condition: string;
+  count: number;
+  percentage?: number;
+}
+
+export interface DashboardFilterParams {
+  from?: string;
+  to?: string;
+  interval?: "day" | "month";
+}
+
+// Backward-compatible types for dashboard components
 export interface RegistrationTrendItem {
   date: string;
   count: number;
@@ -16,12 +61,6 @@ export interface DoctorWorkloadItem {
   name: string;
   specialty: string;
   patientCount: number;
-}
-
-export interface ConditionDistributionItem {
-  condition: string;
-  count: number;
-  percentage: number;
 }
 
 export interface RecentPatientItem {
@@ -35,12 +74,3 @@ export interface RecentPatientItem {
     specialty?: string;
   } | null;
 }
-
-export interface DashboardData {
-  metrics: DashboardMetrics;
-  trends: RegistrationTrendItem[];
-  workload: DoctorWorkloadItem[];
-  conditions: ConditionDistributionItem[];
-  recentPatients: RecentPatientItem[];
-}
-

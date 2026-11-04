@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response } from 'express';
 
 export interface PaginationMeta {
   page: number;
@@ -21,7 +21,7 @@ export class ApiResponse<T = unknown> {
    */
   constructor(
     statusCode: number,
-    message: string = "Operation completed successfully",
+    message: string = 'Operation completed successfully',
     data: T = {} as T,
     meta: PaginationMeta | null = null,
   ) {
@@ -35,7 +35,7 @@ export class ApiResponse<T = unknown> {
     res: Response,
     {
       statusCode = 200,
-      message = "Operation completed successfully",
+      message = 'Operation completed successfully',
       data = {} as T,
       meta = null,
     }: {
@@ -45,15 +45,13 @@ export class ApiResponse<T = unknown> {
       meta?: PaginationMeta | null;
     } = {},
   ): Response {
-    return res
-      .status(statusCode)
-      .json(new ApiResponse<T>(statusCode, message, data, meta));
+    return res.status(statusCode).json(new ApiResponse<T>(statusCode, message, data, meta));
   }
 
   static created<T = unknown>(
     res: Response,
     {
-      message = "Resource created successfully",
+      message = 'Resource created successfully',
       data = {} as T,
       meta = null,
     }: {

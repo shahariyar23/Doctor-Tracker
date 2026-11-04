@@ -1,36 +1,30 @@
-import type { Request, Response } from "express";
-import { Doctor, type IDoctor } from "../models/doctor.model.js";
-import { Patient } from "../models/patient.model.js";
-import { asyncHandler } from "../utils/async-handler.js";
-import { ApiError } from "../utils/api-error.js";
-import { ApiResponse } from "../utils/api-response.js";
+import type { Request, Response } from 'express';
+import { Doctor, type IDoctor } from '../models/doctor.model.js';
+import { Patient } from '../models/patient.model.js';
+import { asyncHandler } from '../utils/async-handler.js';
+import { ApiError } from '../utils/api-error.js';
+import { ApiResponse } from '../utils/api-response.js';
 import type {
   CreateDoctorInput,
   UpdateDoctorInput,
   DoctorQueryInput,
-} from "../validators/doctor.validator.js";
-import type { IdParamInput } from "../validators/common.validator.js";
-import {
-  escapeRegex,
-  parseDateFrom,
-  parseDateTo,
-} from "../validators/common.validator.js";
+} from '../validators/doctor.validator.js';
+import type { IdParamInput } from '../validators/common.validator.js';
+import { escapeRegex, parseDateFrom, parseDateTo } from '../validators/common.validator.js';
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
  */
 function handleDuplicateKeyError(error: unknown): never {
   if (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error !== null &&
-    "code" in error &&
+    'code' in error &&
     (error as { code: number }).code === 11000
   ) {
     const keyPattern = (error as { keyPattern?: Record<string, number> }).keyPattern;
-    const duplicateField = keyPattern ? Object.keys(keyPattern)[0] : "field";
-    throw ApiError.conflict(
-      `A doctor with this ${duplicateField} already exists.`,
-    );
+    const duplicateField = keyPattern ? Object.keys(keyPattern)[0] : 'field';
+    throw ApiError.conflict(`A doctor with this ${duplicateField} already exists.`);
   }
   throw error;
 }
@@ -46,14 +40,11 @@ export const createDoctorHandler = asyncHandler(
     try {
       const doctor = await Doctor.create(data);
 
-      ApiResponse.success(
-        res,
-        {
-          statusCode: 201,
-          message: "Doctor created successfully",
-          data: doctor,
-        },
-      );
+      ApiResponse.success(res, {
+        statusCode: 201,
+        message: 'Doctor created successfully',
+        data: doctor,
+      });
     } catch (error) {
       handleDuplicateKeyError(error);
     }
@@ -75,7 +66,7 @@ export const getAllDoctorsHandler = asyncHandler(
 
     // Search condition across name, specialization, hospital, email
     if (query.search && query.search.trim().length > 0) {
-      const searchRegex = new RegExp(escapeRegex(query.search.trim()), "i");
+      const searchRegex = new RegExp(escapeRegex(query.search.trim()), 'i');
       filter.$or = [
         { name: searchRegex },
         { specialization: searchRegex },
@@ -98,29 +89,22 @@ export const getAllDoctorsHandler = asyncHandler(
 
     // Run query and total count concurrently
     const [doctors, total] = await Promise.all([
-      Doctor.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      Doctor.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Doctor.countDocuments(filter),
     ]);
 
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Doctors retrieved successfully",
-        data: doctors,
-        meta: {
-          page,
-          limit,
-          total,
-          totalPages,
-        },
+    ApiResponse.success(res, {
+      message: 'Doctors retrieved successfully',
+      data: doctors,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
       },
-    );
+    });
   },
 );
 
@@ -134,16 +118,13 @@ export const getDoctorByIdHandler = asyncHandler(
 
     const doctor = await Doctor.findById(id);
     if (!doctor) {
-      throw ApiError.notFound("Doctor not found");
+      throw ApiError.notFound('Doctor not found');
     }
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Doctor retrieved successfully",
-        data: doctor,
-      },
-    );
+    ApiResponse.success(res, {
+      message: 'Doctor retrieved successfully',
+      data: doctor,
+    });
   },
 );
 
@@ -161,22 +142,19 @@ export const updateDoctorHandler = asyncHandler(
         id,
         { $set: updateData },
         {
-          returnDocument: "after",
+          returnDocument: 'after',
           runValidators: true,
         },
       );
 
       if (!updatedDoctor) {
-        throw ApiError.notFound("Doctor not found");
+        throw ApiError.notFound('Doctor not found');
       }
 
-      ApiResponse.success(
-        res,
-        {
-          message: "Doctor updated successfully",
-          data: updatedDoctor,
-        },
-      );
+      ApiResponse.success(res, {
+        message: 'Doctor updated successfully',
+        data: updatedDoctor,
+      });
     } catch (error) {
       handleDuplicateKeyError(error);
     }
@@ -193,7 +171,7 @@ export const deleteDoctorHandler = asyncHandler(
 
     const doctor = await Doctor.findById(id);
     if (!doctor) {
-      throw ApiError.notFound("Doctor not found");
+      throw ApiError.notFound('Doctor not found');
     }
 
     // Check whether Patient documents reference this Doctor through assignedDoctorId
@@ -209,12 +187,9 @@ export const deleteDoctorHandler = asyncHandler(
 
     await Doctor.findByIdAndDelete(id);
 
-    ApiResponse.success(
-      res,
-      {
-        message: "Doctor deleted successfully",
-        data: {},
-      },
-    );
+    ApiResponse.success(res, {
+      message: 'Doctor deleted successfully',
+      data: {},
+    });
   },
 );

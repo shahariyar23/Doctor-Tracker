@@ -51,9 +51,11 @@ export function PatientFormModal({
     defaultValues: {
       name: "",
       phone: "",
+      age: 30,
+      gender: "prefer_not_to_say",
       condition: "Stable",
       status: "Active",
-      assignedDoctorId: null,
+      assignedDoctorId: "",
     },
   });
 
@@ -61,18 +63,22 @@ export function PatientFormModal({
     if (patientToEdit) {
       reset({
         name: patientToEdit.name,
-        phone: patientToEdit.phone,
+        phone: patientToEdit.phone || "",
+        age: patientToEdit.age ?? 30,
+        gender: patientToEdit.gender ?? "prefer_not_to_say",
         condition: patientToEdit.condition,
-        status: patientToEdit.status,
-        assignedDoctorId: patientToEdit.assignedDoctorId || null,
+        status: patientToEdit.status || "Active",
+        assignedDoctorId: patientToEdit.assignedDoctorId || "",
       });
     } else {
       reset({
         name: "",
         phone: "",
+        age: 30,
+        gender: "prefer_not_to_say",
         condition: "Stable",
         status: "Active",
-        assignedDoctorId: null,
+        assignedDoctorId: "",
       });
     }
   }, [patientToEdit, reset, isOpen]);
@@ -150,7 +156,7 @@ export function PatientFormModal({
             {/* Phone Number */}
             <div className="space-y-1.5">
               <Label htmlFor="patient-phone" className="text-xs font-semibold">
-                Contact Phone Number *
+                Contact Phone Number
               </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
@@ -165,6 +171,45 @@ export function PatientFormModal({
               {errors.phone && (
                 <p className="text-[11px] text-destructive">{errors.phone.message}</p>
               )}
+            </div>
+
+            {/* Age & Gender */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="patient-age" className="text-xs font-semibold">
+                  Age *
+                </Label>
+                <Input
+                  id="patient-age"
+                  type="number"
+                  min={0}
+                  max={120}
+                  placeholder="e.g. 45"
+                  {...register("age", { valueAsNumber: true })}
+                  className="text-xs"
+                />
+                {errors.age && (
+                  <p className="text-[11px] text-destructive">{errors.age.message}</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="patient-gender" className="text-xs font-semibold">
+                  Gender *
+                </Label>
+                <select
+                  id="patient-gender"
+                  {...register("gender")}
+                  className="h-8 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+                {errors.gender && (
+                  <p className="text-[11px] text-destructive">{errors.gender.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

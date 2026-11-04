@@ -404,7 +404,7 @@ export function DoctorTable({
 
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
+                      className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 cursor-pointer transition-colors"
                       aria-label="Open doctor menu"
                     >
                       <MoreVertical className="h-4 w-4" />
@@ -464,7 +464,7 @@ export function DoctorTable({
                   <button
                     type="button"
                     onClick={() => onViewPatients(doctor)}
-                    className="font-semibold text-blue-600 hover:underline shrink-0 text-xs"
+                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline shrink-0 text-xs cursor-pointer transition-colors"
                   >
                     View Patients ({currentCount})
                   </button>
@@ -656,14 +656,14 @@ export function DoctorTable({
                               <button
                                 type="button"
                                 onClick={() => onViewPatients(doctor)}
-                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5"
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline px-1 py-0.5 cursor-pointer transition-colors"
                               >
                                 Patients
                               </button>
 
                               <DropdownMenu>
                                 <DropdownMenuTrigger
-                                  className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                                  className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
                                   aria-label="Open doctor menu"
                                 >
                                   <MoreVertical className="h-4 w-4" />
@@ -779,7 +779,7 @@ export function DoctorTable({
                     <button
                       type="button"
                       onClick={() => onViewPatients(doctor)}
-                      className="font-semibold text-blue-600 hover:underline"
+                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer transition-colors"
                     >
                       View Patients ({currentCount})
                     </button>

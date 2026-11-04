@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
-import { ZodType, ZodIssue, z } from "zod";
-import { ApiError } from "../utils/api-error.js";
+import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { ZodType, ZodIssue, z } from 'zod';
+import { ApiError } from '../utils/api-error.js';
 
 export interface RequestValidationSchema<
   TBody extends ZodType = ZodType,
@@ -41,8 +41,11 @@ declare global {
  *     const { name, age, gender } = req.validated.body; // Fully typed!
  *   };
  */
-export interface ValidatedRequest<TBody = unknown, TQuery = unknown, TParams = unknown>
-  extends Request {
+export interface ValidatedRequest<
+  TBody = unknown,
+  TQuery = unknown,
+  TParams = unknown,
+> extends Request {
   validated: ValidatedData<TBody, TQuery, TParams>;
 }
 
@@ -50,11 +53,7 @@ export interface ValidatedRequest<TBody = unknown, TQuery = unknown, TParams = u
  * Type-safe accessor helper for req.validated.
  * Retrieves validated data without relying on unused/misleading schema parameters.
  */
-export const getValidated = <
-  TBody = unknown,
-  TQuery = unknown,
-  TParams = unknown,
->(
+export const getValidated = <TBody = unknown, TQuery = unknown, TParams = unknown>(
   req: Request,
 ): ValidatedData<TBody, TQuery, TParams> => {
   return (req.validated ?? {}) as ValidatedData<TBody, TQuery, TParams>;
@@ -86,7 +85,7 @@ export const validate = <
       if (!result.success) {
         result.error.issues.forEach((issue: ZodIssue) => {
           errorDetails.push({
-            field: issue.path.length > 0 ? `params.${issue.path.join(".")}` : "params",
+            field: issue.path.length > 0 ? `params.${issue.path.join('.')}` : 'params',
             message: issue.message,
           });
         });
@@ -100,7 +99,7 @@ export const validate = <
       if (!result.success) {
         result.error.issues.forEach((issue: ZodIssue) => {
           errorDetails.push({
-            field: issue.path.length > 0 ? `query.${issue.path.join(".")}` : "query",
+            field: issue.path.length > 0 ? `query.${issue.path.join('.')}` : 'query',
             message: issue.message,
           });
         });
@@ -114,7 +113,7 @@ export const validate = <
       if (!result.success) {
         result.error.issues.forEach((issue: ZodIssue) => {
           errorDetails.push({
-            field: issue.path.length > 0 ? `body.${issue.path.join(".")}` : "body",
+            field: issue.path.length > 0 ? `body.${issue.path.join('.')}` : 'body',
             message: issue.message,
           });
         });
@@ -124,10 +123,7 @@ export const validate = <
     }
 
     if (errorDetails.length > 0) {
-      const validationError = ApiError.unprocessableEntity(
-        "Validation failed",
-        errorDetails,
-      );
+      const validationError = ApiError.unprocessableEntity('Validation failed', errorDetails);
       next(validationError);
       return;
     }

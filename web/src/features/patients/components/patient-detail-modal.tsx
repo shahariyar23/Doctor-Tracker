@@ -88,6 +88,10 @@ export function PatientDetailModal({
   const handleReassignSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!selectedDoctorId) {
+        alert("Please select a doctor to reassign.");
+        return;
+      }
       await updatePatientMutation.mutateAsync({
         id: patient.id,
         data: {
@@ -95,7 +99,7 @@ export function PatientDetailModal({
           phone: patient.phone,
           condition: patient.condition,
           status: patient.status,
-          assignedDoctorId: selectedDoctorId || null,
+          assignedDoctorId: selectedDoctorId,
         },
       });
       setReassignSuccess(true);
@@ -211,7 +215,7 @@ export function PatientDetailModal({
                 <button
                   type="button"
                   onClick={() => setIsReassigning(false)}
-                  className="text-xs text-slate-500 hover:text-slate-800"
+                  className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>

@@ -1,16 +1,13 @@
-import type { Request, Response } from "express";
-import { Doctor } from "../models/doctor.model.js";
-import { Patient } from "../models/patient.model.js";
-import { asyncHandler } from "../utils/async-handler.js";
-import { ApiResponse } from "../utils/api-response.js";
-import {
-  parseDateFrom,
-  parseDateTo,
-} from "../validators/common.validator.js";
+import type { Request, Response } from 'express';
+import { Doctor } from '../models/doctor.model.js';
+import { Patient } from '../models/patient.model.js';
+import { asyncHandler } from '../utils/async-handler.js';
+import { ApiResponse } from '../utils/api-response.js';
+import { parseDateFrom, parseDateTo } from '../validators/common.validator.js';
 import type {
   DashboardDateRangeInput,
   PatientTrendsQueryInput,
-} from "../validators/dashboard.validator.js";
+} from '../validators/dashboard.validator.js';
 
 /**
  * Resolves standard UTC date boundaries for dashboard queries.
@@ -42,7 +39,9 @@ function resolveDateRange(from?: string, to?: string): { startDate: Date; endDat
 
   // Default: most recent 30 days up to current moment
   const now = new Date();
-  const past30Days = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 30, 0, 0, 0, 0));
+  const past30Days = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 30, 0, 0, 0, 0),
+  );
   return {
     startDate: past30Days,
     endDate: now,
@@ -92,19 +91,19 @@ export const getDashboardOverviewHandler = asyncHandler(
       }>([
         {
           $lookup: {
-            from: "patients",
-            localField: "_id",
-            foreignField: "assignedDoctorId",
-            as: "patients",
+            from: 'patients',
+            localField: '_id',
+            foreignField: 'assignedDoctorId',
+            as: 'patients',
           },
         },
         {
           $project: {
             _id: 0,
-            doctorId: { $toString: "$_id" },
-            doctorName: "$name",
-            specialization: "$specialization",
-            patientCount: { $size: "$patients" },
+            doctorId: { $toString: '$_id' },
+            doctorName: '$name',
+            specialization: '$specialization',
+            patientCount: { $size: '$patients' },
           },
         },
         { $sort: { patientCount: -1, doctorName: 1 } },
@@ -112,24 +111,24 @@ export const getDashboardOverviewHandler = asyncHandler(
 
       // 6. Top conditions across all patients
       Patient.aggregate<{ condition: string; count: number }>([
-        { $group: { _id: "$condition", count: { $sum: 1 } } },
+        { $group: { _id: '$condition', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 5 },
-        { $project: { _id: 0, condition: "$_id", count: 1 } },
+        { $project: { _id: 0, condition: '$_id', count: 1 } },
       ]),
 
       // 7. Unassigned patients (patients whose assignedDoctorId does not exist in doctors collection)
       Patient.aggregate<{ count: number }>([
         {
           $lookup: {
-            from: "doctors",
-            localField: "assignedDoctorId",
-            foreignField: "_id",
-            as: "doctor",
+            from: 'doctors',
+            localField: 'assignedDoctorId',
+            foreignField: '_id',
+            as: 'doctor',
           },
         },
         { $match: { doctor: { $size: 0 } } },
-        { $count: "count" },
+        { $count: 'count' },
       ]),
     ]);
 
@@ -140,12 +139,12 @@ export const getDashboardOverviewHandler = asyncHandler(
 
     if (totalDoctors === 0 && totalPatients === 0) {
       // Empty database state
-      insights.push("The system currently has no recorded doctors or patients.");
+      insights.push('The system currently has no recorded doctors or patients.');
     } else {
       if (patientsByDoctorRaw.length > 0) {
         const topDoctor = patientsByDoctorRaw[0]!;
         if (topDoctor.patientCount > 0) {
-          const prefix = topDoctor.doctorName.startsWith("Dr.") ? "" : "Dr. ";
+          const prefix = topDoctor.doctorName.startsWith('Dr.') ? '' : 'Dr. ';
           insights.push(
             `${prefix}${topDoctor.doctorName} (${topDoctor.specialization}) manages the highest patient load with ${topDoctor.patientCount} patient(s).`,
           );
@@ -177,7 +176,7 @@ export const getDashboardOverviewHandler = asyncHandler(
     }
 
     ApiResponse.success(res, {
-      message: "Dashboard overview statistics retrieved successfully",
+      message: 'Dashboard overview statistics retrieved successfully',
       data: {
         totalDoctors,
         totalPatients,
@@ -203,8 +202,8 @@ export const getDashboardOverviewHandler = asyncHandler(
  */
 function formatUtcDay(d: Date): string {
   const year = d.getUTCFullYear();
-  const month = (d.getUTCMonth() + 1).toString().padStart(2, "0");
-  const day = d.getUTCDate().toString().padStart(2, "0");
+  const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+  const day = d.getUTCDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
@@ -213,7 +212,7 @@ function formatUtcDay(d: Date): string {
  */
 function formatUtcMonth(d: Date): string {
   const year = d.getUTCFullYear();
-  const month = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+  const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
   return `${year}-${month}`;
 }
 
@@ -227,15 +226,19 @@ export const getPatientTrendsHandler = asyncHandler(
     const { startDate, endDate } = resolveDateRange(query.from, query.to);
 
     const diffDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const interval = query.interval ?? (diffDays > 90 ? "month" : "day");
+    const interval = query.interval ?? (diffDays > 90 ? 'month' : 'day');
 
     let labels: string[] = [];
     const countsMap = new Map<string, number>();
 
-    if (interval === "day") {
+    if (interval === 'day') {
       // Build continuous daily labels
-      const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
-      const endLimit = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+      const cursor = new Date(
+        Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()),
+      );
+      const endLimit = new Date(
+        Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()),
+      );
 
       while (cursor <= endLimit) {
         const key = formatUtcDay(cursor);
@@ -253,7 +256,7 @@ export const getPatientTrendsHandler = asyncHandler(
         },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "UTC" } },
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'UTC' } },
             count: { $sum: 1 },
           },
         },
@@ -285,7 +288,7 @@ export const getPatientTrendsHandler = asyncHandler(
         },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt", timezone: "UTC" } },
+            _id: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: 'UTC' } },
             count: { $sum: 1 },
           },
         },
@@ -301,12 +304,12 @@ export const getPatientTrendsHandler = asyncHandler(
     const dataSeries = labels.map((label) => countsMap.get(label) ?? 0);
 
     ApiResponse.success(res, {
-      message: "Patient registration trends retrieved successfully",
+      message: 'Patient registration trends retrieved successfully',
       data: {
         labels,
         datasets: [
           {
-            label: "Patient Registrations",
+            label: 'Patient Registrations',
             data: dataSeries,
           },
         ],
@@ -329,26 +332,26 @@ export const getPatientsByDoctorHandler = asyncHandler(
     }>([
       {
         $lookup: {
-          from: "patients",
-          localField: "_id",
-          foreignField: "assignedDoctorId",
-          as: "patients",
+          from: 'patients',
+          localField: '_id',
+          foreignField: 'assignedDoctorId',
+          as: 'patients',
         },
       },
       {
         $project: {
           _id: 0,
-          doctorId: { $toString: "$_id" },
-          doctorName: "$name",
-          specialization: "$specialization",
-          patientCount: { $size: "$patients" },
+          doctorId: { $toString: '$_id' },
+          doctorName: '$name',
+          specialization: '$specialization',
+          patientCount: { $size: '$patients' },
         },
       },
       { $sort: { patientCount: -1, doctorName: 1 } },
     ]);
 
     ApiResponse.success(res, {
-      message: "Patients by doctor distribution retrieved successfully",
+      message: 'Patients by doctor distribution retrieved successfully',
       data: result,
     });
   },
@@ -363,7 +366,7 @@ export const getConditionsDistributionHandler = asyncHandler(
     const result = await Patient.aggregate<{ condition: string; count: number }>([
       {
         $group: {
-          _id: "$condition",
+          _id: '$condition',
           count: { $sum: 1 },
         },
       },
@@ -371,14 +374,14 @@ export const getConditionsDistributionHandler = asyncHandler(
       {
         $project: {
           _id: 0,
-          condition: "$_id",
+          condition: '$_id',
           count: 1,
         },
       },
     ]);
 
     ApiResponse.success(res, {
-      message: "Patient condition distribution retrieved successfully",
+      message: 'Patient condition distribution retrieved successfully',
       data: result,
     });
   },

@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { dateStringSchema, parseDateFrom, parseDateTo } from "./common.validator.js";
+import { z } from 'zod';
+import { dateStringSchema, parseDateFrom, parseDateTo } from './common.validator.js';
 
 /**
  * Zod schema for creating a new Doctor record.
@@ -8,27 +8,27 @@ import { dateStringSchema, parseDateFrom, parseDateTo } from "./common.validator
  */
 export const createDoctorBodySchema = z.object({
   name: z
-    .string({ message: "Doctor name is required" })
+    .string({ message: 'Doctor name is required' })
     .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name cannot exceed 100 characters"),
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name cannot exceed 100 characters'),
   specialization: z
-    .string({ message: "Specialization is required" })
+    .string({ message: 'Specialization is required' })
     .trim()
-    .min(2, "Specialization must be at least 2 characters"),
+    .min(2, 'Specialization must be at least 2 characters'),
   hospital: z
-    .string({ message: "Hospital name is required" })
+    .string({ message: 'Hospital name is required' })
     .trim()
-    .min(2, "Hospital must be at least 2 characters"),
+    .min(2, 'Hospital must be at least 2 characters'),
   phone: z
-    .string({ message: "Phone number is required" })
+    .string({ message: 'Phone number is required' })
     .trim()
-    .min(5, "Phone number must be at least 5 characters"),
+    .min(5, 'Phone number must be at least 5 characters'),
   email: z
-    .string({ message: "Doctor email is required" })
+    .string({ message: 'Doctor email is required' })
     .trim()
     .toLowerCase()
-    .email("Please provide a valid email address"),
+    .email('Please provide a valid email address'),
 });
 
 export type CreateDoctorInput = z.infer<typeof createDoctorBodySchema>;
@@ -41,7 +41,7 @@ export const updateDoctorBodySchema = createDoctorBodySchema
   .partial()
   .refine(
     (data) => Object.keys(data).length > 0,
-    "Update payload cannot be empty. At least one field must be provided.",
+    'Update payload cannot be empty. At least one field must be provided.',
   );
 
 export type UpdateDoctorInput = z.infer<typeof updateDoctorBodySchema>;
@@ -55,24 +55,14 @@ export const doctorQuerySchema = z
     page: z
       .string()
       .optional()
-      .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 1))
-      .refine(
-        (val) => !isNaN(val) && val >= 1,
-        "Page must be a positive integer",
-      ),
+      .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 1))
+      .refine((val) => !isNaN(val) && val >= 1, 'Page must be a positive integer'),
     limit: z
       .string()
       .optional()
-      .transform((val) => (val !== undefined && val !== "" ? parseInt(val, 10) : 10))
-      .refine(
-        (val) => !isNaN(val) && val >= 1 && val <= 100,
-        "Limit must be between 1 and 100",
-      ),
-    search: z
-      .string()
-      .trim()
-      .max(100, "Search term cannot exceed 100 characters")
-      .optional(),
+      .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 10))
+      .refine((val) => !isNaN(val) && val >= 1 && val <= 100, 'Limit must be between 1 and 100'),
+    search: z.string().trim().max(100, 'Search term cannot exceed 100 characters').optional(),
     from: dateStringSchema.optional(),
     to: dateStringSchema.optional(),
   })
@@ -87,7 +77,7 @@ export const doctorQuerySchema = z
     },
     {
       message: "'from' date cannot be later than 'to' date",
-      path: ["from"],
+      path: ['from'],
     },
   );
 

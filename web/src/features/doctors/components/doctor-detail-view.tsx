@@ -342,7 +342,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
               <button
                 type="button"
                 onClick={() => setIsAddingPatient(false)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 Cancel
               </button>
@@ -437,7 +437,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   <button
                     type="button"
                     onClick={() => setIsAdjustingLimit(false)}
-                    className="text-xs text-blue-600 font-semibold"
+                    className="text-xs text-blue-600 hover:text-blue-700 font-semibold cursor-pointer transition-colors"
                   >
                     Done
                   </button>
@@ -612,7 +612,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     <button
                       type="button"
                       onClick={() => handleDeallocate(patient.id, patient.name)}
-                      className="px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-blue-600 font-semibold text-[11px] shrink-0"
+                      className="px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-blue-600 font-semibold text-[11px] shrink-0 cursor-pointer transition-colors"
                     >
                       Reassign
                     </button>
@@ -763,7 +763,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 transition-colors cursor-pointer"
+                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -785,7 +785,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 transition-colors cursor-pointer"
+                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

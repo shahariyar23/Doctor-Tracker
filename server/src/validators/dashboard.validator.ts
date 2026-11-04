@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { calendarDateSchema, parseDateFrom, parseDateTo } from "./common.validator.js";
+import { z } from 'zod';
+import { calendarDateSchema, parseDateFrom, parseDateTo } from './common.validator.js';
 
 /**
  * Base dashboard date range schema.
@@ -21,7 +21,7 @@ export const dashboardDateRangeSchema = z
     },
     {
       message: "'from' date cannot be later than 'to' date",
-      path: ["from"],
+      path: ['from'],
     },
   );
 
@@ -34,7 +34,7 @@ export const patientTrendsQuerySchema = z
   .object({
     from: calendarDateSchema.optional(),
     to: calendarDateSchema.optional(),
-    interval: z.enum(["day", "month"]).optional(),
+    interval: z.enum(['day', 'month']).optional(),
   })
   .refine(
     (data) => {
@@ -47,9 +47,8 @@ export const patientTrendsQuerySchema = z
     },
     {
       message: "'from' date cannot be later than 'to' date",
-      path: ["from"],
+      path: ['from'],
     },
   );
 
 export type PatientTrendsQueryInput = z.infer<typeof patientTrendsQuerySchema>;
-

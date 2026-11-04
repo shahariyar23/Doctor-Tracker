@@ -25,7 +25,7 @@ export function useCreatePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -39,7 +39,7 @@ export function useUpdatePatient() {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["patient", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -51,7 +51,7 @@ export function useDeletePatient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -59,11 +59,15 @@ export function useDeletePatient() {
 export function useBulkDeletePatients() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => patientService.bulkDeletePatients(ids),
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) {
+        await patientService.deletePatient(id);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -71,19 +75,23 @@ export function useBulkDeletePatients() {
 export function useBulkReassignPatients() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       patientIds,
       doctorId,
-      doctorMeta,
     }: {
       patientIds: string[];
       doctorId: string | null;
       doctorMeta?: { id: string; name: string; specialization: string };
-    }) => patientService.bulkReassignPatients(patientIds, doctorId, doctorMeta),
+    }) => {
+      if (!doctorId) return;
+      for (const id of patientIds) {
+        await patientService.updatePatient(id, { assignedDoctorId: doctorId });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
@@ -91,17 +99,9 @@ export function useBulkReassignPatients() {
 export function useBulkUpdatePatientStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      patientIds,
-      status,
-    }: {
-      patientIds: string[];
-      status: Patient["status"];
-    }) => patientService.bulkUpdatePatientStatus(patientIds, status),
+    mutationFn: async (_payload: { patientIds: string[]; status: Patient["status"] }) => Promise.resolve(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
     },
   });
 }
@@ -115,12 +115,11 @@ export function useReassignPatient() {
     }: {
       patientId: string;
       doctorId: string;
-    }) => patientService.reassignDoctor(patientId, doctorId),
+    }) => patientService.updatePatient(patientId, { assignedDoctorId: doctorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
-

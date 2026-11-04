@@ -45,11 +45,13 @@ export function RegisterPatientView() {
   } = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
     defaultValues: {
-      name: "Amelia Chen",
-      phone: "+1 (415) 890-2391",
+      name: "",
+      phone: "",
+      age: 30,
+      gender: "prefer_not_to_say",
       condition: "Under Treatment",
       status: "Active",
-      assignedDoctorId: null,
+      assignedDoctorId: "",
     },
   });
 
@@ -64,10 +66,7 @@ export function RegisterPatientView() {
   const onSubmit = async (data: PatientFormData) => {
     setFormError(null);
     try {
-      await createMutation.mutateAsync({
-        ...data,
-        assignedDoctorId: data.assignedDoctorId || null,
-      });
+      await createMutation.mutateAsync(data);
       router.push("/patients");
     } catch (err: unknown) {
       const error = err as {
@@ -227,7 +226,7 @@ export function RegisterPatientView() {
                   htmlFor="phoneNumber"
                   className="text-xs font-semibold text-foreground flex items-center gap-1"
                 >
-                  Phone Number <span className="text-destructive">*</span>
+                  Phone Number
                 </label>
                 <div className="relative flex items-center">
                   <Phone className="w-4 h-4 text-muted-foreground absolute left-3.5 pointer-events-none" />
@@ -242,6 +241,54 @@ export function RegisterPatientView() {
                 {errors.phone && (
                   <p className="text-xs text-destructive font-medium">
                     {errors.phone.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Age & Gender */}
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="patientAge"
+                  className="text-xs font-semibold text-foreground flex items-center gap-1"
+                >
+                  Age <span className="text-destructive">*</span>
+                </label>
+                <input
+                  id="patientAge"
+                  type="number"
+                  min={0}
+                  max={120}
+                  {...register("age", { valueAsNumber: true })}
+                  placeholder="e.g. 35"
+                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
+                />
+                {errors.age && (
+                  <p className="text-xs text-destructive font-medium">
+                    {errors.age.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="patientGender"
+                  className="text-xs font-semibold text-foreground flex items-center gap-1"
+                >
+                  Gender <span className="text-destructive">*</span>
+                </label>
+                <select
+                  id="patientGender"
+                  {...register("gender")}
+                  className="w-full h-11 px-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+                {errors.gender && (
+                  <p className="text-xs text-destructive font-medium">
+                    {errors.gender.message}
                   </p>
                 )}
               </div>
@@ -296,12 +343,12 @@ export function RegisterPatientView() {
                     id="assignedDoctor"
                     value={watchedDoctorId || ""}
                     onChange={(e) => {
-                      setValue("assignedDoctorId", e.target.value || null);
+                      setValue("assignedDoctorId", e.target.value);
                     }}
                     disabled={isLoadingDoctors}
                     className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
                   >
-                    <option value="">-- Leave Unassigned --</option>
+                    <option value="">-- Select Attending Physician * --</option>
                     {doctors.map((doc) => (
                       <option key={doc.id} value={doc.id}>
                         {doc.name} ({doc.specialization})

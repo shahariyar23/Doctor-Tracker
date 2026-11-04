@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+*.log
+temporary test artifacts
+
