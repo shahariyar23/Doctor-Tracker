@@ -1,0 +1,497 @@
+openapi: 3.1.0
+info:
+  title: Doctor Tracker REST API
+  description: |
+    Production-grade backend API for the Doctor Tracker medical administration portal.
+    Features robust administrator authentication via HTTP-only cookies, full Doctor & Patient
+    CRUD operations, multi-field search, calendar date filtering, and analytics aggregations.
+  version: 1.0.0
+  contact:
+    name: Doctor Tracker Engineering Team
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns server uptime and operational status. Publicly accessible.
+      responses:
+        '200':
+          description: Server is healthy and running.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /auth/login:
+    post:
+      summary: Administrator login
+      description: |
+        Authenticates an administrator with email and password.
+        Sets an HTTP-only, SameSite=Lax cookie named `token`.
+        **Never** returns JWT or password hashes in the JSON response payload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@doctortracker.com
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 72
+                  description: UTF-8 password string (maximum 72 bytes).
+                  example: "AdminPassword#2026"
+      responses:
+        '200':
+          description: Successfully authenticated. HTTP-only cookie set.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=eyJhbGciOiJIUzI1NiIsIn...; Path=/; HttpOnly; SameSite=Lax; Max-Age=3600
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Invalid email or password combination (timing-safe anti-enumeration).
+        '422':
+          description: Input validation failed.
+        '429':
+          description: Too many failed login attempts (max 5 failed attempts per 15 minutes per IP).
+
+  /auth/me:
+    get:
+      summary: Get current authenticated admin
+      description: Returns the safe profile of the currently logged-in administrator. Requires valid `token` cookie.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Admin profile retrieved successfully.
+        '401':
+          description: Authentication required or invalid/expired token.
+
+  /auth/logout:
+    post:
+      summary: Administrator logout
+      description: Clears the HTTP-only `token` cookie with matching options (Path=/, Max-Age=0).
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logged out successfully.
+
+  /doctors:
+    get:
+      summary: List all doctors
+      description: |
+        Retrieves doctors sorted by `createdAt: -1` with database-level pagination,
+        case-insensitive multi-field search (name, specialization, hospital, email),
+        and inclusive date range filtering (`from` and `to` in UTC).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          description: Partial case-insensitive text search (regex escaped)
+          schema:
+            type: string
+            maxLength: 100
+        - name: from
+          in: query
+          description: Inclusive start date (YYYY-MM-DD or ISO 8601)
+          schema:
+            type: string
+        - name: to
+          in: query
+          description: Inclusive end date (YYYY-MM-DD or ISO 8601)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Doctors retrieved successfully with pagination metadata.
+        '401':
+          description: Unauthorized.
+        '422':
+          description: Invalid query parameters or from > to.
+    post:
+      summary: Create a doctor
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDoctorInput'
+      responses:
+        '201':
+          description: Doctor created successfully.
+        '401':
+          description: Unauthorized.
+        '409':
+          description: Doctor with this email already exists.
+        '422':
+          description: Validation failure.
+
+  /doctors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+    get:
+      summary: Get doctor by ID
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Doctor retrieved successfully.
+        '404':
+          description: Doctor not found.
+    patch:
+      summary: Update doctor
+      description: Partially updates doctor fields. Rejects empty payload.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDoctorInput'
+      responses:
+        '200':
+          description: Doctor updated successfully.
+        '404':
+          description: Doctor not found.
+        '409':
+          description: Conflict on unique field.
+        '422':
+          description: Validation failure or empty body.
+    delete:
+      summary: Delete doctor
+      description: |
+        Guarded deletion: verifies whether Patient records reference this doctor.
+        If assigned patients exist, rejects deletion with HTTP 409 Conflict.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Doctor deleted successfully.
+        '404':
+          description: Doctor not found.
+        '409':
+          description: Cannot delete doctor with assigned patients.
+
+  /patients:
+    get:
+      summary: List all patients
+      description: Retrieves patients sorted by `createdAt: -1` with pagination, search, exact condition, and date filters.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: condition
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patients retrieved successfully.
+    post:
+      summary: Create a patient
+      description: Verifies that assignedDoctorId references an existing Doctor document.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientInput'
+      responses:
+        '201':
+          description: Patient created successfully.
+        '400':
+          description: Referenced doctor does not exist.
+        '422':
+          description: Validation failure.
+
+  /patients/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+    get:
+      summary: Get patient by ID
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Patient retrieved successfully.
+        '404':
+          description: Patient not found.
+    patch:
+      summary: Update patient
+      description: Partially updates patient. If assignedDoctorId is modified, verifies target doctor exists.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePatientInput'
+      responses:
+        '200':
+          description: Patient updated successfully.
+        '400':
+          description: Referenced doctor does not exist.
+        '404':
+          description: Patient not found.
+    delete:
+      summary: Delete patient
+      description: Permanently deletes the patient record. Assigned doctor is unaffected.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Patient deleted successfully.
+        '404':
+          description: Patient not found.
+
+  /dashboard/overview:
+    get:
+      summary: Dashboard summary and insights
+      description: |
+        Returns all-time totals (`totalDoctors`, `totalPatients`), date-filtered volume (`newDoctors`, `newPatients`),
+        workload distribution per doctor (including 0-count doctors), orphan patient counts, top conditions, and factual insights.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: from
+          in: query
+          description: Calendar date (YYYY-MM-DD). Defaults to past 30 days if omitted.
+          schema:
+            type: string
+        - name: to
+          in: query
+          description: Calendar date (YYYY-MM-DD).
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Overview statistics retrieved successfully.
+
+  /dashboard/patient-trends:
+    get:
+      summary: Patient registration trend time series
+      description: Returns continuous timeline with zero-filled counts suitable for charts.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: interval
+          in: query
+          schema:
+            type: string
+            enum: [day, month]
+      responses:
+        '200':
+          description: Trend dataset retrieved successfully.
+
+  /dashboard/patients-by-doctor:
+    get:
+      summary: Patient counts per doctor
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Distribution array sorted descending.
+
+  /dashboard/conditions:
+    get:
+      summary: Patient condition distribution
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Condition counts sorted descending.
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+
+  schemas:
+    ApiResponse:
+      type: object
+      required: [success, message, data, meta]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation completed successfully
+        data:
+          type: object
+        meta:
+          type: object
+          nullable: true
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    CreateDoctorInput:
+      type: object
+      required: [name, specialization, hospital, phone, email]
+      properties:
+        name:
+          type: string
+          example: Dr. Gregory House
+        specialization:
+          type: string
+          example: Nephrology
+        hospital:
+          type: string
+          example: Princeton-Plainsboro
+        phone:
+          type: string
+          example: "+1-555-0199"
+        email:
+          type: string
+          format: email
+          example: house@princeton.edu
+
+    UpdateDoctorInput:
+      type: object
+      description: At least one field required
+      properties:
+        name:
+          type: string
+        specialization:
+          type: string
+        hospital:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+
+    CreatePatientInput:
+      type: object
+      required: [name, condition, assignedDoctorId, age, gender]
+      properties:
+        name:
+          type: string
+          example: Jane Doe
+        condition:
+          type: string
+          example: Acute Rhinitis
+        assignedDoctorId:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 28
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+          example: female
+        phone:
+          type: string
+          nullable: true
+          example: "+1-555-9876"
+
+    UpdatePatientInput:
+      type: object
+      description: At least one field required
+      properties:
+        name:
+          type: string
+        condition:
+          type: string
+        assignedDoctorId:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        phone:
+          type: string
+          nullable: true
+
