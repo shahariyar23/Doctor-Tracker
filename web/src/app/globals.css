@@ -116,3 +116,31 @@
   --sidebar-border: #1e293b;
   --sidebar-ring: #3b82f6;
 }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(7px); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-float-1 {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-reverse 5s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+

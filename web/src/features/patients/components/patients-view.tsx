@@ -7,6 +7,7 @@ import { Patient } from "../types";
 import { usePatients, useDeletePatient } from "../hooks/use-patients";
 import { PatientTable } from "./patient-table";
 import { PatientFormModal } from "./patient-form-modal";
+import { Button } from "@/components/ui/button";
 
 export function PatientsView() {
   const searchParams = useSearchParams();
@@ -101,22 +102,25 @@ export function PatientsView() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors"
+            className="gap-1.5"
           >
             <Download className="h-4 w-4 text-muted-foreground" />
             <span>Export CSV</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="sm"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors"
+            className="gap-1.5"
           >
             <UserPlus className="h-4 w-4" />
             <span>Register New Patient</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -131,13 +135,15 @@ export function PatientsView() {
                 : "Failed to connect to the patient management service."}
             </span>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => refetch()}
-            className="font-semibold underline flex items-center gap-1"
+            className="font-semibold underline flex items-center gap-1 text-destructive hover:bg-destructive/10"
           >
             <RefreshCw className="h-3 w-3" /> Retry
-          </button>
+          </Button>
         </div>
       )}
 

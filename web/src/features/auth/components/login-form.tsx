@@ -21,6 +21,8 @@ import { loginSchema, LoginFormData } from "../schemas/login-schema";
 import { authService } from "../services/auth-service";
 import { useAppDispatch } from "@/store";
 import { setCredentials } from "@/store/slices/auth-slice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function LoginForm() {
   const router = useRouter();
@@ -187,14 +189,15 @@ export function LoginForm() {
                 </span>
               </div>
             </div>
-            <button
+            <Button
               type="button"
               onClick={handleDemoLogin}
               disabled={isSubmitting}
-              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors shrink-0"
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
             >
               One-Click Demo
-            </button>
+            </Button>
           </div>
 
           {/* Error Banner */}
@@ -218,14 +221,14 @@ export function LoginForm() {
                 Work Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
                   id="email"
                   type="email"
                   autoComplete="email"
                   placeholder="admin@doctortracker.com"
                   {...register("email")}
-                  className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
+                  className="h-10 pl-9 pr-3 text-sm"
                 />
               </div>
               {errors.email && (
@@ -246,19 +249,21 @@ export function LoginForm() {
                 </label>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="••••••••••••"
                   {...register("password")}
-                  className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
+                  className="h-10 pl-9 pr-10 text-sm"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -266,7 +271,7 @@ export function LoginForm() {
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                </button>
+                </Button>
               </div>
               {errors.password && (
                 <p className="text-xs font-medium text-destructive">
@@ -288,23 +293,25 @@ export function LoginForm() {
                 </span>
               </label>
 
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
                 onClick={() => {
                   setValue("email", "admin@doctortracker.com");
                   setValue("password", "admin123");
                 }}
-                className="text-xs text-primary hover:underline font-medium"
+                className="text-xs p-0 h-auto font-medium"
               >
                 Fill Demo Credentials
-              </button>
+              </Button>
             </div>
 
             {/* Submit CTA */}
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-10 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full h-10 font-semibold text-sm gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -317,7 +324,7 @@ export function LoginForm() {
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}
-            </button>
+            </Button>
           </form>
         </div>
       </section>

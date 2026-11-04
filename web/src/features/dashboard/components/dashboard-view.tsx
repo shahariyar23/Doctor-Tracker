@@ -19,6 +19,8 @@ import { WorkloadChart } from "./workload-chart";
 import { ConditionDonutChart } from "./condition-donut-chart";
 import { RecentPatientsTable } from "./recent-patients-table";
 import { useDashboardData } from "../hooks/use-dashboard";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function DashboardView() {
   const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
@@ -59,14 +61,15 @@ export function DashboardView() {
             ? error.message
             : "Could not establish connection to the backend analytics service. Please verify the API server is active."}
         </p>
-        <button
+        <Button
           type="button"
+          size="sm"
           onClick={() => refetch()}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-all"
+          className="mt-4 gap-1.5"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>Retry Connection</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -98,21 +101,21 @@ export function DashboardView() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/patients"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
           >
             <Eye className="h-4 w-4 text-muted-foreground" />
             <span>View All Patients</span>
           </Link>
           <Link
             href="/doctors?action=add"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-input bg-card text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
           >
             <UserPlus className="h-4 w-4 text-primary" />
             <span>Add Doctor</span>
           </Link>
           <Link
             href="/patients?action=register"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors"
+            className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
           >
             <PlusCircle className="h-4 w-4" />
             <span>Add Patient</span>

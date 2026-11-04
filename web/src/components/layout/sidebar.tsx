@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleSidebar } from "@/store/slices/ui-slice";
 import { logout } from "@/store/slices/auth-slice";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
   {
@@ -135,10 +136,12 @@ export function Sidebar() {
             collapsed && "flex-col gap-2"
           )}
         >
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => dispatch(toggleSidebar())}
-            className="flex items-center gap-2 rounded-lg p-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
@@ -149,17 +152,19 @@ export function Sidebar() {
                 <span>Collapse</span>
               </>
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => dispatch(logout())}
-            className="flex items-center gap-2 rounded-lg p-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            className="flex items-center gap-2 text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
             title="Log out"
           >
             <LogOut className="h-4 w-4" />
             {!collapsed && <span>Log out</span>}
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

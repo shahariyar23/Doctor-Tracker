@@ -1,7 +1,7 @@
 import { LoginForm } from "@/features/auth/components/login-form";
 
 export const metadata = {
-  title: "Sign In — Doctor Tracker",
+  title: "Doctor Tracker — Clinical Portal Sign In",
 };
 
 export default function LoginPage() {

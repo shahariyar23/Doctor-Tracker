@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { RegistrationTrendItem } from "../types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface RegistrationTrendsChartProps {
   data: RegistrationTrendItem[];
@@ -46,19 +47,19 @@ export function RegistrationTrendsChart({
 
         <div className="flex items-center rounded-lg bg-muted p-0.5 self-start sm:self-auto">
           {(["7d", "30d", "90d"] as const).map((p) => (
-            <button
+            <Button
               key={p}
               type="button"
+              variant={period === p ? "default" : "ghost"}
+              size="xs"
               onClick={() => onPeriodChange(p)}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium transition-all uppercase",
-                period === p
-                  ? "bg-card text-primary shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
+                "uppercase text-xs",
+                period === p ? "shadow-xs" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {p}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

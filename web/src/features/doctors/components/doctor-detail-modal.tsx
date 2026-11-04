@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  X,
   User,
   Plus,
   Trash2,
@@ -18,6 +17,24 @@ import {
   useAddPatientToDoctor,
   useRemovePatientFromDoctor,
 } from "../hooks/use-doctors";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 interface DoctorDetailModalProps {
@@ -27,10 +44,10 @@ interface DoctorDetailModalProps {
 }
 
 const CONDITION_COLORS: Record<string, string> = {
-  Critical: "bg-red-50 text-red-700 border-red-200",
-  "Under Treatment": "bg-amber-50 text-amber-700 border-amber-200",
-  Stable: "bg-teal-50 text-teal-700 border-teal-200",
-  Recovering: "bg-blue-50 text-blue-700 border-blue-200",
+  Critical: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900",
+  "Under Treatment": "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900",
+  Stable: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-900",
+  Recovering: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900",
 };
 
 export function DoctorDetailModal({
@@ -51,7 +68,7 @@ export function DoctorDetailModal({
   const addPatientMutation = useAddPatientToDoctor();
   const removePatientMutation = useRemovePatientFromDoctor();
 
-  if (!isOpen || !doctor) return null;
+  if (!doctor) return null;
 
   const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -78,88 +95,78 @@ export function DoctorDetailModal({
       setPatientPhone("");
       setIsAddingPatient(false);
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } }; message?: string };
-      setFormError(error.response?.data?.message || error.message || "Failed to add patient");
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      setFormError(e.response?.data?.message || "Failed to add patient to doctor");
     }
   };
 
-  const handleRemovePatient = async (patientId: string, patientNameStr: string) => {
-    if (
-      confirm(
-        `Are you sure you want to remove ${patientNameStr} from ${doctor.name}'s caseload?`
-      )
-    ) {
+  const handleRemovePatient = async (patientId: string, name: string) => {
+    if (confirm(`Remove ${name} from ${doctor.name}'s active patients?`)) {
       try {
         await removePatientMutation.mutateAsync({
           doctorId: doctor.id,
           patientId,
         });
       } catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string } }; message?: string };
-        alert(error.response?.data?.message || "Failed to remove patient from list");
+        const e = err as { response?: { data?: { message?: string } }; message?: string };
+        alert(e.response?.data?.message || "Failed to remove patient");
       }
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-4xl rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
         {/* Doctor Header Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border bg-muted/40 p-6 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary font-bold text-lg ring-2 ring-primary/20">
-              {doctor.name.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl font-bold tracking-tight text-foreground">
-                  {doctor.name}
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                  {doctor.specialization}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
-                  {doctor.status || "Active"}
-                </span>
+        <div className="bg-muted/40 p-6 border-b border-border/80">
+          <DialogHeader>
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary font-bold text-lg ring-2 ring-primary/20">
+                {doctor.name.slice(0, 2).toUpperCase()}
               </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5 text-primary" />
-                  {doctor.hospital}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                  {doctor.email}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                  {doctor.phone}
-                </span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
+                    {doctor.name}
+                  </DialogTitle>
+                  <Badge variant="secondary" className="font-semibold text-primary">
+                    {doctor.specialization}
+                  </Badge>
+                  <Badge variant="outline" className="text-muted-foreground">
+                    {doctor.status || "Active"}
+                  </Badge>
+                </div>
+                <DialogDescription className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    {doctor.hospital}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    {doctor.email}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                    {doctor.phone}
+                  </span>
+                </DialogDescription>
               </div>
             </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors self-start sm:self-center"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          </DialogHeader>
         </div>
 
         {/* Patients Section Header & Actions */}
-        <div className="p-6 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-background">
+        <div className="p-4 sm:p-6 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm sm:text-base font-bold text-foreground">
                 Corresponding Patients
               </h3>
-              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold text-xs">
+              <Badge variant="secondary" className="font-semibold text-xs">
                 {patients.length} assigned
-              </span>
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Patients currently under active care of this physician
@@ -167,24 +174,25 @@ export function DoctorDetailModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative w-48 sm:w-60">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-              <input
+            <div className="relative w-44 sm:w-56">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10" />
+              <Input
                 type="text"
                 placeholder="Search assigned patients..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-full rounded-lg border border-input bg-card pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                className="pl-8 h-8 text-xs"
               />
             </div>
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={() => setIsAddingPatient(!isAddingPatient)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors shrink-0"
+              className="gap-1.5 shrink-0"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add Patient</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -192,19 +200,21 @@ export function DoctorDetailModal({
         {isAddingPatient && (
           <form
             onSubmit={handleAddPatientSubmit}
-            className="p-4 bg-muted/40 border-b border-border/80 flex flex-col gap-3 animate-in fade-in duration-100"
+            className="p-4 bg-muted/30 border-b border-border/80 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">
                 Add New Patient to {doctor.name}&apos;s List
               </span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setIsAddingPatient(false)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
 
             {formError && (
@@ -215,13 +225,13 @@ export function DoctorDetailModal({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
+              <Input
                 type="text"
                 placeholder="Patient Full Name *"
                 value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
                 required
-                className="h-8 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:border-primary focus:outline-none"
+                className="h-8 text-xs"
               />
               <select
                 value={patientCondition}
@@ -234,27 +244,27 @@ export function DoctorDetailModal({
                 <option value="Critical">Critical</option>
               </select>
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   type="tel"
                   placeholder="Phone (optional)"
                   value={patientPhone}
                   onChange={(e) => setPatientPhone(e.target.value)}
-                  className="h-8 flex-1 px-3 rounded-lg border border-input bg-background text-xs text-foreground focus:border-primary focus:outline-none"
+                  className="h-8 flex-1 text-xs"
                 />
-                <button
+                <Button
                   type="submit"
+                  size="sm"
                   disabled={addPatientMutation.isPending}
-                  className="h-8 px-4 rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                 >
                   {addPatientMutation.isPending ? "Adding..." : "Confirm"}
-                </button>
+                </Button>
               </div>
             </div>
           </form>
         )}
 
         {/* Patients Table */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -265,36 +275,38 @@ export function DoctorDetailModal({
               <p className="text-xs font-medium">
                 No patients assigned to this doctor yet.
               </p>
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
                 onClick={() => setIsAddingPatient(true)}
-                className="mt-3 text-xs font-semibold text-primary hover:underline"
+                className="mt-2 text-xs"
               >
                 + Add the first patient
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-border/80">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-border bg-muted/40 text-muted-foreground uppercase tracking-wider text-[11px] font-semibold">
-                  <tr>
-                    <th className="py-2.5 px-3">Patient Name</th>
-                    <th className="py-2.5 px-3">Condition Status</th>
-                    <th className="py-2.5 px-3">Assigned Date</th>
-                    <th className="py-2.5 px-3">Contact</th>
-                    <th className="py-2.5 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/40 uppercase tracking-wider text-[11px] font-semibold text-muted-foreground">
+                    <TableHead className="py-2.5 px-3">Patient Name</TableHead>
+                    <TableHead className="py-2.5 px-3">Condition Status</TableHead>
+                    <TableHead className="py-2.5 px-3">Assigned Date</TableHead>
+                    <TableHead className="py-2.5 px-3">Contact</TableHead>
+                    <TableHead className="py-2.5 px-3 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredPatients.map((patient) => (
-                    <tr
+                    <TableRow
                       key={patient.id}
                       className="hover:bg-muted/30 transition-colors"
                     >
-                      <td className="py-2.5 px-3 font-semibold text-foreground">
+                      <TableCell className="py-2.5 px-3 font-semibold text-foreground">
                         {patient.name}
-                      </td>
-                      <td className="py-2.5 px-3">
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3">
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold border",
@@ -304,35 +316,37 @@ export function DoctorDetailModal({
                         >
                           {patient.condition}
                         </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-muted-foreground">
                         {patient.assignedDate}
-                      </td>
-                      <td className="py-2.5 px-3 text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-muted-foreground">
                         {patient.phone || "—"}
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <button
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-right">
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="xs"
                           onClick={() =>
                             handleRemovePatient(patient.id, patient.name)
                           }
                           disabled={removePatientMutation.isPending}
-                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                          className="gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           title="Remove patient from doctor's list"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           <span>Remove</span>
-                        </button>
-                      </td>
-                    </tr>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

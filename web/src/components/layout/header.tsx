@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { Search, Bell, Menu } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleSidebar } from "@/store/slices/ui-slice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const ROUTE_TITLES: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": {
@@ -35,14 +38,16 @@ export function Header() {
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/90 px-4 sm:px-6 backdrop-blur-md">
       {/* Left: Mobile trigger & Page Title */}
       <div className="flex items-center gap-3">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => dispatch(toggleSidebar())}
-          className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+          className="lg:hidden text-muted-foreground hover:text-foreground"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
-        </button>
+        </Button>
 
         <div className="flex flex-col">
           <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
@@ -58,29 +63,33 @@ export function Header() {
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Quick Search Input */}
         <div className="relative hidden md:block w-64 lg:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+          <Input
             type="text"
             placeholder="Search doctors, patients... (⌘K)"
-            className="h-9 w-full rounded-lg border border-input bg-muted/50 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-background focus:outline-none transition-colors"
+            className="pl-9 h-9 text-xs bg-muted/50 focus:bg-background"
           />
         </div>
 
         {/* Notifications Button */}
-        <button
+        <Button
           type="button"
-          className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground hover:text-foreground"
           aria-label="View notifications"
         >
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
-        </button>
+        </Button>
 
         {/* User Avatar */}
         <div className="flex items-center gap-2 pl-2 border-l border-border">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-xs ring-1 ring-primary/20">
-            {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
-          </div>
+          <Avatar className="h-8 w-8 ring-1 ring-primary/20">
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : "AD"}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </header>

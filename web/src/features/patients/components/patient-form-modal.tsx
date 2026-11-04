@@ -3,11 +3,22 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, UserPlus, Phone, User, Activity, Stethoscope, AlertCircle } from "lucide-react";
+import { UserPlus, Phone, User, Activity, Stethoscope, AlertCircle } from "lucide-react";
 import { patientSchema, PatientFormData } from "../schemas/patient-schema";
 import { Patient } from "../types";
 import { useCreatePatient, useUpdatePatient } from "../hooks/use-patients";
 import { useDoctors } from "@/features/doctors/hooks/use-doctors";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface PatientFormModalProps {
   isOpen: boolean;
@@ -66,63 +77,48 @@ export function PatientFormModal({
     }
   }, [patientToEdit, reset, isOpen]);
 
-  if (!isOpen) return null;
-
   const onSubmit = async (data: PatientFormData) => {
     setFormError(null);
-
-    // Format empty doctor string as null
-    const payload = {
-      ...data,
-      assignedDoctorId: data.assignedDoctorId ? data.assignedDoctorId : null,
-    };
-
     try {
       if (isEditing && patientToEdit) {
-        await updateMutation.mutateAsync({ id: patientToEdit.id, data: payload });
+        await updateMutation.mutateAsync({
+          id: patientToEdit.id,
+          data,
+        });
       } else {
-        await createMutation.mutateAsync(payload);
+        await createMutation.mutateAsync(data);
       }
       onClose();
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
       setFormError(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to save patient profile. Please verify your inputs."
+        e.response?.data?.message || e.message || "Failed to save patient. Please check required fields."
       );
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-lg rounded-xl border border-border bg-card shadow-xl overflow-hidden flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-lg">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-6 py-4">
+        <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <UserPlus className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-foreground">
+              <DialogTitle className="text-base font-bold">
                 {isEditing ? "Edit Patient Details" : "Register New Patient"}
-              </h2>
-              <p className="text-xs text-muted-foreground">
+              </DialogTitle>
+              <DialogDescription className="text-xs">
                 Enter medical profile and allocate an attending physician
-              </p>
+              </DialogDescription>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {formError && (
             <div className="flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-destructive text-xs">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -132,17 +128,18 @@ export function PatientFormModal({
 
           <div className="space-y-4">
             {/* Full Name */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground">
+            <div className="space-y-1.5">
+              <Label htmlFor="patient-name" className="text-xs font-semibold">
                 Patient Full Name *
-              </label>
+              </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
+                  id="patient-name"
                   type="text"
                   placeholder="e.g. Katherine Hawthorne"
                   {...register("name")}
-                  className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="pl-9 text-xs"
                 />
               </div>
               {errors.name && (
@@ -151,17 +148,18 @@ export function PatientFormModal({
             </div>
 
             {/* Phone Number */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground">
+            <div className="space-y-1.5">
+              <Label htmlFor="patient-phone" className="text-xs font-semibold">
                 Contact Phone Number *
-              </label>
+              </Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
+                  id="patient-phone"
                   type="tel"
                   placeholder="+1 (555) 000-0000"
                   {...register("phone")}
-                  className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="pl-9 text-xs"
                 />
               </div>
               {errors.phone && (
@@ -171,15 +169,16 @@ export function PatientFormModal({
 
             <div className="grid grid-cols-2 gap-3">
               {/* Medical Condition */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">
+              <div className="space-y-1.5">
+                <Label htmlFor="patient-condition" className="text-xs font-semibold">
                   Medical Condition *
-                </label>
+                </Label>
                 <div className="relative">
-                  <Activity className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <Activity className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                   <select
+                    id="patient-condition"
                     {...register("condition")}
-                    className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                    className="h-8 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                   >
                     <option value="Stable">Stable</option>
                     <option value="Under Treatment">Under Treatment</option>
@@ -195,13 +194,14 @@ export function PatientFormModal({
               </div>
 
               {/* Record Status */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">
+              <div className="space-y-1.5">
+                <Label htmlFor="patient-status" className="text-xs font-semibold">
                   Record Status
-                </label>
+                </Label>
                 <select
+                  id="patient-status"
                   {...register("status")}
-                  className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                  className="h-8 w-full rounded-lg border border-input bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
@@ -211,15 +211,16 @@ export function PatientFormModal({
             </div>
 
             {/* Assigned Doctor */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground">
+            <div className="space-y-1.5">
+              <Label htmlFor="patient-doc" className="text-xs font-semibold">
                 Assigned Attending Doctor
-              </label>
+              </Label>
               <div className="relative">
-                <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Stethoscope className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                 <select
+                  id="patient-doc"
                   {...register("assignedDoctorId")}
-                  className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                  className="h-8 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
                   <option value="">-- No doctor assigned (Unassigned) --</option>
                   {doctors.map((d) => (
@@ -233,27 +234,29 @@ export function PatientFormModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/80">
-            <button
+          <DialogFooter className="pt-2">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={onClose}
-              className="h-9 px-4 rounded-lg border border-input bg-card text-xs font-semibold text-foreground hover:bg-muted transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              size="sm"
               disabled={isSubmitting || createMutation.isPending || updateMutation.isPending}
-              className="h-9 px-5 rounded-lg bg-primary text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+              className="gap-1.5"
             >
               {(isSubmitting || createMutation.isPending || updateMutation.isPending) && (
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
               )}
               <span>{isEditing ? "Save Patient" : "Register Patient"}</span>
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
