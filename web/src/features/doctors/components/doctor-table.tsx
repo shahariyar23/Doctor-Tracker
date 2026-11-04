@@ -178,7 +178,11 @@ export function DoctorTable({
                 </TableRow>
               ) : (
                 doctors.map((doctor) => (
-                  <TableRow key={doctor.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={doctor.id}
+                    onClick={() => onViewPatients(doctor)}
+                    className="hover:bg-muted/30 transition-colors cursor-pointer"
+                  >
                     {/* Doctor Details */}
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -186,12 +190,9 @@ export function DoctorTable({
                           {doctor.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
-                          <Link
-                            href={`/doctors/${doctor.id}`}
-                            className="font-semibold text-foreground hover:text-primary hover:underline transition-colors text-xs"
-                          >
+                          <span className="font-semibold text-foreground hover:text-primary transition-colors text-xs">
                             {doctor.name}
-                          </Link>
+                          </span>
                           <span className="text-[11px] text-muted-foreground">
                             ID: {doctor.id.slice(0, 8)}...
                           </span>
