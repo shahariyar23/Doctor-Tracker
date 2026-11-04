@@ -213,8 +213,8 @@ export function PatientsView() {
       {/* Header & Primary Action Bar matching the design */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Patient Directory & Management
             </h1>
             <Badge
@@ -229,13 +229,13 @@ export function PatientsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
+            className="flex-1 sm:flex-initial justify-center gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
           >
             <Download className="h-4 w-4 text-muted-foreground" />
             <span>Export CSV</span>
@@ -244,7 +244,7 @@ export function PatientsView() {
             href="/patients/new"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+              "flex-1 sm:flex-initial justify-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
             )}
           >
             <UserPlus className="h-4 w-4" />

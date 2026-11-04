@@ -99,7 +99,7 @@ export function PatientFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <DialogHeader>
           <div className="flex items-center gap-3">

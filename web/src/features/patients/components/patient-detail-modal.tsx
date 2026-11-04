@@ -380,19 +380,19 @@ export function PatientDetailModal({
         </div>
 
         {/* Modal Bottom Footer */}
-        <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Shield className="w-4 h-4 text-blue-600" />
+        <div className="px-4 sm:px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-slate-500 text-center sm:text-left">
+            <Shield className="w-4 h-4 text-blue-600 shrink-0" />
             <span>Encrypted clinical chart compliant with Doctor Tracker specification.</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsReassigning(!isReassigning)}
-              className="gap-1.5 h-9 text-xs font-semibold"
+              className="flex-1 sm:flex-initial justify-center gap-1.5 h-9 text-xs font-semibold"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span>Reassign Doctor</span>
@@ -403,7 +403,7 @@ export function PatientDetailModal({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-9 text-xs font-semibold hover:bg-slate-200"
+              className="flex-1 sm:flex-initial justify-center h-9 text-xs font-semibold hover:bg-slate-200"
             >
               Close
             </Button>

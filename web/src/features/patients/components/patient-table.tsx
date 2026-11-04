@@ -207,7 +207,7 @@ export function PatientTable({
               <select
                 value={selectedCondition}
                 onChange={(e) => onConditionChange(e.target.value)}
-                className="h-10 rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 {CONDITION_OPTIONS.map((c) => (
                   <option key={c} value={c === "All Conditions" ? "" : c}>
@@ -220,7 +220,7 @@ export function PatientTable({
               <select
                 value={selectedStatus}
                 onChange={(e) => onStatusChange && onStatusChange(e.target.value)}
-                className="h-10 rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 <option value="">All Statuses</option>
                 <option value="Active">Active</option>
@@ -232,7 +232,7 @@ export function PatientTable({
               <select
                 value={selectedWard}
                 onChange={(e) => setSelectedWard(e.target.value)}
-                className="h-10 rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                className="h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 {WARD_OPTIONS.map((ward) => (
                   <option key={ward} value={ward}>
@@ -251,11 +251,11 @@ export function PatientTable({
                 title="Filter by Admission Date Range"
               >
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="hidden sm:inline">Dates</span>
+                <span className="inline">Dates</span>
               </Button>
 
               {/* List / Grid Toggle */}
-              <div className="flex items-center rounded-xl border border-border bg-muted/40 p-1">
+              <div className="flex items-center rounded-xl border border-border bg-muted/40 p-1 ml-auto sm:ml-0">
                 <Button
                   type="button"
                   variant={viewMode === "list" ? "default" : "ghost"}
@@ -282,14 +282,14 @@ export function PatientTable({
 
           {/* Expandable Date-wise Filter */}
           {showDatePicker && (
-            <div className="flex items-center gap-2 pt-2 border-t border-border/50 text-xs">
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50 text-xs">
               <span className="text-muted-foreground font-medium">Admission Range:</span>
               <Input
                 type="date"
                 title="Start Date"
                 value={startDate}
                 onChange={(e) => onStartDateChange(e.target.value)}
-                className="h-8 w-36 px-2 text-xs"
+                className="h-8 w-32 sm:w-36 px-2 text-xs"
               />
               <span className="text-muted-foreground">to</span>
               <Input
@@ -297,7 +297,7 @@ export function PatientTable({
                 title="End Date"
                 value={endDate}
                 onChange={(e) => onEndDateChange(e.target.value)}
-                className="h-8 w-36 px-2 text-xs"
+                className="h-8 w-32 sm:w-36 px-2 text-xs"
               />
               {(startDate || endDate) && (
                 <Button
@@ -696,14 +696,14 @@ export function PatientTable({
           </div>
 
           {/* Pagination Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-5 py-3 bg-muted/20 text-xs text-muted-foreground">
-            <span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-4 sm:px-5 py-3 bg-muted/20 text-xs text-muted-foreground">
+            <span className="order-2 sm:order-1 text-center sm:text-left">
               Showing page <strong className="text-foreground">{currentPage}</strong>{" "}
               of <strong className="text-foreground">{Math.max(totalPages, 1)}</strong>{" "}
               ({totalPatients} total patients)
             </span>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
               <Button
                 type="button"
                 variant="outline"

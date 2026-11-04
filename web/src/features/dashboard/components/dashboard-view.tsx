@@ -18,6 +18,7 @@ import { RegistrationTrendsChart } from "./registration-trends-chart";
 import { WorkloadChart } from "./workload-chart";
 import { ConditionDonutChart } from "./condition-donut-chart";
 import { RecentPatientsTable } from "./recent-patients-table";
+import { MobileDashboardSection } from "./mobile-dashboard-section";
 import { useDashboardData } from "../hooks/use-dashboard";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -89,8 +90,13 @@ export function DashboardView() {
       : 0);
 
   return (
-    <div className="space-y-6">
-      {/* Quick Action Header Bar */}
+    <>
+      {/* Mobile-optimized Dashboard View */}
+      <MobileDashboardSection data={data} />
+
+      {/* Desktop / Tablet Dashboard View */}
+      <div className="hidden md:block space-y-6">
+        {/* Quick Action Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-primary/10 text-primary mb-1">
@@ -108,21 +114,21 @@ export function DashboardView() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/patients"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 flex-1 sm:flex-initial justify-center")}
           >
             <Eye className="h-4 w-4 text-muted-foreground" />
             <span>View All Patients</span>
           </Link>
           <Link
             href="/doctors/new"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 flex-1 sm:flex-initial justify-center")}
           >
             <UserPlus className="h-4 w-4 text-primary" />
             <span>Add Doctor</span>
           </Link>
           <Link
             href="/patients/new"
-            className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
+            className={cn(buttonVariants({ size: "sm" }), "gap-1.5 w-full sm:w-auto justify-center")}
           >
             <PlusCircle className="h-4 w-4" />
             <span>Add Patient</span>
@@ -183,9 +189,10 @@ export function DashboardView() {
         />
       </div>
 
-      {/* Recent Activity Table */}
-      <RecentPatientsTable patients={data?.recentPatients || []} />
-    </div>
+        {/* Recent Activity Table */}
+        <RecentPatientsTable patients={data?.recentPatients || []} />
+      </div>
+    </>
   );
 }
 

@@ -4,6 +4,7 @@ import React, { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 import { useAppSelector } from "@/store";
 import { cn } from "@/lib/utils";
 
@@ -56,9 +57,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <Header />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto pb-20 lg:pb-8">
           {children}
         </main>
+        <MobileBottomNav />
       </div>
     </div>
   );

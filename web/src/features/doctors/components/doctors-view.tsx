@@ -24,6 +24,7 @@ import {
 import { DoctorTable } from "./doctor-table";
 import { DoctorFormModal } from "./doctor-form-modal";
 import { DoctorDetailModal } from "./doctor-detail-modal";
+import { MobileDoctorsView } from "./mobile-doctors-view";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -192,12 +193,23 @@ export function DoctorsView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header & Primary Action Bar matching the design */}
+    <>
+      {/* Mobile-Optimized Doctors Directory */}
+      <MobileDoctorsView
+        doctors={data?.doctors || []}
+        stats={stats}
+        onEditDoctor={handleEdit}
+        onDeleteDoctor={handleDelete}
+        onViewPatients={setSelectedDoctorForPatients}
+      />
+
+      {/* Desktop / Tablet Doctors Directory */}
+      <div className="hidden md:block space-y-6">
+        {/* Header & Primary Action Bar matching the design */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Doctor Directory & Management
             </h1>
             <Badge
@@ -212,13 +224,13 @@ export function DoctorsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
+            className="flex-1 sm:flex-initial justify-center gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
           >
             <Download className="h-4 w-4 text-muted-foreground" />
             <span>Export CSV</span>
@@ -227,7 +239,7 @@ export function DoctorsView() {
             href="/doctors/new"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+              "flex-1 sm:flex-initial justify-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
             )}
           >
             <UserPlus className="h-4 w-4" />
@@ -400,12 +412,13 @@ export function DoctorsView() {
         doctorToEdit={doctorToEdit}
       />
 
-      {/* Doctor Associated Patients Modal (PDF §2.2) */}
-      <DoctorDetailModal
-        doctor={selectedDoctorForPatients}
-        isOpen={!!selectedDoctorForPatients}
-        onClose={() => setSelectedDoctorForPatients(null)}
-      />
-    </div>
+        {/* Doctor Associated Patients Modal (PDF §2.2) */}
+        <DoctorDetailModal
+          doctor={selectedDoctorForPatients}
+          isOpen={!!selectedDoctorForPatients}
+          onClose={() => setSelectedDoctorForPatients(null)}
+        />
+      </div>
+    </>
   );
 }

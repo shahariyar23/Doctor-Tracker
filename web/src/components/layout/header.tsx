@@ -4,7 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import { Search, Bell, Menu } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { toggleSidebar } from "@/store/slices/ui-slice";
+import { toggleMobileSidebar } from "@/store/slices/ui-slice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -49,25 +49,25 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/90 px-4 sm:px-6 backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/90 px-3 sm:px-6 backdrop-blur-md">
       {/* Left: Mobile trigger & Page Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => dispatch(toggleSidebar())}
-          className="lg:hidden text-muted-foreground hover:text-foreground"
+          onClick={() => dispatch(toggleMobileSidebar())}
+          className="lg:hidden shrink-0 text-muted-foreground hover:text-foreground"
           aria-label="Toggle navigation menu"
         >
           <Menu className="h-5 w-5" />
         </Button>
 
-        <div className="flex flex-col">
-          <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+        <div className="flex flex-col min-w-0">
+          <h1 className="text-sm sm:text-lg font-bold tracking-tight text-foreground truncate">
             {routeInfo.title}
           </h1>
-          <p className="hidden text-xs text-muted-foreground sm:block">
+          <p className="hidden text-xs text-muted-foreground sm:block truncate">
             {routeInfo.subtitle}
           </p>
         </div>

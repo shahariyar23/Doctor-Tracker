@@ -753,22 +753,22 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
       </div>
 
       {/* View Bottom Footer */}
-      <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <Info className="w-4 h-4 text-slate-400" />
+      <div className="px-4 sm:px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2 text-xs text-slate-500 text-center sm:text-left">
+          <Info className="w-4 h-4 text-slate-400 shrink-0" />
           <span>Bulk selection transfers available via checkbox selection.</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="gap-1.5 h-9 text-xs font-semibold"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-9 text-xs font-semibold"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export Patient List</span>
+            <span>Export Patients</span>
           </Button>
 
           <Button
@@ -776,15 +776,15 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             size="sm"
             disabled={selectedPatientIds.length === 0}
             onClick={handleBulkTransfer}
-            className="gap-1.5 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
           >
             <ArrowRightLeft className="w-3.5 h-3.5" />
-            <span>Transfer Selected ({selectedPatientIds.length})</span>
+            <span>Transfer ({selectedPatientIds.length})</span>
           </Button>
 
           <Link
             href="/doctors"
-            className="h-9 px-4 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-800 text-xs font-semibold flex items-center justify-center transition-colors"
+            className="w-full sm:w-auto h-9 px-4 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-800 text-xs font-semibold flex items-center justify-center transition-colors"
           >
             Back to Doctors
           </Link>
