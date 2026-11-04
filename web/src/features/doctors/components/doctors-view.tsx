@@ -24,7 +24,6 @@ import {
 import { DoctorTable } from "./doctor-table";
 import { DoctorFormModal } from "./doctor-form-modal";
 import { DoctorDetailModal } from "./doctor-detail-modal";
-import { MobileDoctorsView } from "./mobile-doctors-view";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -114,17 +113,6 @@ export function DoctorsView() {
     }
   };
 
-  // Statistics from API or defaults matching the design
-  const stats: DoctorStats = data?.stats || {
-    totalDoctors: data?.total || 148,
-    activeOnDuty: 136,
-    availabilityRate: 91.9,
-    avgCaseload: 25.1,
-    atCapacity: 12,
-    onLeave: 12,
-    acceptingPatients: 94,
-  };
-
   const handleEdit = (doctor: Doctor) => {
     setDoctorToEdit(doctor);
     setIsFormModalOpen(true);
@@ -133,40 +121,53 @@ export function DoctorsView() {
   const handleDelete = async (doctor: Doctor) => {
     if (
       confirm(
-        `Are you sure you want to delete ${doctor.name}? This will remove the doctor and deallocate associated patients.`
+        `Are you sure you want to remove Dr. ${doctor.name}? This will affect their caseload.`
       )
     ) {
       try {
         await deleteMutation.mutateAsync(doctor.id);
-      } catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string } }; message?: string };
-        alert(error.response?.data?.message || "Failed to delete doctor.");
+      } catch {
+        alert("Failed to delete doctor.");
       }
     }
   };
 
-  const handleExportCsv = () => {
-    const doctors = data?.doctors || [];
-    if (doctors.length === 0) {
-      alert("No doctors to export.");
-      return;
-    }
+  // Derive Doctor Directory Stats
+  const doctorsList = data?.doctors || [];
+  const activeCount = doctorsList.filter((d) => d.status === "Active" || !d.status).length;
+  const atCapCount = doctorsList.filter((d) => {
+    const current = d.patientCount || 0;
+    const max = d.maxCapacity || 35;
+    return (current / max) >= 0.9;
+  }).length;
+  const totalPatientsServed = doctorsList.reduce((acc, d) => acc + (d.patientCount || 0), 0);
 
+  const stats: DoctorStats = {
+    totalDoctors: data?.total || doctorsList.length,
+    activeOnDuty: activeCount,
+    availabilityRate: doctorsList.length > 0 ? Math.round((activeCount / doctorsList.length) * 100) : 0,
+    avgCaseload: doctorsList.length > 0 ? Math.round(totalPatientsServed / doctorsList.length) : 0,
+    atCapacity: atCapCount,
+    onLeave: doctorsList.filter((d) => d.status === "On Leave").length,
+    acceptingPatients: doctorsList.filter((d) => d.status === "Available").length,
+  };
+
+  const handleExportCsv = () => {
+    if (!doctorsList.length) return;
     const headers = [
-      "ID",
-      "Code",
+      "Doctor ID",
       "Name",
-      "Specialization",
+      "Specialty",
       "Hospital",
       "Phone",
       "Email",
       "Status",
       "Shift",
-      "Patients",
-      "MaxCapacity",
+      "Patient Count",
+      "Max Capacity",
     ];
-    const rows = doctors.map((d, index) => [
-      d.id,
+
+    const rows = doctorsList.map((d, index) => [
       d.code || `#DOC-${1042 + index}`,
       `"${d.name}"`,
       `"${d.specialization}"`,
@@ -193,20 +194,9 @@ export function DoctorsView() {
   };
 
   return (
-    <>
-      {/* Mobile-Optimized Doctors Directory */}
-      <MobileDoctorsView
-        doctors={data?.doctors || []}
-        stats={stats}
-        onEditDoctor={handleEdit}
-        onDeleteDoctor={handleDelete}
-        onViewPatients={setSelectedDoctorForPatients}
-      />
-
-      {/* Desktop / Tablet Doctors Directory */}
-      <div className="hidden md:block space-y-6">
-        {/* Header & Primary Action Bar matching the design */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Header & Primary Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
@@ -224,124 +214,134 @@ export function DoctorsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="flex-1 sm:flex-initial justify-center gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
           >
-            <Download className="h-4 w-4 text-muted-foreground" />
+            <Download className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Export CSV</span>
           </Button>
           <Link
             href="/doctors/new"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "flex-1 sm:flex-initial justify-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+              "flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
             )}
           >
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-3.5 w-3.5" />
             <span>Add New Doctor</span>
           </Link>
         </div>
       </div>
 
-      {/* 4 Metric KPI Cards (Matching the design image) */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: TOTAL DOCTORS */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                TOTAL DOCTORS
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.totalDoctors}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:ring-blue-900/40">
-              <Stethoscope className="h-5 w-5" />
+      {/* Top 4 Stat Indicator Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {/* Total Doctors */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Total Doctors
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40">
+              <Stethoscope className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-600">
-            <TrendingUp className="h-3.5 w-3.5" />
-            <span>+4 this month</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.totalDoctors}
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center">
+              <TrendingUp className="h-3 w-3 mr-0.5" /> Active
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Registered medical staff
+          </p>
         </Card>
 
-        {/* Card 2: ACTIVE ON DUTY */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                ACTIVE ON DUTY
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.activeOnDuty}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 ring-1 ring-teal-100 dark:bg-teal-950/60 dark:text-teal-400 dark:ring-teal-900/40">
-              <CheckCircle2 className="h-5 w-5" />
+        {/* Active on Shift */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              On Duty
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40">
+              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-teal-700 dark:text-teal-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal-600" />
-            <span>{stats.availabilityRate}% availability rate</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.activeOnDuty}
+            </span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
+              ({stats.totalDoctors > 0 ? Math.round((stats.activeOnDuty / stats.totalDoctors) * 100) : 0}%)
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Available for consults
+          </p>
         </Card>
 
-        {/* Card 3: AVG. CASELOAD */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                AVG. CASELOAD
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.avgCaseload} Patients
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:ring-blue-900/40">
-              <Users className="h-5 w-5" />
+        {/* Patients Under Care */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Avg Caseload
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40">
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 text-xs text-muted-foreground">
-            Per active physician
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.avgCaseload}
+            </span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
+              pts/doc
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Active patient caseloads
+          </p>
         </Card>
 
-        {/* Card 4: AT CAPACITY */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                AT CAPACITY
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-red-600">
-                {stats.atCapacity} Doctors
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-100 dark:bg-red-950/60 dark:text-red-400 dark:ring-red-900/40">
-              <AlertTriangle className="h-5 w-5" />
+        {/* At Capacity Physicians */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Near Capacity
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40">
+              <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 text-xs font-semibold text-red-600">
-            Needs caseload rebalancing
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.atCapacity}
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold text-amber-600">
+              &gt;90% load
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Physicians requiring relief
+          </p>
         </Card>
       </div>
 
-      {/* Error state */}
+      {/* Network Error Notification Banner */}
       {isError && (
-        <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive text-xs">
+        <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/10 p-3 sm:p-4 text-xs text-destructive">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>
               {error instanceof Error
                 ? error.message
-                : "Failed to connect to the doctor management service."}
+                : "Failed to connect to the physician database."}
             </span>
           </div>
           <Button
@@ -349,7 +349,7 @@ export function DoctorsView() {
             variant="ghost"
             size="xs"
             onClick={() => refetch()}
-            className="font-semibold underline flex items-center gap-1 text-destructive hover:bg-destructive/10"
+            className="font-semibold underline flex items-center gap-1 text-destructive hover:bg-destructive/10 shrink-0"
           >
             <RefreshCw className="h-3 w-3" /> Retry
           </Button>
@@ -412,13 +412,12 @@ export function DoctorsView() {
         doctorToEdit={doctorToEdit}
       />
 
-        {/* Doctor Associated Patients Modal (PDF §2.2) */}
-        <DoctorDetailModal
-          doctor={selectedDoctorForPatients}
-          isOpen={!!selectedDoctorForPatients}
-          onClose={() => setSelectedDoctorForPatients(null)}
-        />
-      </div>
-    </>
+      {/* Doctor Associated Patients Modal (PDF §2.2) */}
+      <DoctorDetailModal
+        doctor={selectedDoctorForPatients}
+        isOpen={!!selectedDoctorForPatients}
+        onClose={() => setSelectedDoctorForPatients(null)}
+      />
+    </div>
   );
 }

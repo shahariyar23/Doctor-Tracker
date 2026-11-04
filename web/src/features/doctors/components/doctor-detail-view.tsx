@@ -16,7 +16,6 @@ import {
   AlertCircle,
   Settings2,
   ArrowRightLeft,
-  ArrowLeft,
 } from "lucide-react";
 import {
   useDoctor,
@@ -31,7 +30,7 @@ interface DoctorDetailViewProps {
 }
 
 export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
-  const { data: doctor, isLoading, isError, error, refetch } = useDoctor(doctorId);
+  const { data: doctor, isLoading, isError, error } = useDoctor(doctorId);
   const { data: patients = [], isLoading: isLoadingPatients } =
     useDoctorPatients(doctorId);
   const addPatientMutation = useAddPatientToDoctor();
@@ -63,20 +62,17 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
   if (isError || !doctor) {
     return (
-      <div className="p-8 rounded-2xl border border-destructive/20 bg-destructive/5 text-center">
-        <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
-        <h3 className="font-semibold text-foreground text-sm">Doctor profile not found</h3>
-        <p className="text-muted-foreground text-xs mt-1">
-          {error instanceof Error
-            ? error.message
-            : "The requested doctor record does not exist or has been removed."}
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-card rounded-2xl border border-destructive/20">
+        <AlertCircle className="w-10 h-10 text-destructive mb-3" />
+        <h3 className="text-base font-bold text-foreground">Doctor Not Found</h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+          {error instanceof Error ? error.message : "The requested physician profile could not be retrieved."}
         </p>
         <Link
           href="/doctors"
-          className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold text-primary hover:underline"
+          className="mt-4 px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Doctors Directory</span>
+          Return to Doctors
         </Link>
       </div>
     );
@@ -162,7 +158,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
     if (selectedPatientIds.length === 0) return;
     if (
       confirm(
-        `Reassign ${selectedPatientIds.length} selected patients from Dr. ${doctor.name}?`
+        `Reassign ${selectedPatientIds.length} selected patients to another available physician?`
       )
     ) {
       try {
@@ -173,24 +169,27 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
           });
         }
         setSelectedPatientIds([]);
-        refetch();
+        alert("Selected patients successfully unassigned for redistribution.");
       } catch {
-        alert("Some transfers could not be completed.");
+        alert("Failed to unassign some patients.");
       }
     }
   };
 
   const handleExportCsv = () => {
-    if (patients.length === 0) {
-      alert("No patient records to export.");
-      return;
-    }
-    const headers = ["ID", "Name", "Phone", "Condition", "AssignedDate"];
+    if (!patients.length) return;
+    const headers = [
+      "Patient ID",
+      "Name",
+      "Condition",
+      "Phone",
+      "Assigned Date",
+    ];
     const rows = patients.map((p) => [
       p.id,
       `"${p.name}"`,
-      p.phone || "",
       p.condition,
+      `"${p.phone || ''}"`,
       p.assignedDate || "",
     ]);
     const csvContent =
@@ -228,13 +227,13 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
       setNewPatientPhone("");
       setIsAddingPatient(false);
     } catch (err: unknown) {
-      const error = err as {
+      const errorObj = err as {
         response?: { data?: { message?: string } };
         message?: string;
       };
       setAddError(
-        error.response?.data?.message ||
-          error.message ||
+        errorObj.response?.data?.message ||
+          errorObj.message ||
           "Failed to assign patient to doctor."
       );
     }
@@ -251,26 +250,26 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
   };
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200/80 my-4 flex flex-col">
+    <div className="relative w-full max-w-6xl mx-auto bg-card rounded-2xl shadow-xl overflow-hidden border border-border my-2 sm:my-4 flex flex-col">
       {/* View Header */}
-      <div className="px-6 py-5 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-bold text-base flex items-center justify-center shrink-0 ring-2 ring-blue-500/20 shadow-xs">
+      <div className="px-4 sm:px-6 py-4 sm:py-5 bg-muted/40 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-700 font-bold text-sm sm:text-base flex items-center justify-center shrink-0 ring-2 ring-blue-500/20 shadow-xs">
             {getInitials(doctor.name)}
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-xl font-bold text-slate-900 leading-tight">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
                 {doctor.name}
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 text-xs font-semibold">
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200/60 text-xs font-semibold">
                 {doctor.specialization}
               </span>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
                   isNearCapacity
-                    ? "bg-red-50 text-red-700 border border-red-200/60"
-                    : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                    ? "bg-red-50 text-red-700 border border-red-200/60 dark:bg-red-950/40 dark:text-red-400"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400"
                 }`}
               >
                 <span
@@ -282,37 +281,37 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   ? `Near Capacity (${capacityPercent}%)`
                   : `Active (${capacityPercent}%)`}
               </span>
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono text-muted-foreground">
                 #DOC-{doctor.id.slice(0, 4).toUpperCase()}
               </span>
             </div>
 
             {/* Sub-meta details row */}
-            <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 flex-wrap">
-              <span className="flex items-center gap-1.5 text-slate-600">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex items-center gap-2 sm:gap-3 mt-1.5 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-muted-foreground/60" />
                 {doctor.email}
               </span>
-              <span className="text-slate-300">•</span>
-              <span className="flex items-center gap-1.5 text-slate-600 font-mono">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline text-muted-foreground/40">•</span>
+              <span className="flex items-center gap-1 font-mono">
+                <Phone className="w-3.5 h-3.5 text-muted-foreground/60" />
                 {doctor.phone}
               </span>
-              <span className="text-slate-300">•</span>
-              <span className="flex items-center gap-1.5 text-slate-600">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline text-muted-foreground/40">•</span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground/60" />
                 Day Shift ({doctor.hospital})
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex items-center gap-2 self-stretch sm:self-center justify-between sm:justify-end">
           <Button
             type="button"
             size="sm"
             onClick={() => setIsAddingPatient(!isAddingPatient)}
-            className="gap-1.5 h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+            className="gap-1.5 h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs flex-1 sm:flex-initial justify-center"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Assign Patient</span>
@@ -320,7 +319,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
           <Link
             href="/doctors"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ml-1 inline-flex items-center"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors inline-flex items-center"
             title="Back to Doctors"
           >
             <X className="w-5 h-5" />
@@ -329,28 +328,28 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
       </div>
 
       {/* Main Body Content */}
-      <div className="p-6 overflow-y-auto flex flex-col gap-6 flex-1 bg-white">
+      <div className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-5 sm:gap-6 flex-1 bg-card">
         {/* Inline Add Patient Drawer / Form */}
         {isAddingPatient && (
           <form
             onSubmit={handleAddPatientSubmit}
-            className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 flex flex-col gap-3 animate-in fade-in duration-150"
+            className="p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 flex flex-col gap-3 animate-in fade-in duration-150"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+              <span className="text-xs font-bold text-blue-900 dark:text-blue-100 flex items-center gap-1.5">
                 <Plus className="w-4 h-4 text-blue-600" /> Assign New Patient to Dr. {doctor.name}
               </span>
               <button
                 type="button"
                 onClick={() => setIsAddingPatient(false)}
-                className="text-xs text-slate-500 hover:text-slate-800"
+                className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Cancel
               </button>
             </div>
 
             {addError && (
-              <div className="text-xs text-red-600 font-medium">{addError}</div>
+              <div className="text-xs text-destructive font-medium">{addError}</div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -360,14 +359,14 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                 value={newPatientName}
                 onChange={(e) => setNewPatientName(e.target.value)}
                 required
-                className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-9 px-3 bg-background text-xs rounded-lg border border-input focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="tel"
                 placeholder="Phone Number"
                 value={newPatientPhone}
                 onChange={(e) => setNewPatientPhone(e.target.value)}
-                className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-9 px-3 bg-background text-xs rounded-lg border border-input focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <select
                 value={newPatientCondition}
@@ -376,7 +375,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     e.target.value as "Critical" | "Under Treatment" | "Stable" | "Recovering"
                   )
                 }
-                className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-9 px-3 bg-background text-xs rounded-lg border border-input focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="Critical">Critical</option>
                 <option value="Under Treatment">Under Treatment</option>
@@ -398,14 +397,14 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
         )}
 
         {/* Section: Caseload Saturation & Capacity Card */}
-        <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 flex flex-col gap-4">
+        <div className="bg-muted/30 rounded-2xl p-4 sm:p-5 border border-border flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                 Caseload Saturation &amp; Capacity
               </span>
-              <div className="flex items-baseline gap-2.5 mt-0.5">
-                <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              <div className="flex items-baseline gap-2.5 mt-0.5 flex-wrap">
+                <span className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
                   {totalPatientsCount} / {maxLimit} Patients
                 </span>
                 <span
@@ -415,7 +414,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                 >
                   ({capacityPercent}% Assigned)
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   Threshold: {maxLimit} max
                 </span>
               </div>
@@ -423,8 +422,8 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
             <div className="flex items-center gap-2">
               {isAdjustingLimit ? (
-                <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-slate-200">
-                  <span className="text-xs text-slate-500">Max:</span>
+                <div className="flex items-center gap-2 bg-background px-2 py-1 rounded-lg border border-border">
+                  <span className="text-xs text-muted-foreground">Max:</span>
                   <input
                     type="number"
                     value={maxLimit}
@@ -433,7 +432,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     onChange={(e) =>
                       setMaxLimit(Math.max(1, parseInt(e.target.value) || 1))
                     }
-                    className="w-14 h-6 text-xs text-center border rounded font-semibold"
+                    className="w-14 h-6 text-xs text-center border rounded font-semibold bg-background"
                   />
                   <button
                     type="button"
@@ -447,9 +446,9 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => setIsAdjustingLimit(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200/80 shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-background hover:bg-muted text-foreground text-xs font-medium border border-border shadow-xs transition-colors cursor-pointer"
                 >
-                  <Settings2 className="w-3.5 h-3.5 text-slate-500" />
+                  <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>Adjust Max Limit</span>
                 </button>
               )}
@@ -458,7 +457,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
           {/* Capacity Progress Bar */}
           <div className="w-full flex flex-col gap-1.5">
-            <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
+            <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden flex">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
                   capacityPercent >= 85
@@ -470,7 +469,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                 style={{ width: `${capacityPercent}%` }}
               />
             </div>
-            <div className="flex justify-between items-center text-[11px] text-slate-500">
+            <div className="flex justify-between items-center text-[11px] text-muted-foreground flex-wrap gap-1">
               <span>{slotsRemaining} slots remaining before strict overload lock</span>
               <span className={isNearCapacity ? "text-red-600 font-semibold" : ""}>
                 {isNearCapacity ? "Warning threshold reached (>85%)" : "Within normal capacity limit"}
@@ -479,13 +478,13 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
           </div>
 
           {/* 4 Condition Metric Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-1">
             {/* Active Patients */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-              <span className="text-[11px] text-slate-500 font-medium">
+            <div className="bg-card p-3 sm:p-3.5 rounded-xl border border-border flex flex-col shadow-xs">
+              <span className="text-[11px] text-muted-foreground font-medium">
                 Active Patients
               </span>
-              <span className="text-xl font-bold text-slate-900 mt-1">
+              <span className="text-lg sm:text-xl font-bold text-foreground mt-1">
                 {totalPatientsCount}
               </span>
               <span className="text-[11px] text-emerald-600 font-medium mt-0.5">
@@ -494,11 +493,11 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             </div>
 
             {/* Critical Condition */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
+            <div className="bg-card p-3 sm:p-3.5 rounded-xl border border-border flex flex-col shadow-xs">
               <span className="text-[11px] text-red-600 font-medium">
                 Critical Condition
               </span>
-              <span className="text-xl font-bold text-red-600 mt-1">
+              <span className="text-lg sm:text-xl font-bold text-red-600 mt-1">
                 {criticalCount}
               </span>
               <span className="text-[11px] text-red-600/80 font-medium mt-0.5">
@@ -507,27 +506,27 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             </div>
 
             {/* Under Treatment */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-              <span className="text-[11px] text-slate-500 font-medium">
+            <div className="bg-card p-3 sm:p-3.5 rounded-xl border border-border flex flex-col shadow-xs">
+              <span className="text-[11px] text-muted-foreground font-medium">
                 Under Treatment
               </span>
-              <span className="text-xl font-bold text-blue-600 mt-1">
+              <span className="text-lg sm:text-xl font-bold text-blue-600 mt-1">
                 {underTreatmentCount}
               </span>
-              <span className="text-[11px] text-slate-400 font-medium mt-0.5">
+              <span className="text-[11px] text-muted-foreground/70 font-medium mt-0.5">
                 Routine therapy
               </span>
             </div>
 
             {/* Stable / Recovering */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
-              <span className="text-[11px] text-slate-500 font-medium">
+            <div className="bg-card p-3 sm:p-3.5 rounded-xl border border-border flex flex-col shadow-xs">
+              <span className="text-[11px] text-muted-foreground font-medium">
                 Stable / Recovering
               </span>
-              <span className="text-xl font-bold text-emerald-700 mt-1">
+              <span className="text-lg sm:text-xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">
                 {stableRecoveringCount}
               </span>
-              <span className="text-[11px] text-slate-400 font-medium mt-0.5">
+              <span className="text-[11px] text-muted-foreground/70 font-medium mt-0.5">
                 Discharge ready
               </span>
             </div>
@@ -539,17 +538,17 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
           {/* Table Control Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900">
+              <h2 className="text-sm sm:text-base font-bold text-foreground">
                 Assigned Patients
-              </h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 text-xs font-semibold">
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200/60 text-xs font-semibold">
                 {totalPatientsCount} Total
               </span>
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search assigned patients..."
@@ -558,7 +557,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full h-8 pl-8 pr-3 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full h-8 pl-8 pr-3 text-xs bg-muted/40 focus:bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
@@ -568,7 +567,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   setSelectedCondition(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="h-8 px-2.5 bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 focus:outline-none cursor-pointer"
+                className="h-8 px-2.5 bg-card text-foreground text-xs font-medium rounded-lg border border-input focus:outline-none cursor-pointer"
               >
                 <option value="All Conditions">All Conditions</option>
                 <option value="Critical">Critical ({criticalCount})</option>
@@ -579,11 +578,55 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+          {/* Responsive Mobile Card List (< md) */}
+          <div className="block md:hidden divide-y divide-border/60 border border-border rounded-xl p-3 bg-card">
+            {isLoadingPatients ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                Loading assigned patient records...
+              </div>
+            ) : paginatedPatients.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No patients currently assigned to this doctor.
+              </div>
+            ) : (
+              paginatedPatients.map((patient) => {
+                const isSelected = selectedPatientIds.includes(patient.id);
+                return (
+                  <div key={patient.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectPatient(patient.id)}
+                        className="rounded text-blue-600 border-slate-300 focus:ring-0 cursor-pointer shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {patient.name}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {patient.condition} · {patient.phone || "Clinical Record"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeallocate(patient.id, patient.name)}
+                      className="px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-blue-600 font-semibold text-[11px] shrink-0"
+                    >
+                      Reassign
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop / Tablet Table Container (md and above) */}
+          <div className="hidden md:block border border-border rounded-xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider h-9 border-b border-slate-200">
+                <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider h-9 border-b border-border">
                   <tr>
                     <th className="px-4 w-10">
                       <input
@@ -601,16 +644,16 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     <th className="px-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-border/60 text-foreground">
                   {isLoadingPatients ? (
                     <tr>
-                      <td colSpan={7} className="h-32 text-center text-slate-400">
+                      <td colSpan={7} className="h-32 text-center text-muted-foreground">
                         Loading assigned patient records...
                       </td>
                     </tr>
                   ) : paginatedPatients.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="h-32 text-center text-slate-400">
+                      <td colSpan={7} className="h-32 text-center text-muted-foreground">
                         No patients currently assigned to this doctor.
                       </td>
                     </tr>
@@ -620,8 +663,8 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                       return (
                         <tr
                           key={patient.id}
-                          className={`hover:bg-slate-50/80 transition-colors ${
-                            isSelected ? "bg-blue-50/40" : ""
+                          className={`hover:bg-muted/30 transition-colors ${
+                            isSelected ? "bg-blue-50/40 dark:bg-blue-950/20" : ""
                           }`}
                         >
                           <td className="px-4 py-3">
@@ -634,25 +677,25 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-slate-900 leading-tight">
+                              <span className="font-semibold text-foreground leading-tight">
                                 {patient.name}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono mt-0.5">
+                              <span className="text-[11px] text-muted-foreground font-mono mt-0.5">
                                 #PT-{patient.id.slice(0, 5).toUpperCase()}
                               </span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-slate-500">
+                          <td className="px-4 py-3 text-muted-foreground">
                             {patient.phone ? patient.phone : "Clinical Record"}
                           </td>
                           <td className="px-4 py-3">
                             <span
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
                                 patient.condition === "Critical"
-                                  ? "bg-red-50 text-red-700 border-red-200/60"
+                                  ? "bg-red-50 text-red-700 border-red-200/60 dark:bg-red-950/40 dark:text-red-400"
                                   : patient.condition === "Under Treatment"
-                                  ? "bg-blue-50 text-blue-700 border-blue-200/60"
-                                  : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/40 dark:text-blue-300"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400"
                               }`}
                             >
                               <span
@@ -667,7 +710,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                               {patient.condition}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-slate-600">
+                          <td className="px-4 py-3 text-muted-foreground">
                             {patient.assignedDate
                               ? new Date(patient.assignedDate).toLocaleDateString(
                                   "en-US",
@@ -680,7 +723,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                               : "Active"}
                           </td>
                           <td className="px-4 py-3">
-                            <span className="text-slate-600 truncate max-w-[180px] inline-block">
+                            <span className="text-muted-foreground truncate max-w-[180px] inline-block">
                               Routine clinical therapy
                             </span>
                           </td>
@@ -690,7 +733,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                               onClick={() =>
                                 handleDeallocate(patient.id, patient.name)
                               }
-                              className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-blue-600 font-semibold text-[11px] transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-blue-600 font-semibold text-[11px] transition-colors cursor-pointer"
                             >
                               Reassign
                             </button>
@@ -704,7 +747,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             </div>
 
             {/* Table Pagination Footer */}
-            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50/70 border-t border-slate-200 text-xs text-slate-500">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-muted/20 border-t border-border text-xs text-muted-foreground">
               <span>
                 Showing{" "}
                 {filteredPatients.length > 0
@@ -720,7 +763,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 transition-colors cursor-pointer"
+                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -732,7 +775,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                     className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                       currentPage === pg
                         ? "bg-blue-600 text-white"
-                        : "text-slate-700 hover:bg-slate-200"
+                        : "text-foreground hover:bg-muted"
                     }`}
                   >
                     {pg}
@@ -742,7 +785,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="p-1 rounded hover:bg-slate-200 text-slate-600 disabled:opacity-40 transition-colors cursor-pointer"
+                  className="p-1 rounded hover:bg-muted text-foreground disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -753,10 +796,10 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
       </div>
 
       {/* View Bottom Footer */}
-      <div className="px-4 sm:px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2 text-xs text-slate-500 text-center sm:text-left">
-          <Info className="w-4 h-4 text-slate-400 shrink-0" />
-          <span>Bulk selection transfers available via checkbox selection.</span>
+      <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-muted/40 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground text-center sm:text-left">
+          <Info className="w-4 h-4 text-muted-foreground/70 shrink-0" />
+          <span>Caseload allocations and transfers reflect live hospital census.</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -765,7 +808,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="flex-1 sm:flex-initial justify-center gap-1.5 h-9 text-xs font-semibold"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 text-xs font-semibold"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Patients</span>
@@ -776,7 +819,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
             size="sm"
             disabled={selectedPatientIds.length === 0}
             onClick={handleBulkTransfer}
-            className="flex-1 sm:flex-initial justify-center gap-1.5 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
           >
             <ArrowRightLeft className="w-3.5 h-3.5" />
             <span>Transfer ({selectedPatientIds.length})</span>
@@ -784,7 +827,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
           <Link
             href="/doctors"
-            className="w-full sm:w-auto h-9 px-4 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-800 text-xs font-semibold flex items-center justify-center transition-colors"
+            className="w-full sm:w-auto h-8 sm:h-9 px-4 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold flex items-center justify-center transition-colors"
           >
             Back to Doctors
           </Link>

@@ -93,7 +93,7 @@ export function PatientsView() {
     if (selectedPatientIds.length === 0) return;
     if (
       confirm(
-        `Are you sure you want to delete ${selectedPatientIds.length} selected patient records? This action cannot be undone.`
+        `Are you sure you want to delete ${selectedPatientIds.length} selected patient record(s)? This action cannot be undone.`
       )
     ) {
       try {
@@ -120,29 +120,16 @@ export function PatientsView() {
 
   const handleBulkReassign = async (doctorId: string) => {
     if (selectedPatientIds.length === 0) return;
-    const doc = doctors.find((d) => d.id === doctorId);
     try {
       await bulkReassignMutation.mutateAsync({
         patientIds: selectedPatientIds,
-        doctorId: doctorId || null,
-        doctorMeta: doc
-          ? { id: doc.id, name: doc.name, specialization: doc.specialization }
-          : undefined,
+        doctorId,
       });
       setSelectedPatientIds([]);
+      alert("Patients successfully reassigned.");
     } catch {
-      alert("Failed to reassign doctor to selected patients.");
+      alert("Failed to reassign selected patients.");
     }
-  };
-
-  // Statistics matching design system
-  const stats: PatientStats = data?.stats || {
-    totalPatients: data?.total || 248,
-    underTreatment: 112,
-    criticalCare: 18,
-    stable: 84,
-    recovering: 34,
-    unassigned: 6,
   };
 
   const handleEdit = (patient: Patient) => {
@@ -151,41 +138,51 @@ export function PatientsView() {
   };
 
   const handleDelete = async (patient: Patient) => {
-    if (confirm(`Are you sure you want to delete patient record for ${patient.name}?`)) {
+    if (
+      confirm(
+        `Are you sure you want to remove the medical record for ${patient.name}?`
+      )
+    ) {
       try {
         await deleteMutation.mutateAsync(patient.id);
-      } catch (err: unknown) {
-        const errObj = err as { response?: { data?: { message?: string } }; message?: string };
-        alert(errObj.response?.data?.message || "Failed to delete patient record.");
+      } catch {
+        alert("Failed to delete patient.");
       }
     }
   };
 
-  const handleExportCsv = () => {
-    const patients = data?.patients || [];
-    if (patients.length === 0) {
-      alert("No patient records to export.");
-      return;
-    }
+  // Derive Patient Directory Stats
+  const patientsList = data?.patients || [];
+  const stats: PatientStats = {
+    totalPatients: data?.total || patientsList.length,
+    criticalCare: patientsList.filter((p) => p.condition === "Critical").length,
+    underTreatment: patientsList.filter(
+      (p) => p.condition === "Under Treatment"
+    ).length,
+    stable: patientsList.filter((p) => p.condition === "Stable").length,
+    recovering: patientsList.filter((p) => p.condition === "Recovering").length,
+    unassigned: patientsList.filter((p) => !p.assignedDoctorId && !p.assignedDoctor).length,
+  };
 
+  const handleExportCsv = () => {
+    if (!patientsList.length) return;
     const headers = [
-      "ID",
+      "Patient ID",
       "MRN",
       "Name",
-      "Phone",
       "Age",
       "Gender",
       "Condition",
       "Room",
       "Status",
       "Assigned Doctor",
-      "Registered Date",
+      "Admitted Date",
     ];
-    const rows = patients.map((p, index) => [
+
+    const rows = patientsList.map((p, index) => [
       p.id,
-      p.code || `#MRN-${8492 + index}`,
+      p.code || `#MRN-${2045 + index}`,
       `"${p.name}"`,
-      `"${p.phone}"`,
       p.age || "—",
       p.gender || "—",
       p.condition,
@@ -209,9 +206,9 @@ export function PatientsView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header & Primary Action Bar matching the design */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Header & Primary Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
@@ -229,118 +226,128 @@ export function PatientsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="flex-1 sm:flex-initial justify-center gap-2 h-9 px-3.5 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
+            className="flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3 bg-card hover:bg-muted text-xs font-semibold text-foreground shadow-xs border-border/80"
           >
-            <Download className="h-4 w-4 text-muted-foreground" />
+            <Download className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Export CSV</span>
           </Button>
           <Link
             href="/patients/new"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "flex-1 sm:flex-initial justify-center gap-2 h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
+              "flex-1 sm:flex-initial justify-center gap-1.5 h-8 sm:h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
             )}
           >
-            <UserPlus className="h-4 w-4" />
-            <span>Register New Patient</span>
+            <UserPlus className="h-3.5 w-3.5" />
+            <span>Register Patient</span>
           </Link>
         </div>
       </div>
 
-      {/* 4 Metric KPI Cards (Matching Design System) */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: TOTAL PATIENTS */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                TOTAL PATIENTS
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.totalPatients}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/60 dark:text-blue-400 dark:ring-blue-900/40">
-              <Users className="h-5 w-5" />
+      {/* Top 4 Stat Indicator Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {/* Total Patients */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Total Admissions
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40">
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-600">
-            <TrendingUp className="h-3.5 w-3.5" />
-            <span>+12 this week</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.totalPatients}
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center">
+              <TrendingUp className="h-3 w-3 mr-0.5" /> Live
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Active hospital census
+          </p>
         </Card>
 
-        {/* Card 2: UNDER TREATMENT */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                UNDER TREATMENT
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.underTreatment}
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100 dark:bg-amber-950/60 dark:text-amber-400 dark:ring-amber-900/40">
-              <Activity className="h-5 w-5" />
+        {/* Critical Condition */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Critical Care
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40">
+              <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-            <span>45.2% active therapies</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-red-600">
+              {stats.criticalCare}
+            </span>
+            <span className="text-[10px] sm:text-xs text-red-600 font-semibold">
+              Immediate
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            ICU &amp; unstable patients
+          </p>
         </Card>
 
-        {/* Card 3: CRITICAL CARE */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                CRITICAL CARE
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-red-600">
-                {stats.criticalCare} Patients
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-100 dark:bg-red-950/60 dark:text-red-400 dark:ring-red-900/40">
-              <AlertTriangle className="h-5 w-5" />
+        {/* Under Treatment */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Under Treatment
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40">
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 text-xs font-semibold text-red-600">
-            Requires urgent attention
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.underTreatment}
+            </span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">
+              in therapy
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Stable therapeutic care
+          </p>
         </Card>
 
-        {/* Card 4: UNASSIGNED */}
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                UNASSIGNED
-              </span>
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {stats.unassigned} Patients
-              </div>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-100 dark:bg-purple-950/60 dark:text-purple-400 dark:ring-purple-900/40">
-              <Clock className="h-5 w-5" />
+        {/* Unassigned Admissions */}
+        <Card className="p-3.5 sm:p-5 border border-border/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between pb-1 sm:pb-2">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Unassigned
+            </span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40">
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
-          <div className="mt-3 text-xs text-muted-foreground">
-            Awaiting physician allocation
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              {stats.unassigned}
+            </span>
+            <span className="text-[10px] sm:text-xs font-semibold text-amber-600">
+              Awaiting Doctor
+            </span>
           </div>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Requires physician triage
+          </p>
         </Card>
       </div>
 
-      {/* Error state */}
+      {/* Network Error Notification Banner */}
       {isError && (
-        <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive text-xs">
+        <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/10 p-3 sm:p-4 text-xs text-destructive">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>
@@ -354,7 +361,7 @@ export function PatientsView() {
             variant="ghost"
             size="xs"
             onClick={() => refetch()}
-            className="font-semibold underline flex items-center gap-1 text-destructive hover:bg-destructive/10"
+            className="font-semibold underline flex items-center gap-1 text-destructive hover:bg-destructive/10 shrink-0"
           >
             <RefreshCw className="h-3 w-3" /> Retry
           </Button>

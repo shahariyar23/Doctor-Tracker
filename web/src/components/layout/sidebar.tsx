@@ -4,9 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Stethoscope,
-  Users,
   ChevronsLeft,
   ChevronsRight,
   LogOut,
@@ -17,24 +14,7 @@ import { toggleSidebar, setMobileSidebarOpen } from "@/store/slices/ui-slice";
 import { logout } from "@/store/slices/auth-slice";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-const NAV_ITEMS = [
-  {
-    title: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Doctors",
-    href: "/doctors",
-    icon: Stethoscope,
-  },
-  {
-    title: "Patients",
-    href: "/patients",
-    icon: Users,
-  },
-];
+import { NAV_ITEMS } from "./nav-config";
 
 export function Sidebar() {
   const pathname = usePathname();

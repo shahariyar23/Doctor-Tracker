@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleMobileSidebar } from "@/store/slices/ui-slice";
 import { Button } from "@/components/ui/button";
@@ -85,18 +85,6 @@ export function Header() {
             className="pl-9 h-9 text-xs bg-muted/50 focus:bg-background"
           />
         </div>
-
-        {/* Notifications Button */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="relative text-muted-foreground hover:text-foreground"
-          aria-label="View notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
-        </Button>
 
         {/* User Avatar */}
         <div className="flex items-center gap-2 pl-2 border-l border-border">
