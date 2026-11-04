@@ -1,24 +1,35 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { useAppSelector } from "@/store";
 import { cn } from "@/lib/utils";
 
+const emptySubscribe = () => () => {};
+
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
+  const isMounted = useIsMounted();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isMounted && !isLoading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isMounted, isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
+  if (!isMounted || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -52,4 +63,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
