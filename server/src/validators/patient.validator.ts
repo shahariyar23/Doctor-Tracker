@@ -1,0 +1,58 @@
+import { z } from "zod";
+import { objectIdSchema } from "./common.validator.js";
+import { PATIENT_GENDERS } from "../models/patient.model.js";
+
+/**
+ * Zod enum validator for Patient Gender.
+ * Normalizes input using trim and lowercase before enum validation.
+ */
+export const patientGenderEnum = z.preprocess(
+  (val: unknown) => (typeof val === "string" ? val.trim().toLowerCase() : val),
+  z.enum(PATIENT_GENDERS, {
+    message: "Gender must be 'male', 'female', 'other', or 'prefer_not_to_say'",
+  }),
+);
+
+/**
+ * Zod schema for creating a new Patient record.
+ * Enforces required integer age (0–120), normalized gender, and mandatory doctor reference.
+ */
+export const createPatientBodySchema = z.object({
+  name: z
+    .string({ message: "Patient full name is required" })
+    .trim()
+    .min(2, "Patient full name must be at least 2 characters long")
+    .max(100, "Name cannot exceed 100 characters"),
+  condition: z
+    .string({ message: "Patient condition is required" })
+    .trim()
+    .min(2, "Patient condition is required"),
+  assignedDoctorId: objectIdSchema,
+  age: z
+    .number({ message: "Patient age is required and must be a number" })
+    .int("Age must be an integer")
+    .min(0, "Age cannot be negative")
+    .max(120, "Age cannot exceed 120 years"),
+  gender: patientGenderEnum,
+  phone: z
+    .string()
+    .trim()
+    .min(5, "Phone number must be at least 5 characters")
+    .optional()
+    .nullable(),
+});
+
+export type CreatePatientInput = z.infer<typeof createPatientBodySchema>;
+
+/**
+ * Zod schema for updating a Patient record.
+ * Supports partial updates while rejecting completely empty payloads.
+ */
+export const updatePatientBodySchema = createPatientBodySchema
+  .partial()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    "Update payload cannot be empty. At least one field must be provided.",
+  );
+
+export type UpdatePatientInput = z.infer<typeof updatePatientBodySchema>;

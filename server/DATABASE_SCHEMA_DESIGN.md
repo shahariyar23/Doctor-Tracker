@@ -63,22 +63,26 @@ Strictly limited to the 5 fields required by Project Specification §2.2:
 
 ### 2.3 Patient Model (`patients` collection)
 
-Strictly limited to the core requirements of Project Specification §2.3:
+Strictly limited to the approved requirements of Project Specification §2.3 and approved entity fields:
 - Name (required)
 - Condition (required)
 - Assigned Doctor (required reference)
+- Age (required)
+- Gender (required)
 - Phone (optional)
 
 | Field Name | BSON / Mongoose Type | Required | Unique | Indexed | Description & Validation Rules |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `name` | `String` | Yes | No | Yes (Compound) | Trimmed, 2–100 characters. Patient's full name. |
+| `name` | `String` | Yes | No | Yes (Text) | Trimmed, 2–100 characters. Patient's full name. |
 | `condition` | `String` | Yes | No | Yes (Compound) | Trimmed, min 2 characters. Flexible string (e.g. "Critical", "Under Treatment", "Stable", "Recovering") to support condition filtering without hardcoded enum lock-in. |
 | `assignedDoctorId` | `mongoose.Schema.Types.ObjectId` | Yes | No | Yes (Compound) | Mandatory reference to `Doctor` model (`ref: 'Doctor'`). Every patient must belong to a specific doctor upon creation. |
-| `phone` | `String` | No | No | No | Trimmed contact telephone number (optional). |
+| `age` | `Number` | Yes | No | No | Integer only (0–120). Patient's age at the time of registration. |
+| `gender` | `String` | Yes | No | No | Trimmed, lowercase enum: `male`, `female`, `other`, `prefer_not_to_say`. |
+| `phone` | `String` | No | No | Yes (Partial) | Trimmed contact telephone number (optional). Partial index on non-null strings. |
 | `createdAt` | `Date` | Auto | No | Yes | Creation timestamp; indexed for date-wise filtering per PDF §2.3 and dashboard trend analytics. |
 | `updatedAt` | `Date` | Auto | No | No | Auto-generated timestamp via `{ timestamps: true }`. |
 
-*Note: Unsupported optional fields (`code`, `notes`, `age`, `gender`, wards, medical history) have been removed.*
+*Note: Unsupported optional fields (`code`, `notes`, wards, medical history) remain removed.*
 
 ---
 

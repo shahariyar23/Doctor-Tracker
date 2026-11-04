@@ -414,21 +414,20 @@ All paginated collection endpoints support the following uniform query parameter
   ```json
   {
     "name": "Elena Rostova",
-    "phone": "+1 (555) 111-2233",
     "condition": "Critical",
-    "status": "Active",
-    "assignedDoctorId": "doc-1",
+    "assignedDoctorId": "507f1f77bcf86cd799439011",
     "age": 42,
-    "gender": "Female",
-    "roomNumber": "ICU-04"
+    "gender": "female",
+    "phone": "+1 (555) 111-2233"
   }
   ```
 - **Validation Rules**:
   - `name`: Required, 2–100 characters.
-  - `phone`: Required, valid contact format.
-  - `condition`: Required, one of `["Critical", "Under Treatment", "Stable", "Recovering"]`.
-  - `status`: Required, one of `["Active", "Inactive", "Archived"]`.
-  - `assignedDoctorId`: Optional or null.
+  - `condition`: Required, minimum 2 characters.
+  - `assignedDoctorId`: Required, valid 24-character hex MongoDB ObjectId referencing Doctor.
+  - `age`: Required integer, 0 to 120.
+  - `gender`: Required, one of `["male", "female", "other", "prefer_not_to_say"]` (case-insensitive normalized to lowercase).
+  - `phone`: Optional string, minimum 5 characters.
 - **Success Response (`201 Created`)**:
   ```json
   {
@@ -437,10 +436,11 @@ All paginated collection endpoints support the following uniform query parameter
     "data": {
       "id": "pt-8492",
       "name": "Elena Rostova",
-      "phone": "+1 (555) 111-2233",
       "condition": "Critical",
-      "status": "Active",
-      "assignedDoctorId": "doc-1",
+      "assignedDoctorId": "507f1f77bcf86cd799439011",
+      "age": 42,
+      "gender": "female",
+      "phone": "+1 (555) 111-2233",
       "createdAt": "2026-11-04T14:20:00.000Z"
     },
     "meta": null

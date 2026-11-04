@@ -1,9 +1,20 @@
 import mongoose, { Model, HydratedDocument, Types } from "mongoose";
 
+export type PatientGender = "male" | "female" | "other" | "prefer_not_to_say";
+
+export const PATIENT_GENDERS: readonly PatientGender[] = [
+  "male",
+  "female",
+  "other",
+  "prefer_not_to_say",
+] as const;
+
 export interface IPatient {
   name: string;
   condition: string;
   assignedDoctorId: Types.ObjectId;
+  age: number;
+  gender: PatientGender;
   phone?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -31,6 +42,26 @@ const patientSchema = new mongoose.Schema<IPatient, PatientModel>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
       required: [true, "Assigned doctor reference is required"],
+    },
+    age: {
+      type: Number,
+      required: [true, "Patient age is required"],
+      min: [0, "Age cannot be negative"],
+      max: [120, "Age cannot exceed 120 years"],
+      validate: {
+        validator: (val: number) => Number.isInteger(val),
+        message: "Age must be an integer",
+      },
+    },
+    gender: {
+      type: String,
+      required: [true, "Patient gender is required"],
+      trim: true,
+      lowercase: true,
+      enum: {
+        values: PATIENT_GENDERS,
+        message: "Gender must be 'male', 'female', 'other', or 'prefer_not_to_say'",
+      },
     },
     phone: {
       type: String,

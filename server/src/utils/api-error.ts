@@ -55,6 +55,13 @@ export class ApiError extends Error {
     return new ApiError(404, message, errors);
   }
 
+  static unprocessableEntity(
+    message: string = "Validation failed",
+    errors: unknown = null,
+  ): ApiError {
+    return new ApiError(422, message, errors);
+  }
+
   static internal(
     message: string = "Internal server error",
     errors: unknown = null,
