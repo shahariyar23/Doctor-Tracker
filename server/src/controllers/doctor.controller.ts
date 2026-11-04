@@ -109,7 +109,7 @@ export const updateDoctorHandler = asyncHandler(
         id,
         { $set: updateData },
         {
-          new: true,
+          returnDocument: "after",
           runValidators: true,
         },
       );

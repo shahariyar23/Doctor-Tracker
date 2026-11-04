@@ -44,3 +44,4 @@ export const updateDoctorBodySchema = createDoctorBodySchema
   );
 
 export type UpdateDoctorInput = z.infer<typeof updateDoctorBodySchema>;
+
