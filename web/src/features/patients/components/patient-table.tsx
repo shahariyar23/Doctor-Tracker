@@ -52,6 +52,8 @@ interface PatientTableProps {
   onSearchChange: (search: string) => void;
   selectedCondition: string;
   onConditionChange: (condition: string) => void;
+  selectedStatus?: string;
+  onStatusChange?: (status: string) => void;
   startDate: string;
   onStartDateChange: (date: string) => void;
   endDate: string;
@@ -64,6 +66,7 @@ interface PatientTableProps {
   onToggleSelectPatient?: (id: string) => void;
   onToggleSelectAll?: () => void;
   onBulkDelete?: () => void;
+  onBulkStatusChange?: (status: Patient["status"]) => void;
   onBulkReassign?: (doctorId: string) => void;
   availableDoctors?: Doctor[];
 }
@@ -90,6 +93,8 @@ export function PatientTable({
   onSearchChange,
   selectedCondition,
   onConditionChange,
+  selectedStatus = "",
+  onStatusChange,
   startDate,
   onStartDateChange,
   endDate,
@@ -124,6 +129,13 @@ export function PatientTable({
     return clean.slice(0, 2).toUpperCase();
   };
 
+  const getPatientMrn = (patient: Patient, index: number) => {
+    return (
+      patient.code ||
+      `#MRN-${String(index + 2045).padStart(5, "0")}`
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
@@ -134,7 +146,7 @@ export function PatientTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by patient name, condition, or phone..."
+              placeholder="Search by patient name, MRN, phone, or doctor..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl"
@@ -155,6 +167,20 @@ export function PatientTable({
                 </option>
               ))}
             </select>
+
+            {/* Status Select */}
+            {onStatusChange && (
+              <select
+                value={selectedStatus}
+                onChange={(e) => onStatusChange(e.target.value)}
+                className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+              >
+                <option value="">All Statuses</option>
+                <option value="Admitted">Admitted</option>
+                <option value="Observation">Observation</option>
+                <option value="Discharged">Discharged</option>
+              </select>
+            )}
 
             {/* Date Filter Toggle */}
             <Button
@@ -198,7 +224,7 @@ export function PatientTable({
         {/* Expandable Date-wise Filter */}
         {showDatePicker && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50 text-xs">
-            <span className="text-muted-foreground font-medium">Registered:</span>
+            <span className="text-muted-foreground font-medium">Admitted:</span>
             <Input
               type="date"
               title="Start Date"
@@ -234,7 +260,7 @@ export function PatientTable({
 
       {/* Bulk Action Bar */}
       {selectedPatientIds.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 px-3 sm:px-4 py-2.5 text-xs text-teal-900 dark:text-teal-100 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-teal-50 dark:bg-blue-950/40 border border-teal-200 dark:border-teal-900 px-3 sm:px-4 py-2.5 text-xs text-teal-900 dark:text-teal-100 shadow-xs">
           <div className="flex items-center gap-2">
             <CheckSquare className="h-4 w-4 text-primary" />
             <span className="font-semibold">
@@ -459,19 +485,18 @@ export function PatientTable({
                         />
                       )}
                     </TableHead>
-                    <TableHead className="py-3 px-4">PATIENT & MRN</TableHead>
+                    <TableHead className="py-3 px-4">PATIENT</TableHead>
                     <TableHead className="py-3 px-4">MEDICAL CONDITION</TableHead>
-                    <TableHead className="py-3 px-4">ATTENDING PHYSICIAN</TableHead>
-                    <TableHead className="py-3 px-4">CONTACT & ROOM</TableHead>
-                    <TableHead className="py-3 px-4">ADMITTED</TableHead>
-                    <TableHead className="py-3 px-4">STATUS</TableHead>
+                    <TableHead className="py-3 px-4">ASSIGNED DOCTOR</TableHead>
+                    <TableHead className="py-3 px-4">CONTACT</TableHead>
+                    <TableHead className="py-3 px-4">REGISTERED</TableHead>
                     <TableHead className="py-3 px-5 text-right">ACTIONS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-52 text-center">
+                      <TableCell colSpan={7} className="h-52 text-center">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                           <span className="text-xs text-muted-foreground">
@@ -482,7 +507,7 @@ export function PatientTable({
                     </TableRow>
                   ) : patients.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-52 text-center">
+                      <TableCell colSpan={7} className="h-52 text-center">
                         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                           <User className="h-8 w-8 text-muted-foreground/40" />
                           <span className="text-xs font-semibold">
@@ -494,7 +519,6 @@ export function PatientTable({
                   ) : (
                     patients.map((patient, index) => {
                       const initials = getInitials(patient.name);
-                      const mrn = getPatientMrn(patient, index);
                       const avatarColor = AVATAR_COLORS[index % AVATAR_COLORS.length];
                       const isSelected = selectedPatientIds.includes(patient.id);
 
@@ -503,7 +527,7 @@ export function PatientTable({
                           key={patient.id}
                           className={cn(
                             "hover:bg-muted/30 transition-colors",
-                            isSelected && "bg-teal-50/50 dark:bg-teal-950/20"
+                            isSelected && "bg-teal-50/50 dark:bg-blue-950/20"
                           )}
                         >
                           {/* SELECTION CHECKBOX */}
@@ -519,7 +543,7 @@ export function PatientTable({
                             )}
                           </TableCell>
 
-                          {/* PATIENT & MRN */}
+                          {/* PATIENT (Name, Age, Gender) */}
                           <TableCell className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               <div
@@ -537,8 +561,8 @@ export function PatientTable({
                                 >
                                   {patient.name}
                                 </span>
-                                <span className="text-[11px] font-mono text-muted-foreground">
-                                  {mrn} · Age {patient.age || "—"}
+                                <span className="text-[11px] text-muted-foreground">
+                                  Age {patient.age} · {patient.gender ? patient.gender.replace(/_/g, " ") : "—"}
                                 </span>
                               </div>
                             </div>
@@ -560,7 +584,7 @@ export function PatientTable({
                             </span>
                           </TableCell>
 
-                          {/* ATTENDING PHYSICIAN */}
+                          {/* ASSIGNED DOCTOR */}
                           <TableCell className="py-3 px-4">
                             {patient.assignedDoctor ? (
                               <div className="flex flex-col text-xs leading-relaxed">
@@ -582,32 +606,20 @@ export function PatientTable({
                             )}
                           </TableCell>
 
-                          {/* CONTACT & ROOM */}
+                          {/* CONTACT */}
                           <TableCell className="py-3 px-4">
-                            <div className="flex flex-col text-xs leading-relaxed">
-                              <span className="font-medium text-foreground">{patient.phone || "—"}</span>
-                              <span className="text-muted-foreground text-[11px] flex items-center gap-1">
-                                <Bed className="h-3 w-3 text-muted-foreground/60" />
-                                {patient.roomNumber || "Main Ward"}
-                              </span>
-                            </div>
+                            <span className="text-xs font-medium text-foreground">
+                              {patient.phone || "Not provided"}
+                            </span>
                           </TableCell>
 
-                          {/* ADMITTED */}
+                          {/* REGISTERED */}
                           <TableCell className="py-3 px-4 text-xs text-muted-foreground">
                             {new Date(patient.createdAt).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               year: "numeric",
                             })}
-                          </TableCell>
-
-                          {/* STATUS */}
-                          <TableCell className="py-3 px-4">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                              <span>{patient.status || "Admitted"}</span>
-                            </span>
                           </TableCell>
 
                           {/* ACTIONS */}
@@ -707,7 +719,9 @@ export function PatientTable({
                         >
                           {patient.name}
                         </p>
-                        <p className="text-[11px] font-mono text-muted-foreground">{mrn}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Age {patient.age} · {patient.gender ? patient.gender.replace(/_/g, " ") : "—"}
+                        </p>
                       </div>
                     </div>
                     <span
@@ -729,7 +743,7 @@ export function PatientTable({
                     <button
                       type="button"
                       onClick={() => onViewPatient && onViewPatient(patient)}
-                      className="font-semibold text-primary hover:text-teal-700 hover:underline cursor-pointer transition-colors"
+                      className="font-semibold text-primary hover:underline"
                     >
                       View Details
                     </button>
