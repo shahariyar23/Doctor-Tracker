@@ -1,8 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Model, HydratedDocument } from "mongoose";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const adminSchema = new mongoose.Schema(
+export interface IAdmin {
+  name: string;
+  email: string;
+  passwordHash: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type AdminDocument = HydratedDocument<IAdmin>;
+export type AdminModel = Model<IAdmin>;
+
+const adminSchema = new mongoose.Schema<IAdmin, AdminModel>(
   {
     name: {
       type: String,
@@ -29,7 +40,7 @@ const adminSchema = new mongoose.Schema(
     timestamps: true,
     versionKey: false,
     toJSON: {
-      transform: (doc, ret) => {
+      transform: (_doc, ret: Record<string, unknown>) => {
         delete ret.passwordHash;
         return ret;
       },
@@ -39,5 +50,7 @@ const adminSchema = new mongoose.Schema(
 
 // Prevent model recompilation in watch/dev environments
 export const Admin =
-  mongoose.models.Admin || mongoose.model("Admin", adminSchema);
+  (mongoose.models.Admin as AdminModel) ||
+  mongoose.model<IAdmin, AdminModel>("Admin", adminSchema);
+
 export default Admin;

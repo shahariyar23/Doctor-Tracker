@@ -1,8 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Model, HydratedDocument } from "mongoose";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const doctorSchema = new mongoose.Schema(
+export interface IDoctor {
+  name: string;
+  specialization: string;
+  hospital: string;
+  phone: string;
+  email: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type DoctorDocument = HydratedDocument<IDoctor>;
+export type DoctorModel = Model<IDoctor>;
+
+const doctorSchema = new mongoose.Schema<IDoctor, DoctorModel>(
   {
     name: {
       type: String,
@@ -55,5 +68,7 @@ doctorSchema.index({ name: "text", specialization: "text", hospital: "text" });
 
 // Prevent model recompilation in watch/dev environments
 export const Doctor =
-  mongoose.models.Doctor || mongoose.model("Doctor", doctorSchema);
+  (mongoose.models.Doctor as DoctorModel) ||
+  mongoose.model<IDoctor, DoctorModel>("Doctor", doctorSchema);
+
 export default Doctor;

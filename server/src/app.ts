@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -7,7 +7,7 @@ import apiRouter from "./routes/index.js";
 import { notFoundHandler } from "./middlewares/not-found.middleware.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
-const app = express();
+const app: Application = express();
 
 // Security HTTP headers
 app.use(helmet());
@@ -15,11 +15,14 @@ app.use(helmet());
 // CORS configuration
 app.use(
   cors({
-    origin: config.clientUrl === "*" ? "*" : [config.clientUrl, "http://localhost:3000"],
+    origin:
+      config.clientUrl === "*"
+        ? "*"
+        : [config.clientUrl, "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // Logging middleware in development

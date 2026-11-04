@@ -1,6 +1,18 @@
-import mongoose from "mongoose";
+import mongoose, { Model, HydratedDocument, Types } from "mongoose";
 
-const patientSchema = new mongoose.Schema(
+export interface IPatient {
+  name: string;
+  condition: string;
+  assignedDoctorId: Types.ObjectId;
+  phone?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type PatientDocument = HydratedDocument<IPatient>;
+export type PatientModel = Model<IPatient>;
+
+const patientSchema = new mongoose.Schema<IPatient, PatientModel>(
   {
     name: {
       type: String,
@@ -32,7 +44,7 @@ const patientSchema = new mongoose.Schema(
   },
 );
 
-
+// Indexes per approved schema design
 // Compound index for querying a doctor's patients in reverse-chronological order
 patientSchema.index({ assignedDoctorId: 1, createdAt: -1 });
 
@@ -57,5 +69,7 @@ patientSchema.index(
 
 // Prevent model recompilation in watch/dev environments
 export const Patient =
-  mongoose.models.Patient || mongoose.model("Patient", patientSchema);
+  (mongoose.models.Patient as PatientModel) ||
+  mongoose.model<IPatient, PatientModel>("Patient", patientSchema);
+
 export default Patient;
