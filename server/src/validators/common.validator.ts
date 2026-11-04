@@ -1,6 +1,40 @@
 import { z } from "zod";
 
 /**
+ * Strict calendar date regex YYYY-MM-DD
+ */
+const CALENDAR_DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
+/**
+ * Validates whether YYYY-MM-DD is an actual real calendar date (e.g. leap years, 30 vs 31 days).
+ */
+export function isValidCalendarDate(dateStr: string): boolean {
+  if (!CALENDAR_DATE_REGEX.test(dateStr)) return false;
+  const [yearStr, monthStr, dayStr] = dateStr.split("-");
+  const year = parseInt(yearStr!, 10);
+  const month = parseInt(monthStr!, 10);
+  const day = parseInt(dayStr!, 10);
+
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return (
+    d.getUTCFullYear() === year &&
+    d.getUTCMonth() === month - 1 &&
+    d.getUTCDate() === day
+  );
+}
+
+/**
+ * Strict ISO calendar date string schema (YYYY-MM-DD)
+ */
+export const calendarDateSchema = z
+  .string()
+  .trim()
+  .refine(
+    (val) => isValidCalendarDate(val),
+    { message: "Invalid calendar date. Expected a valid YYYY-MM-DD calendar date." },
+  );
+
+/**
  * Reusable Mongo ObjectId validation helper
  */
 export const objectIdSchema = z
@@ -48,12 +82,10 @@ export const dateStringSchema = z
  * or parsed exact Date if full ISO with time was supplied.
  */
 export function parseDateFrom(val: string): Date {
-  const d = new Date(val);
-  // If calendar date format without time (e.g., YYYY-MM-DD), set to start of day UTC
   if (/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) {
     return new Date(`${val.trim()}T00:00:00.000Z`);
   }
-  return d;
+  return new Date(val);
 }
 
 /**
@@ -64,8 +96,7 @@ export function parseDateTo(val: string): Date {
   if (/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) {
     return new Date(`${val.trim()}T23:59:59.999Z`);
   }
-  const d = new Date(val);
-  return d;
+  return new Date(val);
 }
 
 /**
