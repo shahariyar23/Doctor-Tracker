@@ -138,7 +138,7 @@ export function PatientTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by patient name, MRN, phone, or doctor..."
+              placeholder="Search by patient name, phone, or doctor..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl"
@@ -159,20 +159,6 @@ export function PatientTable({
                 </option>
               ))}
             </select>
-
-            {/* Status Select */}
-            {onStatusChange && (
-              <select
-                value={selectedStatus}
-                onChange={(e) => onStatusChange(e.target.value)}
-                className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
-              >
-                <option value="">All Statuses</option>
-                <option value="Admitted">Admitted</option>
-                <option value="Observation">Observation</option>
-                <option value="Discharged">Discharged</option>
-              </select>
-            )}
 
             {/* Date Filter Toggle */}
             <Button
@@ -216,7 +202,7 @@ export function PatientTable({
         {/* Expandable Date-wise Filter */}
         {showDatePicker && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50 text-xs">
-            <span className="text-muted-foreground font-medium">Admitted:</span>
+            <span className="text-muted-foreground font-medium">Registered:</span>
             <Input
               type="date"
               title="Start Date"

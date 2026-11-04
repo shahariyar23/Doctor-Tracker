@@ -19,9 +19,9 @@ import {
 import { Doctor } from "../types";
 import {
   useDoctorPatients,
-  useAddPatientToDoctor,
   useRemovePatientFromDoctor,
 } from "../hooks/use-doctors";
+import { AssignPatientModal } from "./assign-patient-modal";
 import { Button } from "@/components/ui/button";
 
 interface DoctorDetailModalProps {
@@ -41,25 +41,12 @@ export function DoctorDetailModal({
   const [selectedCondition, setSelectedCondition] = useState("All Conditions");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
-
-  // Quick Inline Add Patient state
-  const [isAddingPatient, setIsAddingPatient] = useState(false);
-  const [newPatientName, setNewPatientName] = useState("");
-  const [newPatientCondition, setNewPatientCondition] = useState<
-    "Critical" | "Under Treatment" | "Stable" | "Recovering"
-  >("Stable");
-  const [newPatientPhone, setNewPatientPhone] = useState("");
-  const [newPatientAge, setNewPatientAge] = useState<number | "">("");
-  const [newPatientGender, setNewPatientGender] = useState<
-    "male" | "female" | "other" | "prefer_not_to_say"
-  >("male");
-  const [addError, setAddError] = useState<string | null>(null);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   const { data: patients = [], isLoading, refetch } = useDoctorPatients(
     doctor ? doctor.id : null
   );
 
-  const addPatientMutation = useAddPatientToDoctor();
   const removePatientMutation = useRemovePatientFromDoctor();
 
   if (!isOpen || !doctor) return null;
@@ -185,42 +172,6 @@ export function DoctorDetailModal({
     document.body.removeChild(link);
   };
 
-  const handleAddPatientSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPatientName.trim()) {
-      setAddError("Patient name is required");
-      return;
-    }
-    setAddError(null);
-    try {
-      await addPatientMutation.mutateAsync({
-        doctorId: doctor.id,
-        patientData: {
-          name: newPatientName.trim(),
-          age: typeof newPatientAge === "number" ? newPatientAge : 30,
-          gender: newPatientGender,
-          condition: newPatientCondition,
-          ...(newPatientPhone.trim() ? { phone: newPatientPhone.trim() } : {}),
-        },
-      });
-      setNewPatientName("");
-      setNewPatientPhone("");
-      setNewPatientAge("");
-      setNewPatientGender("male");
-      setIsAddingPatient(false);
-    } catch (err: unknown) {
-      const error = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      setAddError(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to assign patient to doctor."
-      );
-    }
-  };
-
   // Get Initials for Avatar
   const getInitials = (nameStr: string) => {
     const clean = nameStr.replace(/^(dr\.|dr|doctor|md|prof\.)\s+/i, "").trim();
@@ -294,8 +245,8 @@ export function DoctorDetailModal({
             <Button
               type="button"
               size="sm"
-              onClick={() => setIsAddingPatient(!isAddingPatient)}
-              className="gap-1.5 h-8 bg-primary hover:bg-teal-800 text-white text-xs font-semibold shadow-xs"
+              onClick={() => setIsAssignModalOpen(true)}
+              className="gap-1.5 h-8 bg-primary hover:bg-teal-800 text-white text-xs font-semibold shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Assign Patient</span>
@@ -313,98 +264,6 @@ export function DoctorDetailModal({
 
         {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto flex flex-col gap-6 flex-1 bg-white">
-          {/* Inline Add Patient Drawer / Form */}
-          {isAddingPatient && (
-            <form
-              onSubmit={handleAddPatientSubmit}
-              className="p-4 rounded-xl bg-teal-50/60 border border-teal-200 flex flex-col gap-3 animate-in fade-in duration-150"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
-                  <Plus className="w-4 h-4 text-primary" /> Assign New Patient to Dr. {doctor.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsAddingPatient(false)}
-                  className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-
-              {addError && (
-                <div className="text-xs text-red-600 font-medium">{addError}</div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <input
-                  type="text"
-                  placeholder="Patient Full Name *"
-                  value={newPatientName}
-                  onChange={(e) => setNewPatientName(e.target.value)}
-                  required
-                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  placeholder="Age *"
-                  value={newPatientAge}
-                  onChange={(e) => setNewPatientAge(e.target.value ? Number(e.target.value) : "")}
-                  required
-                  min={0}
-                  max={120}
-                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <select
-                  value={newPatientGender}
-                  onChange={(e) =>
-                    setNewPatientGender(
-                      e.target.value as "male" | "female" | "other" | "prefer_not_to_say"
-                    )
-                  }
-                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
-                </select>
-                <input
-                  type="tel"
-                  placeholder="Phone Number (optional)"
-                  value={newPatientPhone}
-                  onChange={(e) => setNewPatientPhone(e.target.value)}
-                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="Medical Condition *"
-                  value={newPatientCondition}
-                  onChange={(e) =>
-                    setNewPatientCondition(
-                      e.target.value as "Critical" | "Under Treatment" | "Stable" | "Recovering"
-                    )
-                  }
-                  required
-                  className="h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-8 bg-primary hover:bg-teal-800 text-white text-xs font-semibold"
-                >
-                  Confirm Assignment
-                </Button>
-              </div>
-            </form>
-          )}
-
           {/* Real Patient Count Summary Header */}
           <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 flex flex-col gap-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -663,6 +522,17 @@ export function DoctorDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Assign Patient Modal */}
+      <AssignPatientModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          refetch();
+        }}
+        doctorId={doctor.id}
+        doctorName={doctor.name}
+      />
     </div>
   );
 }

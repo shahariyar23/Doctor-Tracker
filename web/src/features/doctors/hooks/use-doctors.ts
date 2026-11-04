@@ -123,6 +123,24 @@ export function useAddPatientToDoctor() {
   });
 }
 
+export function useAssignExistingPatientToDoctor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { doctorId: string; patientId: string }) => {
+      return patientService.updatePatient(payload.patientId, {
+        assignedDoctorId: payload.doctorId,
+      });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["doctor-patients", variables.doctorId] });
+      queryClient.invalidateQueries({ queryKey: ["doctor", variables.doctorId] });
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ["doctors"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
 export function useRemovePatientFromDoctor() {
   const queryClient = useQueryClient();
   return useMutation({
