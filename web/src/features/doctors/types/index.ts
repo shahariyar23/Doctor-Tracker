@@ -1,11 +1,15 @@
+export type DoctorStatus = "Active" | "Available" | "On Leave" | "At Capacity";
+
 export interface Doctor {
   id: string;
+  code?: string;
   name: string;
   specialization: string;
   hospital: string;
   phone: string;
   email: string;
-  status?: "Active" | "Available" | "On Leave";
+  status?: DoctorStatus;
+  shift?: "Morning" | "Evening" | "Night" | "All Shifts";
   patientCount?: number;
   maxCapacity?: number;
   createdAt: string;
@@ -17,6 +21,7 @@ export interface DoctorFilterParams {
   specialty?: string;
   hospital?: string;
   status?: string;
+  shift?: string;
   startDate?: string;
   endDate?: string;
   page?: number;
@@ -29,6 +34,17 @@ export interface PaginatedDoctorsResponse {
   page: number;
   limit: number;
   totalPages: number;
+  stats?: DoctorStats;
+}
+
+export interface DoctorStats {
+  totalDoctors: number;
+  activeOnDuty: number;
+  availabilityRate: number;
+  avgCaseload: number;
+  atCapacity: number;
+  onLeave: number;
+  acceptingPatients: number;
 }
 
 export interface AssociatedPatient {
@@ -40,4 +56,3 @@ export interface AssociatedPatient {
   mrn?: string;
   notes?: string;
 }
-

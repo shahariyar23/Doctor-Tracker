@@ -1,25 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import {
   X,
   Mail,
   Phone,
   Clock,
   Edit,
-  RefreshCw,
   Search,
   Download,
   Info,
   ChevronLeft,
   ChevronRight,
   Plus,
-  Trash2,
-  AlertCircle,
   Settings2,
-  CheckSquare,
-  Square,
   ArrowRightLeft,
 } from "lucide-react";
 import { Doctor } from "../types";

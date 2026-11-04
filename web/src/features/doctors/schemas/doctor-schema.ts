@@ -19,7 +19,7 @@ export const doctorSchema = z.object({
     .string()
     .min(1, "Email address is required")
     .email("Please provide a valid clinical email address"),
-  status: z.enum(["Active", "Available", "On Leave"]).optional(),
+  status: z.enum(["Active", "Available", "On Leave", "At Capacity"]).optional(),
 });
 
 export type DoctorFormData = z.infer<typeof doctorSchema>;

@@ -10,79 +10,100 @@ import { DoctorFormData } from "../schemas/doctor-schema";
 let mockDoctors: Doctor[] = [
   {
     id: "doc-1",
-    name: "Dr. Marcus Vance, MD",
+    code: "#DOC-1042",
+    name: "Dr. Marcus Vance",
     specialization: "Cardiology",
     hospital: "Central City Hospital",
     phone: "+1 (555) 234-8910",
     email: "marcus.vance@doctortracker.com",
     status: "Active",
+    shift: "Morning",
     patientCount: 32,
+    maxCapacity: 35,
     createdAt: "2026-09-15T08:00:00Z",
   },
   {
     id: "doc-2",
-    name: "Dr. Priya Patel, MD",
+    code: "#DOC-1088",
+    name: "Dr. Priya Patel",
     specialization: "Neurology",
     hospital: "St. Jude Medical Center",
-    phone: "+1 (555) 345-6789",
+    phone: "+1 (555) 782-9901",
     email: "priya.patel@doctortracker.com",
     status: "Active",
+    shift: "Morning",
     patientCount: 28,
+    maxCapacity: 35,
     createdAt: "2026-09-18T09:30:00Z",
   },
   {
     id: "doc-3",
-    name: "Dr. Aris Thorne, MD",
+    code: "#DOC-1102",
+    name: "Dr. Aris Thorne",
     specialization: "Oncology",
     hospital: "Metro Health Institute",
-    phone: "+1 (555) 456-7890",
+    phone: "+1 (555) 441-2094",
     email: "aris.thorne@doctortracker.com",
-    status: "Available",
-    patientCount: 26,
+    status: "At Capacity",
+    shift: "Evening",
+    patientCount: 34,
+    maxCapacity: 35,
     createdAt: "2026-09-22T11:15:00Z",
   },
   {
     id: "doc-4",
-    name: "Dr. Rachel Green, MD",
+    code: "#DOC-1120",
+    name: "Dr. Rachel Green",
     specialization: "Geriatrics",
     hospital: "Pine Valley Hospital",
     phone: "+1 (555) 567-8901",
     email: "rachel.green@doctortracker.com",
     status: "Active",
+    shift: "Morning",
     patientCount: 24,
+    maxCapacity: 35,
     createdAt: "2026-09-25T14:00:00Z",
   },
   {
     id: "doc-5",
-    name: "Dr. Nathan Drake, MD",
+    code: "#DOC-1135",
+    name: "Dr. Nathan Drake",
     specialization: "Internal Medicine",
     hospital: "Hope Memorial Hospital",
     phone: "+1 (555) 678-9012",
     email: "nathan.drake@doctortracker.com",
     status: "On Leave",
-    patientCount: 21,
+    shift: "Night",
+    patientCount: 0,
+    maxCapacity: 35,
     createdAt: "2026-10-01T10:00:00Z",
   },
   {
     id: "doc-6",
-    name: "Dr. Maya Lin, MD",
+    code: "#DOC-1148",
+    name: "Dr. Maya Lin",
     specialization: "Pediatrics",
     hospital: "Children's Health Hospital",
     phone: "+1 (555) 789-0123",
     email: "maya.lin@doctortracker.com",
-    status: "Active",
+    status: "Available",
+    shift: "Morning",
     patientCount: 19,
+    maxCapacity: 35,
     createdAt: "2026-10-05T08:45:00Z",
   },
   {
     id: "doc-7",
-    name: "Dr. Alistair Finch, MD",
+    code: "#DOC-1160",
+    name: "Dr. Alistair Finch",
     specialization: "Thoracic Surgery",
     hospital: "University Surgical Center",
     phone: "+1 (555) 890-1234",
     email: "alistair.finch@doctortracker.com",
     status: "Available",
+    shift: "Evening",
     patientCount: 15,
+    maxCapacity: 35,
     createdAt: "2026-10-10T13:20:00Z",
   },
 ];
@@ -132,6 +153,7 @@ export const doctorService = {
         filtered = filtered.filter(
           (d) =>
             d.name.toLowerCase().includes(q) ||
+            (d.code && d.code.toLowerCase().includes(q)) ||
             d.specialization.toLowerCase().includes(q) ||
             d.hospital.toLowerCase().includes(q) ||
             d.email.toLowerCase().includes(q)
@@ -140,12 +162,32 @@ export const doctorService = {
       if (params.specialty) {
         filtered = filtered.filter((d) => d.specialization === params.specialty);
       }
+      if (params.status) {
+        if (params.status === "Accepting Patients") {
+          filtered = filtered.filter((d) => d.status === "Available" || d.status === "Active");
+        } else {
+          filtered = filtered.filter((d) => d.status === params.status);
+        }
+      }
+      if (params.shift && params.shift !== "All Shifts") {
+        filtered = filtered.filter((d) => d.shift === params.shift);
+      }
+
       return {
         doctors: filtered,
         total: filtered.length,
         page: params.page || 1,
         limit: params.limit || 10,
         totalPages: Math.ceil(filtered.length / (params.limit || 10)) || 1,
+        stats: {
+          totalDoctors: 148,
+          activeOnDuty: 136,
+          availabilityRate: 91.9,
+          avgCaseload: 25.1,
+          atCapacity: 12,
+          onLeave: 12,
+          acceptingPatients: 94,
+        },
       };
     }
   },

@@ -43,6 +43,7 @@ interface PatientTableProps {
   onStartDateChange: (date: string) => void;
   endDate: string;
   onEndDateChange: (date: string) => void;
+  onViewPatient?: (patient: Patient) => void;
   onEditPatient: (patient: Patient) => void;
   onDeletePatient: (patient: Patient) => void;
 }
@@ -77,6 +78,7 @@ export function PatientTable({
   onStartDateChange,
   endDate,
   onEndDateChange,
+  onViewPatient,
   onEditPatient,
   onDeletePatient,
 }: PatientTableProps) {
@@ -181,7 +183,11 @@ export function PatientTable({
                 </TableRow>
               ) : (
                 patients.map((patient) => (
-                  <TableRow key={patient.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={patient.id}
+                    onClick={() => onViewPatient && onViewPatient(patient)}
+                    className="hover:bg-muted/30 transition-colors cursor-pointer"
+                  >
                     {/* Patient Profile */}
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -189,7 +195,7 @@ export function PatientTable({
                           {patient.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-semibold text-foreground text-xs">
+                          <span className="font-semibold text-foreground text-xs hover:text-primary transition-colors">
                             {patient.name}
                           </span>
                           <span className="text-[11px] text-muted-foreground">

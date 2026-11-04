@@ -8,6 +8,7 @@ import { Patient } from "../types";
 import { usePatients, useDeletePatient } from "../hooks/use-patients";
 import { PatientTable } from "./patient-table";
 import { PatientFormModal } from "./patient-form-modal";
+import { PatientDetailModal } from "./patient-detail-modal";
 import { Button } from "@/components/ui/button";
 
 export function PatientsView() {
@@ -24,6 +25,8 @@ export function PatientsView() {
   // Modal States
   const [isFormModalOpen, setIsFormModalOpen] = useState(initialAction === "register");
   const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
+  const [selectedPatientForDetail, setSelectedPatientForDetail] =
+    useState<Patient | null>(null);
 
   // Data Fetching
   const { data, isLoading, isError, error, refetch } = usePatients({
@@ -174,8 +177,20 @@ export function PatientsView() {
           setEndDate(d);
           setCurrentPage(1);
         }}
+        onViewPatient={(patient) => setSelectedPatientForDetail(patient)}
         onEditPatient={handleEdit}
         onDeletePatient={handleDelete}
+      />
+
+      {/* Patient Detail Modal */}
+      <PatientDetailModal
+        patient={selectedPatientForDetail}
+        isOpen={!!selectedPatientForDetail}
+        onClose={() => setSelectedPatientForDetail(null)}
+        onEditPatient={(patient) => {
+          setSelectedPatientForDetail(null);
+          handleEdit(patient);
+        }}
       />
 
       {/* Register / Edit Patient Modal */}
