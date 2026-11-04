@@ -26,7 +26,7 @@ test.describe('Doctor Directory and Management Flow', () => {
     // Debounce wait
     await page.waitForTimeout(600);
 
-    const matchEl = page.locator('text=Vance').first();
+    const matchEl = page.locator('table tbody tr:visible, div.block.md\\:hidden div.space-y-3 > div:visible').filter({ hasText: 'Vance' }).first();
     await expect(matchEl).toBeVisible();
   });
 

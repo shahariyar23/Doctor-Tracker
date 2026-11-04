@@ -1,0 +1,177 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: global-search.spec.ts >> Global Search E2E System Tests >> should perform live debounced backend search and display Doctor and Patient groups
+- Location: e2e/global-search.spec.ts:32:7
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]:
+          - link "Doctor Tracker Admin" [ref=f1e6] [cursor=pointer]:
+            - /url: /dashboard
+            - generic [ref=f1e14]:
+              - generic [ref=f1e15]: Doctor Tracker
+              - generic [ref=f1e16]: Admin
+          - button "Close menu" [ref=f1e17] [cursor=pointer]
+        - generic [ref=f1e18]:
+          - paragraph [ref=f1e19]: Main Menu
+          - navigation [ref=f1e20]:
+            - link "Overview" [ref=f1e21] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Doctors" [ref=f1e28] [cursor=pointer]:
+              - /url: /doctors
+            - link "Patients" [ref=f1e34] [cursor=pointer]:
+              - /url: /patients
+      - generic [ref=f1e41]:
+        - generic [ref=f1e42]:
+          - generic [ref=f1e43]: SY
+          - generic [ref=f1e44]:
+            - generic [ref=f1e45]: System Administrator
+            - generic [ref=f1e46]: admin@doctortracker.com
+        - button "Log out" [ref=f1e48] [cursor=pointer]
+    - generic [ref=f1e50]:
+      - banner [ref=f1e51]:
+        - generic [ref=f1e52]:
+          - button "Toggle navigation menu" [ref=f1e53] [cursor=pointer]
+          - heading "Admin Overview Dashboard" [level=1] [ref=f1e55]
+        - generic [ref=f1e56]:
+          - button "Open search" [ref=f1e57] [cursor=pointer]
+          - generic [ref=f1e58]: SY
+      - main [ref=f1e61]:
+        - generic [ref=f1e62]:
+          - generic [ref=f1e63]:
+            - generic [ref=f1e64]:
+              - generic [ref=f1e65]: Live Healthcare Metrics
+              - heading "Healthcare System Overview" [level=1] [ref=f1e68]
+              - paragraph [ref=f1e69]: Real-time aggregate analytics across hospital physicians and patient allocations.
+            - generic [ref=f1e70]:
+              - link "Patients" [ref=f1e71] [cursor=pointer]:
+                - /url: /patients
+              - link "Add Doctor" [ref=f1e73] [cursor=pointer]:
+                - /url: /doctors/new
+              - link "Add Patient" [ref=f1e75] [cursor=pointer]:
+                - /url: /patients/new
+          - generic [ref=f1e77]:
+            - generic [ref=f1e78]:
+              - generic [ref=f1e79]: Total Doctors
+              - generic [ref=f1e87]:
+                - generic [ref=f1e88]: "1"
+                - generic [ref=f1e89]: All-time physicians
+            - generic [ref=f1e90]:
+              - generic [ref=f1e91]: Total Patients
+              - generic [ref=f1e100]:
+                - generic [ref=f1e101]: "1"
+                - generic [ref=f1e102]: All-time registrations
+            - generic [ref=f1e103]:
+              - generic [ref=f1e104]: Patients / Doctor
+              - generic [ref=f1e112]:
+                - generic [ref=f1e113]: "1"
+                - generic [ref=f1e114]: Average caseload
+            - generic [ref=f1e115]:
+              - generic [ref=f1e116]: New Patients (30d)
+              - generic [ref=f1e123]:
+                - generic [ref=f1e124]: "1"
+                - generic [ref=f1e125]: 1 new doctors in period
+          - generic [ref=f1e126]:
+            - generic [ref=f1e127]: Data-Driven Healthcare Insights
+            - generic [ref=f1e132]:
+              - generic [ref=f1e133]:
+                - generic [ref=f1e134]: •
+                - generic [ref=f1e135]: Dr. Alexander Vance (Cardiology) manages the highest patient load with 1 patient(s).
+              - generic [ref=f1e136]:
+                - generic [ref=f1e137]: •
+                - generic [ref=f1e138]: The most prevalent condition recorded is "Under Treatment" with 1 patient(s).
+              - generic [ref=f1e139]:
+                - generic [ref=f1e140]: •
+                - generic [ref=f1e141]: 1 new patient(s) registered during the selected observation period.
+          - generic [ref=f1e142]:
+            - generic [ref=f1e143]:
+              - generic [ref=f1e144]:
+                - generic [ref=f1e145]:
+                  - heading "Patient Registration Trends" [level=2] [ref=f1e146]
+                  - paragraph [ref=f1e147]: New patient registrations logged over time
+                - generic [ref=f1e148]:
+                  - button "7d" [ref=f1e149] [cursor=pointer]
+                  - button "30d" [ref=f1e150] [cursor=pointer]
+                  - button "90d" [ref=f1e151] [cursor=pointer]
+              - application [ref=f1e155]:
+                - generic [ref=f1e165]:
+                  - generic [ref=f1e166]:
+                    - generic [ref=f1e167]: 2026-10-09
+                    - generic [ref=f1e169]: 2026-10-17
+                    - generic [ref=f1e171]: 2026-10-25
+                    - generic [ref=f1e173]: 2026-11-04
+                  - generic [ref=f1e175]:
+                    - generic [ref=f1e176]: "0"
+                    - generic [ref=f1e178]: "1"
+                    - generic [ref=f1e180]: "2"
+                    - generic [ref=f1e182]: "3"
+                    - generic [ref=f1e184]: "4"
+            - generic [ref=f1e186]:
+              - generic [ref=f1e187]:
+                - generic [ref=f1e188]:
+                  - heading "Patients per Doctor" [level=2] [ref=f1e189]
+                  - generic [ref=f1e190]: Top Caseloads
+                - paragraph [ref=f1e191]: Workload distribution across active attending physicians
+              - generic [ref=f1e194]:
+                - generic [ref=f1e195]:
+                  - generic [ref=f1e196]: Dr. Alexander Vance
+                  - generic [ref=f1e197]: • Cardiology
+                - generic [ref=f1e198]: 1 patients
+            - generic [ref=f1e201]:
+              - generic [ref=f1e202]:
+                - heading "Condition Status" [level=2] [ref=f1e203]
+                - paragraph [ref=f1e204]: Patient distribution by clinical condition
+              - generic [ref=f1e205]:
+                - application [ref=f1e209]
+                - generic [ref=f1e217]:
+                  - generic [ref=f1e218]: Under Treatment
+                  - generic [ref=f1e221]: "1"
+          - generic [ref=f1e222]:
+            - generic [ref=f1e223]:
+              - generic [ref=f1e224]:
+                - heading "Recent Patient Registrations" [level=2] [ref=f1e225]
+                - paragraph [ref=f1e226]: Latest admissions and assigned physicians
+              - link "View All" [ref=f1e227] [cursor=pointer]:
+                - /url: /patients
+            - generic [ref=f1e232]:
+              - generic [ref=f1e238]:
+                - paragraph [ref=f1e239]: Mostak Shahariyar
+                - paragraph [ref=f1e240]: Dr. Alexander Vance · 11/4/2026
+              - generic [ref=f1e241]: Under Treatment
+      - navigation "Mobile Bottom Navigation" [ref=f1e242]:
+        - generic [ref=f1e243]:
+          - link "Overview" [ref=f1e244] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Doctors" [ref=f1e251] [cursor=pointer]:
+            - /url: /doctors
+          - link "Patients" [ref=f1e257] [cursor=pointer]:
+            - /url: /patients
+  - generic [ref=f1e268] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=f1e269]
+    - generic [ref=f1e273]:
+      - button "Open issues overlay" [ref=f1e274]:
+        - generic [ref=f1e275]:
+          - generic [aria-hidden] [ref=f1e276]: "0"
+          - generic [ref=f1e277]: "1"
+        - generic [ref=f1e278]: Insight
+      - button "Collapse issues badge" [ref=f1e279]
+  - alert [ref=f1e282]
+  - generic [aria-hidden] [ref=f1e283]: "0"
+```

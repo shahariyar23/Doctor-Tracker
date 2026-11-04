@@ -29,7 +29,7 @@ test.describe('Patient Directory and Management Flow', () => {
     await searchInput.fill('Mostak');
     await page.waitForTimeout(600);
 
-    const matchEl = page.locator('text=Mostak').first();
+    const matchEl = page.locator('table tbody tr:visible, div.block.md\\:hidden div.space-y-3 > div:visible').filter({ hasText: 'Mostak' }).first();
     await expect(matchEl).toBeVisible();
   });
 });

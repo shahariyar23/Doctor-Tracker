@@ -4,6 +4,7 @@ import authRoutes from './auth.route.js';
 import doctorRoutes from './doctor.route.js';
 import patientRoutes from './patient.route.js';
 import dashboardRoutes from './dashboard.route.js';
+import searchRoutes from './search.route.js';
 
 const apiRouter: Router = Router();
 
@@ -12,5 +13,6 @@ apiRouter.use('/auth', authRoutes);
 apiRouter.use('/doctors', doctorRoutes);
 apiRouter.use('/patients', patientRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/search', searchRoutes);
 
 export default apiRouter;
