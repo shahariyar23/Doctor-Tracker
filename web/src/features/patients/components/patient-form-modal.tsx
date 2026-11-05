@@ -165,7 +165,7 @@ export function PatientFormModal({
                 <Input
                   id="patient-phone"
                   type="tel"
-                  placeholder="+1 (555) 000-0000"
+                  placeholder="01761102860"
                   {...register("phone")}
                   className="pl-9 text-xs"
                 />

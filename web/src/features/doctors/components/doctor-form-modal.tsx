@@ -212,7 +212,7 @@ export function DoctorFormModal({
                 <Input
                   id="doc-phone"
                   type="tel"
-                  placeholder="e.g. +1 555-019-2834"
+                  placeholder="e.g. 01761102860"
                   {...register("phone")}
                   className="pl-9 text-xs"
                 />

@@ -283,7 +283,7 @@ export function AddDoctorView() {
                       id="input-doctor-phone"
                       type="tel"
                       {...register("phone")}
-                      placeholder="+1 (555) 019-2834"
+                      placeholder="01761102860"
                       className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                     />
                   </div>

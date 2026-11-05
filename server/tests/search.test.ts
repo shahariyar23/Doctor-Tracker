@@ -39,7 +39,7 @@ describe('Global Search API Test Suite — GET /api/v1/search', () => {
       specialization: 'Cardiology',
       hospital: 'St. Jude Memorial Hospital',
       email: 'a.vance@hospital.org',
-      phone: '+1 (555) 019-2834',
+      phone: '01761102860',
     });
 
     doctorGregory = await Doctor.create({
@@ -47,7 +47,7 @@ describe('Global Search API Test Suite — GET /api/v1/search', () => {
       specialization: 'Diagnostic Medicine',
       hospital: 'Princeton-Plainsboro Teaching Hospital',
       email: 'house.diag@clinical.test.invalid',
-      phone: '+1 (555) 010-0001',
+      phone: '01761102860',
     });
 
     // Seed test patients

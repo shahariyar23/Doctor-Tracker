@@ -233,7 +233,7 @@ export function RegisterPatientView() {
                     id="phoneNumber"
                     type="tel"
                     {...register("phone")}
-                    placeholder="+1 (415) 890-2391"
+                    placeholder="01761102860"
                     className="w-full h-11 pl-10 pr-4 bg-muted/40 hover:bg-muted/60 focus:bg-background border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-teal-600 transition-all placeholder:text-muted-foreground"
                   />
                 </div>
@@ -414,7 +414,7 @@ export function RegisterPatientView() {
               <div className="flex items-center justify-between py-1 border-b border-border/40">
                 <span className="text-muted-foreground">Contact Phone</span>
                 <span className="font-mono text-foreground">
-                  {watchedPhone || "+1 (415) 890-2391"}
+                  {watchedPhone || "01761102860"}
                 </span>
               </div>
 
