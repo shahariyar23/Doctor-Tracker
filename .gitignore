@@ -60,10 +60,12 @@ Thumbs.db
 .idea/
 
 # ==========================================
-# Temporary Files
+# Temporary Files & Test Reports
 # ==========================================
 *.tmp
 *.temp
 .cache/
 coverage/
+playwright-report/
+test-results/
 
