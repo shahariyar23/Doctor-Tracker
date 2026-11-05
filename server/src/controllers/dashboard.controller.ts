@@ -16,20 +16,20 @@ import type {
 function resolveDateRange(from?: string, to?: string): { startDate: Date; endDate: Date } {
   if (from && to) {
     return {
-      startDate: parseDateFrom(from),
-      endDate: parseDateTo(to),
+      startDate: parseDateFrom(from, 'UTC'),
+      endDate: parseDateTo(to, 'UTC'),
     };
   }
 
   if (from && !to) {
     return {
-      startDate: parseDateFrom(from),
+      startDate: parseDateFrom(from, 'UTC'),
       endDate: new Date(),
     };
   }
 
   if (!from && to) {
-    const toDate = parseDateTo(to);
+    const toDate = parseDateTo(to, 'UTC');
     const startDate = new Date(toDate.getTime() - 30 * 24 * 60 * 60 * 1000);
     return {
       startDate,

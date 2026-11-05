@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from './helpers';
+import { loginAsAdmin, openGlobalSearch } from './helpers';
 
 test.describe('Global Search E2E System Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -35,13 +35,9 @@ test.describe('Global Search E2E System Tests', () => {
 
   test('should show instructional prompt when search term is 1 character', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
+    const searchInput = await openGlobalSearch(page);
     await searchInput.fill('a');
+    await page.waitForTimeout(400);
 
     const promptEl = page.locator('#global-search-results').getByText('Please enter at least 2 characters');
     await expect(promptEl).toBeVisible({ timeout: 5000 });
@@ -49,16 +45,11 @@ test.describe('Global Search E2E System Tests', () => {
 
   test('should perform live debounced backend search and display Doctor and Patient groups', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
-    
+    const searchInput = await openGlobalSearch(page);
+
     // Type query matching Dr. Alexander Vance
     await searchInput.fill('Vance');
-    await page.waitForTimeout(400); // debounce wait
+    await page.waitForTimeout(600); // debounce wait
 
     const dropdown = page.locator('#global-search-results');
     await expect(dropdown).toBeVisible({ timeout: 5000 });
@@ -72,15 +63,10 @@ test.describe('Global Search E2E System Tests', () => {
 
   test('should search and display patient results with assigned physician', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
-    
+    const searchInput = await openGlobalSearch(page);
+
     await searchInput.fill('Mostak');
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(600);
 
     const dropdown = page.locator('#global-search-results');
     await expect(dropdown).toBeVisible({ timeout: 5000 });
@@ -94,30 +80,20 @@ test.describe('Global Search E2E System Tests', () => {
 
   test('should show empty state for non-matching queries', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
-    
-    await searchInput.fill('NonExistentDoctorPatient123XYZ');
-    await page.waitForTimeout(400);
+    const searchInput = await openGlobalSearch(page);
 
-    const emptyText = page.locator('text=No matching doctors or patients found.');
+    await searchInput.fill('NonExistentDoctorPatient123XYZ');
+    await page.waitForTimeout(600);
+
+    const emptyText = page.locator('#global-search-results').getByText('No matching doctors or patients found.');
     await expect(emptyText).toBeVisible({ timeout: 5000 });
   });
 
   test('should close dropdown when pressing Escape', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
+    const searchInput = await openGlobalSearch(page);
     await searchInput.fill('Vance');
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(600);
 
     const dropdown = page.locator('#global-search-results');
     await expect(dropdown).toBeVisible();
@@ -128,14 +104,9 @@ test.describe('Global Search E2E System Tests', () => {
 
   test('should navigate to doctor detail page when clicking a doctor result', async ({ page }) => {
     await page.goto('/dashboard');
-    const isMobile = page.viewportSize() ? page.viewportSize()!.width < 768 : false;
-    if (isMobile) {
-      await page.getByRole('banner').locator('button[aria-label="Open search"]').click();
-      await page.waitForTimeout(200);
-    }
-    const searchInput = page.getByRole('banner').locator('input[placeholder*="Search doctors, patients"]:visible');
+    const searchInput = await openGlobalSearch(page);
     await searchInput.fill('Vance');
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(600);
 
     const doctorResult = page.locator('#global-search-results [role="option"]:has-text("Dr. Alexander Vance")');
     await expect(doctorResult).toBeVisible();

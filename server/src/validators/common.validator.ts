@@ -70,44 +70,89 @@ export const dateStringSchema = z
   );
 
 /**
- * Transforms a valid date string to the start of that calendar day in UTC (00:00:00.000)
- * or parsed exact Date if full ISO with time was supplied.
+ * Application default timezone offset: Asia/Dhaka is UTC+6 (+06:00, no daylight savings).
  */
-export function parseDateFrom(val: string): Date {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) {
-    return new Date(`${val.trim()}T00:00:00.000Z`);
+export const APP_TIMEZONE_OFFSET = '+06:00';
+
+/**
+ * Transforms a valid date string to the start of that calendar day in local application timezone (+06:00 Asia/Dhaka)
+ * or specified timezone offset, returning a UTC Date instance for MongoDB comparison.
+ */
+export function parseDateFrom(val: string, offset: string = APP_TIMEZONE_OFFSET): Date {
+  const trimmed = val.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const tz = offset === 'UTC' || offset === 'Z' ? 'Z' : offset;
+    return new Date(`${trimmed}T00:00:00.000${tz}`);
   }
-  return new Date(val);
+  return new Date(trimmed);
 }
 
 /**
- * Transforms a valid date string to the end of that calendar day in UTC (23:59:59.999)
+ * Transforms a valid date string to the start of the following calendar day in local application timezone (+06:00 Asia/Dhaka)
+ * or specified timezone offset.
+ * Used with MongoDB's `$lt` operator to provide an exclusive upper boundary that cleanly covers the entire selected end day
+ * without any millisecond precision loss.
+ */
+export function parseExclusiveDateTo(val: string, offset: string = APP_TIMEZONE_OFFSET): Date {
+  const trimmed = val.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [yearStr, monthStr, dayStr] = trimmed.split('-');
+    const year = parseInt(yearStr!, 10);
+    const month = parseInt(monthStr!, 10);
+    const day = parseInt(dayStr!, 10);
+    const nextDate = new Date(Date.UTC(year, month - 1, day + 1));
+    const nextYear = nextDate.getUTCFullYear();
+    const nextMonth = String(nextDate.getUTCMonth() + 1).padStart(2, '0');
+    const nextDay = String(nextDate.getUTCDate()).padStart(2, '0');
+    const tz = offset === 'UTC' || offset === 'Z' ? 'Z' : offset;
+    return new Date(`${nextYear}-${nextMonth}-${nextDay}T00:00:00.000${tz}`);
+  }
+  const parsed = new Date(trimmed);
+  return new Date(parsed.getTime() + 1);
+}
+
+/**
+ * Transforms a valid date string to the end of that calendar day in local timezone or UTC (23:59:59.999)
  * or parsed exact Date if full ISO with time was supplied.
  */
-export function parseDateTo(val: string): Date {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) {
-    return new Date(`${val.trim()}T23:59:59.999Z`);
+export function parseDateTo(val: string, offset: string = APP_TIMEZONE_OFFSET): Date {
+  const trimmed = val.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const tz = offset === 'UTC' || offset === 'Z' ? 'Z' : offset;
+    return new Date(`${trimmed}T23:59:59.999${tz}`);
   }
-  return new Date(val);
+  return new Date(trimmed);
 }
 
 /**
  * Common pagination and date range query parameters schema
  */
-export const paginationQuerySchema = z.object({
-  page: z
-    .string()
-    .optional()
-    .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 1))
-    .refine((val) => !isNaN(val) && val >= 1, 'Page must be a positive integer'),
-  limit: z
-    .string()
-    .optional()
-    .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 10))
-    .refine((val) => !isNaN(val) && val >= 1 && val <= 100, 'Limit must be between 1 and 100'),
-  search: z.string().trim().max(100, 'Search term cannot exceed 100 characters').optional(),
-  from: dateStringSchema.optional(),
-  to: dateStringSchema.optional(),
-});
+export const paginationQuerySchema = z
+  .object({
+    page: z
+      .string()
+      .optional()
+      .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 1))
+      .refine((val) => !isNaN(val) && val >= 1, 'Page must be a positive integer'),
+    limit: z
+      .string()
+      .optional()
+      .transform((val) => (val !== undefined && val !== '' ? parseInt(val, 10) : 10))
+      .refine((val) => !isNaN(val) && val >= 1 && val <= 100, 'Limit must be between 1 and 100'),
+    search: z.string().trim().max(100, 'Search term cannot exceed 100 characters').optional(),
+    from: dateStringSchema.optional(),
+    to: dateStringSchema.optional(),
+    startDate: dateStringSchema.optional(),
+    endDate: dateStringSchema.optional(),
+  })
+  .transform((data) => {
+    const from = data.from || data.startDate;
+    const to = data.to || data.endDate;
+    return {
+      ...data,
+      from,
+      to,
+    };
+  });
 
 export type PaginationQueryInput = z.infer<typeof paginationQuerySchema>;

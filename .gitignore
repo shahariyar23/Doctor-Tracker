@@ -66,4 +66,4 @@ Thumbs.db
 *.temp
 .cache/
 coverage/
-docs
+

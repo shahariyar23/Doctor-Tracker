@@ -163,7 +163,7 @@ export function DoctorsView() {
     <div className="space-y-5 sm:space-y-6">
       {/* Header & Primary Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
               Doctor Directory & Management
@@ -180,7 +180,7 @@ export function DoctorsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0 min-w-0">
           <Button
             type="button"
             variant="outline"

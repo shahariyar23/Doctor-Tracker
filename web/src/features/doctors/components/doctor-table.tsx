@@ -127,24 +127,24 @@ export function DoctorTable({
       <div className="rounded-xl border border-border/80 bg-card p-3 sm:p-4 shadow-xs space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by physician name, specialty, email, or hospital..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl"
+              className="pl-9 h-10 text-xs sm:text-sm bg-muted/30 focus-visible:bg-background rounded-xl w-full"
             />
           </div>
 
           {/* Filter Dropdowns and Actions */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Specialty Select */}
             <select
               value={selectedSpecialty}
               onChange={(e) => onSpecialtyChange(e.target.value)}
-              className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer"
+              className="h-9 sm:h-10 flex-1 sm:flex-initial rounded-xl border border-input bg-card px-2.5 sm:px-3 text-xs text-foreground focus:border-primary focus:outline-none cursor-pointer min-w-0"
             >
               {SPECIALTY_OPTIONS.map((opt) => (
                 <option key={opt} value={opt === "All Specialties" ? "" : opt}>
@@ -361,13 +361,13 @@ export function DoctorTable({
                 </div>
 
                 {/* Contact and Quick Action */}
-                <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
-                  <div className="flex flex-col text-muted-foreground text-[11px] truncate">
-                    <span>{doctor.email}</span>
+                <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs gap-2">
+                  <div className="flex flex-col text-muted-foreground text-[11px] min-w-0 flex-1">
+                    <span className="truncate">{doctor.email}</span>
                     {doctor.phone && (
-                      <span className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {doctor.phone}
+                      <span className="flex items-center gap-1 truncate">
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{doctor.phone}</span>
                       </span>
                     )}
                   </div>

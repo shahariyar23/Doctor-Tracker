@@ -11,7 +11,12 @@ import type {
   DoctorQueryInput,
 } from '../validators/doctor.validator.js';
 import type { IdParamInput } from '../validators/common.validator.js';
-import { escapeRegex, parseDateFrom, parseDateTo } from '../validators/common.validator.js';
+import {
+  escapeRegex,
+  parseDateFrom,
+  parseDateTo,
+  parseExclusiveDateTo,
+} from '../validators/common.validator.js';
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
@@ -76,14 +81,14 @@ export const getAllDoctorsHandler = asyncHandler(
       ];
     }
 
-    // Date range condition on createdAt
+    // Date range condition on createdAt (inclusive start, inclusive end covering entire day via exclusive $lt boundary)
     if (query.from || query.to) {
       const dateFilter: Record<string, Date> = {};
       if (query.from) {
         dateFilter.$gte = parseDateFrom(query.from);
       }
       if (query.to) {
-        dateFilter.$lte = parseDateTo(query.to);
+        dateFilter.$lt = parseExclusiveDateTo(query.to);
       }
       filter.createdAt = dateFilter;
     }

@@ -1,6 +1,6 @@
 # Doctor Tracker — Clinical Resource & Patient Management System
 
-A production-grade, full-stack healthcare administrative platform designed to track medical personnel, monitor patient condition distributions, manage physician assignments, and provide real-time clinical workload analytics.
+A full-stack healthcare administrative platform designed to track medical personnel, monitor patient condition distributions, manage physician assignments, and provide real-time clinical workload analytics.
 
 Built with **Next.js 16 (App Router, React 19, Turbopack)**, **Express 5 (TypeScript)**, and **MongoDB (Mongoose 9)**.
 
@@ -83,7 +83,7 @@ Healthcare administration frequently suffers from fragmented tracking systems, m
 ### Frontend (`web/`)
 - **Framework**: Next.js 16.4.4 (App Router, Turbopack, Partial Prerendering)
 - **UI Library**: React 19.3.0
-- **Language**: TypeScript 5
+- **Language**: TypeScript 5 (`typescript@^5`, resolved `5.9.3`)
 - **Styling**: Tailwind CSS v4, tw-animate-css
 - **Components & Icons**: shadcn/ui, Lucide React, Base UI (`@base-ui/react`)
 - **Server State & Data Fetching**: TanStack Query v5 (`@tanstack/react-query`)
@@ -388,32 +388,31 @@ All protected endpoints require a valid administrative session cookie (`token`).
 
 ## 10. Screenshots
 
-> *Add application screenshots in PNG format to the `docs/screenshots/` directory matching the designated filenames below.*
 
 ### Desktop Views
 
-| View | Screenshot Placeholder |
+| View | Screenshot |
 | :--- | :--- |
-| **Admin Login** | `docs/screenshots/desktop-login.png` |
-| **Analytics Dashboard** | `docs/screenshots/desktop-dashboard.png` |
-| **Doctor Directory** | `docs/screenshots/desktop-doctors.png` |
-| **Patient Directory** | `docs/screenshots/desktop-patients.png` |
-| **Global Search Dropdown**| `docs/screenshots/desktop-search.png` |
+| **Admin Login** | ![Admin Login](docs/screenshots/desktop-login.png) |
+| **Analytics Dashboard** | ![Analytics Dashboard](docs/screenshots/desktop-dashboard.png) |
+| **Doctor Directory** | ![Doctor Directory](docs/screenshots/desktop-doctors.png) |
+| **Patient Directory** | ![Patient Directory](docs/screenshots/desktop-patients.png) |
+| **Global Search Dropdown** | ![Global Search](docs/screenshots/desktop-search.png) |
 
 ### Mobile Views
 
-| View | Screenshot Placeholder |
+| View | Screenshot |
 | :--- | :--- |
-| **Mobile Dashboard** | `docs/screenshots/mobile-dashboard.png` |
-| **Mobile Doctor Directory**| `docs/screenshots/mobile-doctors.png` |
-| **Mobile Patient Cards** | `docs/screenshots/mobile-patients.png` |
+| **Mobile Dashboard** | ![Mobile Dashboard](docs/screenshots/mobile-dashboard.png) |
+| **Mobile Dashboard** | ![Mobile Dashboard](docs/screenshots/mobile-dashboard-2.png) |
+| **Mobile Doctor Directory** | ![Mobile Doctors](docs/screenshots/mobile-doctors.png) |
+| **Mobile Patient Cards** | ![Mobile Patients](docs/screenshots/mobile-patients.png) |
 
----
 
 ## 11. Project Links
 
 - **Repository**: [https://github.com/shahariyar23/Doctor-Tracker](https://github.com/shahariyar23/Doctor-Tracker)
-- **Deployment Guide**: [docs/VERCEL_DEPLOYMENT_GUIDE.md](docs/VERCEL_DEPLOYMENT_GUIDE.md)
+- **Live link**: [https://doctor-tracker.mostak.tech](https://doctor-tracker.mostak.tech)
 - **QA & Verification Report**: [docs/QA_TEST_REPORT.md](docs/QA_TEST_REPORT.md)
 
 ---

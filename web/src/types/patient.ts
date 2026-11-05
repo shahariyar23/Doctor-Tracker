@@ -37,11 +37,14 @@ export interface PatientFilterParams extends PaginationParams {
 
 export interface PatientStats {
   totalPatients: number;
-  underTreatment: number;
+  criticalPatients: number;
+  underTreatmentPatients: number;
+  unassignedPatients: number;
   criticalCare: number;
-  stable: number;
-  recovering: number;
+  underTreatment: number;
   unassigned: number;
+  stable?: number;
+  recovering?: number;
 }
 
 export interface PaginatedPatientsResponse {

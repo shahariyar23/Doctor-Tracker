@@ -224,4 +224,94 @@ describe('Phase 06, 08 & 10: Doctor CRUD, Search & Pagination Test Suite', () =>
     expect(dateRes.status).toBe(200);
     expect(dateRes.body.meta.total).toBe(4);
   });
+
+  describe('Doctor Date Range Filtering & Timezone Suite', () => {
+    async function seedTestDoctors() {
+      await Doctor.create([
+        {
+          name: 'Doctor Nov 4 Night',
+          specialization: 'Neurology',
+          hospital: 'City Hosp',
+          phone: '+1-555-1104',
+          email: 'nov4night@doc.org',
+          createdAt: new Date('2026-11-04T23:59:00.000+06:00'),
+        },
+        {
+          name: 'Doctor Nov 5 Early',
+          specialization: 'Cardiology',
+          hospital: 'City Hosp',
+          phone: '+1-555-1105',
+          email: 'nov5early@doc.org',
+          createdAt: new Date('2026-11-05T00:05:00.000+06:00'),
+        },
+        {
+          name: 'Doctor Nov 5 Late',
+          specialization: 'Pediatrics',
+          hospital: 'City Hosp',
+          phone: '+1-555-1106',
+          email: 'nov5late@doc.org',
+          createdAt: new Date('2026-11-05T23:55:00.000+06:00'),
+        },
+        {
+          name: 'Doctor Nov 6 Early',
+          specialization: 'Orthopedics',
+          hospital: 'City Hosp',
+          phone: '+1-555-1107',
+          email: 'nov6early@doc.org',
+          createdAt: new Date('2026-11-06T00:05:00.000+06:00'),
+        },
+      ]);
+    }
+
+    it('should filter doctors by single-day inclusive range covering entire local calendar day (Asia/Dhaka UTC+6)', async () => {
+      await seedTestDoctors();
+
+      // Single day filter: 2026-11-05 to 2026-11-05
+      const res = await request(app)
+        .get('/api/v1/doctors?from=2026-11-05&to=2026-11-05')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.meta.total).toBe(2);
+      const names = res.body.data.map((d: any) => d.name);
+      expect(names).toContain('Doctor Nov 5 Early');
+      expect(names).toContain('Doctor Nov 5 Late');
+      expect(names).not.toContain('Doctor Nov 4 Night');
+      expect(names).not.toContain('Doctor Nov 6 Early');
+    });
+
+    it('should support aliased startDate and endDate params across multi-day inclusive range', async () => {
+      await seedTestDoctors();
+
+      const res = await request(app)
+        .get('/api/v1/doctors?startDate=2026-11-04&endDate=2026-11-06')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.meta.total).toBe(4);
+    });
+
+    it('should return empty results when date range has no matching records', async () => {
+      await seedTestDoctors();
+
+      const res = await request(app)
+        .get('/api/v1/doctors?from=2025-01-01&to=2025-01-02')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.meta.total).toBe(0);
+      expect(res.body.data).toHaveLength(0);
+    });
+
+    it('should reject inverted date ranges (from > to) with 422 Unprocessable Entity', async () => {
+      const res = await request(app)
+        .get('/api/v1/doctors?from=2026-11-06&to=2026-11-04')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+    });
+  });
 });

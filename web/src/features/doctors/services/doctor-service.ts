@@ -20,8 +20,12 @@ export const doctorService = {
       limit: params.limit || 10,
     };
     if (params.search) queryParams.search = params.search;
-    if (params.from) queryParams.from = params.from;
-    if (params.to) queryParams.to = params.to;
+    const fromDate = params.from || params.startDate;
+    const toDate = params.to || params.endDate;
+    if (fromDate) queryParams.from = fromDate;
+    if (toDate) queryParams.to = toDate;
+    if (params.startDate) queryParams.startDate = params.startDate;
+    if (params.endDate) queryParams.endDate = params.endDate;
     if (params.specialty && !params.search) queryParams.search = params.specialty;
 
     const response = await apiClient.get<ApiResponse<Doctor[]>>("/doctors", {

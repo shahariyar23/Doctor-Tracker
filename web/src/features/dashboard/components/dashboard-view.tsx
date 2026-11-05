@@ -154,7 +154,13 @@ export function DashboardView() {
   const recentPatients = (recentPatientsData?.patients || []).map((p) => ({
     id: p.id,
     name: p.name,
-    registeredDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "Recent",
+    registeredDate: p.createdAt
+      ? new Date(p.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "Recent",
     condition: p.condition,
     assignedDoctor: p.assignedDoctor
       ? {

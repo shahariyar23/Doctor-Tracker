@@ -122,21 +122,21 @@ export async function seedE2EDatabase(overrideUri?: string): Promise<{
   adminCreated: boolean;
 }> {
   const baseUri = overrideUri || process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor_tracker';
-  
+
   // Parse base URL using standard URL or string replacement preserving credentials and search params
   const parsed = new URL(baseUri);
   parsed.pathname = `/${E2E_DB_NAME}`;
   const e2eUri = parsed.toString();
 
   console.log(`[E2E Seed] Target database verification: ${E2E_DB_NAME}`);
-  
+
   // SAFETY CHECK: Ensure we NEVER touch standard development DB
   if (!e2eUri.includes(E2E_DB_NAME)) {
     throw new Error(`FATAL SAFETY ERROR: Connection URI does not point to isolated E2E database ${E2E_DB_NAME}`);
   }
 
   await mongoose.connect(e2eUri);
-  
+
   const connectedDbName = mongoose.connection.db?.databaseName;
   if (connectedDbName !== E2E_DB_NAME) {
     await mongoose.disconnect();

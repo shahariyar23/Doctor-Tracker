@@ -10,7 +10,12 @@ import type {
   PatientQueryInput,
 } from '../validators/patient.validator.js';
 import type { IdParamInput } from '../validators/common.validator.js';
-import { escapeRegex, parseDateFrom, parseDateTo } from '../validators/common.validator.js';
+import {
+  escapeRegex,
+  parseDateFrom,
+  parseDateTo,
+  parseExclusiveDateTo,
+} from '../validators/common.validator.js';
 
 /**
  * Helper to handle MongoDB duplicate key errors (code 11000)
@@ -64,6 +69,48 @@ export const createPatientHandler = asyncHandler(
 );
 
 /**
+ * Global Patient Statistics (entire collection)
+ * GET /api/v1/patients/stats
+ */
+export const getPatientStatsHandler = asyncHandler(
+  async (_req: Request, res: Response): Promise<void> => {
+    const [
+      totalPatients,
+      criticalPatients,
+      underTreatmentPatients,
+      unassignedPatients,
+      stablePatients,
+      recoveringPatients,
+    ] = await Promise.all([
+      Patient.countDocuments(),
+      Patient.countDocuments({ condition: { $regex: /^critical$/i } }),
+      Patient.countDocuments({ condition: { $regex: /^under treatment$/i } }),
+      Patient.countDocuments({
+        $or: [{ assignedDoctorId: null }, { assignedDoctorId: { $exists: false } }],
+      }),
+      Patient.countDocuments({ condition: { $regex: /^stable$/i } }),
+      Patient.countDocuments({ condition: { $regex: /^recovering$/i } }),
+    ]);
+
+    ApiResponse.success(res, {
+      message: 'Patient statistics retrieved successfully',
+      data: {
+        totalPatients,
+        criticalPatients,
+        underTreatmentPatients,
+        unassignedPatients,
+        // Aliases for frontend backward-compatibility
+        criticalCare: criticalPatients,
+        underTreatment: underTreatmentPatients,
+        unassigned: unassignedPatients,
+        stable: stablePatients,
+        recovering: recoveringPatients,
+      },
+    });
+  },
+);
+
+/**
  * Retrieve Patients with search, condition filtering, date filtering, and database pagination
  * GET /api/v1/patients
  */
@@ -97,14 +144,14 @@ export const getAllPatientsHandler = asyncHandler(
       }
     }
 
-    // Date range condition on createdAt
+    // Date range condition on createdAt (inclusive start, inclusive end covering entire day via exclusive $lt boundary)
     if (query.from || query.to) {
       const dateFilter: Record<string, Date> = {};
       if (query.from) {
         dateFilter.$gte = parseDateFrom(query.from);
       }
       if (query.to) {
-        dateFilter.$lte = parseDateTo(query.to);
+        dateFilter.$lt = parseExclusiveDateTo(query.to);
       }
       filter.createdAt = dateFilter;
     }

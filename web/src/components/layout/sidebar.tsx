@@ -15,11 +15,17 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NAV_ITEMS } from "./nav-config";
 import { Logo } from "@/components/brand/logo";
+import type { User } from "@/types/auth";
 
-export function Sidebar() {
+interface SidebarProps {
+  user?: User | null;
+}
+
+export function Sidebar({ user: propUser }: SidebarProps = {}) {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { logout, user } = useAuth();
+  const { logout, user: authUser } = useAuth();
+  const user = propUser !== undefined ? propUser : authUser;
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const mobileOpen = useAppSelector((state) => state.ui.mobileSidebarOpen);
 
@@ -162,7 +168,15 @@ export function Sidebar() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => dispatch(toggleSidebar())}
+              onClick={() => {
+                const next = !collapsed;
+                dispatch(toggleSidebar());
+                try {
+                  localStorage.setItem("doctor_tracker_sidebar_collapsed", String(next));
+                } catch {
+                  // Ignore localStorage error
+                }
+              }}
               className="hidden lg:flex items-center gap-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >

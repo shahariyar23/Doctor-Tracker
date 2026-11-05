@@ -26,6 +26,35 @@ interface AssignPatientModalProps {
   doctorName: string;
 }
 
+/**
+ * Safely extracts the normalized string ObjectId of the assigned doctor from a patient record.
+ * Handles string IDs, populated object references, or nested assignedDoctor references.
+ */
+function extractPatientDoctorId(patient?: Patient | null): string | null {
+  if (!patient) return null;
+
+  if (typeof patient.assignedDoctorId === "string" && patient.assignedDoctorId.trim().length > 0) {
+    return patient.assignedDoctorId.trim();
+  }
+
+  if (patient.assignedDoctorId && typeof patient.assignedDoctorId === "object") {
+    const docObj = patient.assignedDoctorId as { id?: string; _id?: string };
+    const id = docObj.id || docObj._id;
+    if (id && typeof id === "string" && id.trim().length > 0) {
+      return id.trim();
+    }
+  }
+
+  if (patient.assignedDoctor) {
+    const id = patient.assignedDoctor.id || patient.assignedDoctor._id;
+    if (id && typeof id === "string" && id.trim().length > 0) {
+      return id.trim();
+    }
+  }
+
+  return null;
+}
+
 export function AssignPatientModal({
   isOpen,
   onClose,
@@ -105,22 +134,23 @@ export function AssignPatientModal({
 
   if (!isOpen) return null;
 
-  // Determine assignment state for the selected patient
-  const isAlreadyAssignedToCurrent =
-    selectedPatient?.assignedDoctorId === doctorId ||
-    selectedPatient?.assignedDoctor?.id === doctorId ||
-    selectedPatient?.assignedDoctor?._id === doctorId;
+  const targetDocId = (doctorId || "").trim();
+  const selectedDocId = extractPatientDoctorId(selectedPatient);
+
+  // Strict ObjectId equality: Both must be valid non-empty strings and equal
+  const isAlreadyAssignedToCurrent = Boolean(
+    targetDocId && selectedDocId && selectedDocId === targetDocId
+  );
 
   const currentDoctorName =
     selectedPatient?.assignedDoctor?.name ||
-    (selectedPatient?.assignedDoctorId ? "Another Physician" : null);
+    (selectedDocId ? "Another Physician" : null);
 
-  const isAssignedToOtherDoctor =
-    Boolean(selectedPatient?.assignedDoctorId || selectedPatient?.assignedDoctor) &&
-    !isAlreadyAssignedToCurrent;
+  const isAssignedToOtherDoctor = Boolean(
+    selectedDocId && (!targetDocId || selectedDocId !== targetDocId)
+  );
 
-  const isUnassigned =
-    !selectedPatient?.assignedDoctorId && !selectedPatient?.assignedDoctor;
+  const isUnassigned = !selectedDocId;
 
   const handleSelectPatient = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -272,10 +302,13 @@ export function AssignPatientModal({
               <div className="divide-y divide-border/60 border border-border/80 rounded-xl overflow-hidden max-h-48 overflow-y-auto bg-card shadow-2xs">
                 {searchResults.map((patient) => {
                   const isSelected = selectedPatient?.id === patient.id;
-                  const isCurrent =
-                    patient.assignedDoctorId === doctorId ||
-                    patient.assignedDoctor?.id === doctorId ||
-                    patient.assignedDoctor?._id === doctorId;
+                  const patientDocId = extractPatientDoctorId(patient);
+                  const isCurrent = Boolean(
+                    targetDocId && patientDocId && patientDocId === targetDocId
+                  );
+                  const isOther = Boolean(
+                    patientDocId && (!targetDocId || patientDocId !== targetDocId)
+                  );
                   const docName = patient.assignedDoctor?.name;
 
                   return (
@@ -316,6 +349,10 @@ export function AssignPatientModal({
                         ) : docName ? (
                           <span className="text-[10px] text-amber-600 dark:text-amber-400 truncate max-w-[130px]">
                             Dr. {docName}
+                          </span>
+                        ) : isOther ? (
+                          <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                            Assigned
                           </span>
                         ) : (
                           <span className="text-[10px] text-muted-foreground">

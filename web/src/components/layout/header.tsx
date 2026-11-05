@@ -8,6 +8,7 @@ import { toggleMobileSidebar } from "@/store/slices/ui-slice";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { GlobalSearch } from "./global-search";
+import type { User } from "@/types/auth";
 
 const ROUTE_TITLES: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": {
@@ -24,10 +25,15 @@ const ROUTE_TITLES: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export function Header() {
+interface HeaderProps {
+  user?: User | null;
+}
+
+export function Header({ user: propUser }: HeaderProps = {}) {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
+  const reduxUser = useAppSelector((state) => state.auth.user);
+  const user = propUser !== undefined ? propUser : reduxUser;
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const routeInfo = ROUTE_TITLES[pathname] || {

@@ -6,3 +6,6 @@ export type { IDoctor, DoctorDocument, DoctorModel } from './doctor.model.js';
 
 export { Patient, PATIENT_GENDERS } from './patient.model.js';
 export type { IPatient, PatientGender, PatientDocument, PatientModel } from './patient.model.js';
+
+export { RateLimit } from './rate-limit.model.js';
+export type { IRateLimit, RateLimitDocument, RateLimitModel } from './rate-limit.model.js';

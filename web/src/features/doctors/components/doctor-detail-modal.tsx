@@ -530,7 +530,7 @@ export function DoctorDetailModal({
           setIsAssignModalOpen(false);
           refetch();
         }}
-        doctorId={doctor.id}
+        doctorId={doctor.id || doctor._id || ""}
         doctorName={doctor.name}
       />
     </div>

@@ -10,6 +10,14 @@ export function usePatients(params: PatientFilterParams = {}) {
   });
 }
 
+export function usePatientStats() {
+  return useQuery({
+    queryKey: ["patients", "stats"],
+    queryFn: () => patientService.getPatientStats(),
+    staleTime: 30_000,
+  });
+}
+
 export function usePatient(id: string | null) {
   return useQuery({
     queryKey: ["patient", id],
@@ -99,13 +107,8 @@ export function useBulkReassignPatients() {
 export function useReassignPatient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      patientId,
-      doctorId,
-    }: {
-      patientId: string;
-      doctorId: string;
-    }) => patientService.updatePatient(patientId, { assignedDoctorId: doctorId }),
+    mutationFn: ({ patientId, doctorId }: { patientId: string; doctorId: string }) =>
+      patientService.updatePatient(patientId, { assignedDoctorId: doctorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });

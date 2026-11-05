@@ -357,4 +357,251 @@ describe('Phase 07, 08 & 10: Patient CRUD, Search & Integrity Test Suite', () =>
     expect(res.body.data.length).toBe(0);
     expect(res.body.meta.total).toBe(0);
   });
+
+  describe('Global Patient Statistics — GET /api/v1/patients/stats', () => {
+    it('should reject unauthenticated requests to /api/v1/patients/stats with 401', async () => {
+      const res = await request(app).get('/api/v1/patients/stats');
+      expect(res.status).toBe(401);
+    });
+
+    it('should safely handle an empty database returning zero for all statistics', async () => {
+      const res = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toEqual({
+        totalPatients: 0,
+        criticalPatients: 0,
+        underTreatmentPatients: 0,
+        unassignedPatients: 0,
+        criticalCare: 0,
+        underTreatment: 0,
+        unassigned: 0,
+        stable: 0,
+        recovering: 0,
+      });
+    });
+
+    it('should accurately aggregate global statistics across the entire Patient collection', async () => {
+      // 1. Critical + Assigned
+      await Patient.create({
+        name: 'Patient 1',
+        condition: 'Critical',
+        age: 45,
+        gender: 'female',
+        assignedDoctorId: sampleDoctor._id,
+      });
+
+      // 2. Critical + Unassigned
+      await Patient.create({
+        name: 'Patient 2',
+        condition: 'Critical',
+        age: 60,
+        gender: 'male',
+        assignedDoctorId: null,
+      });
+
+      // 3. Under Treatment + Assigned
+      await Patient.create({
+        name: 'Patient 3',
+        condition: 'Under Treatment',
+        age: 30,
+        gender: 'male',
+        assignedDoctorId: sampleDoctor._id,
+      });
+
+      // 4. Under Treatment + Unassigned
+      await Patient.create({
+        name: 'Patient 4',
+        condition: 'Under Treatment',
+        age: 28,
+        gender: 'female',
+        assignedDoctorId: null,
+      });
+
+      // 5. Stable + Unassigned
+      await Patient.create({
+        name: 'Patient 5',
+        condition: 'Stable',
+        age: 50,
+        gender: 'other',
+        assignedDoctorId: null,
+      });
+
+      // 6. Recovering + Assigned
+      await Patient.create({
+        name: 'Patient 6',
+        condition: 'Recovering',
+        age: 22,
+        gender: 'female',
+        assignedDoctorId: sampleDoctor._id,
+      });
+
+      const res = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.totalPatients).toBe(6);
+      expect(res.body.data.criticalPatients).toBe(2);
+      expect(res.body.data.underTreatmentPatients).toBe(2);
+      expect(res.body.data.unassignedPatients).toBe(3); // Patient 2, 4, 5
+
+      // Aliases
+      expect(res.body.data.criticalCare).toBe(2);
+      expect(res.body.data.underTreatment).toBe(2);
+      expect(res.body.data.unassigned).toBe(3);
+      expect(res.body.data.stable).toBe(1);
+      expect(res.body.data.recovering).toBe(1);
+    });
+
+    it('should reflect changes when creating, assigning, or deleting patients', async () => {
+      // Create unassigned Under Treatment patient
+      const p1 = await Patient.create({
+        name: 'Dynamic Patient',
+        condition: 'Under Treatment',
+        age: 33,
+        gender: 'male',
+        assignedDoctorId: null,
+      });
+
+      let statsRes = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+      expect(statsRes.body.data.totalPatients).toBe(1);
+      expect(statsRes.body.data.underTreatmentPatients).toBe(1);
+      expect(statsRes.body.data.unassignedPatients).toBe(1);
+      expect(statsRes.body.data.criticalPatients).toBe(0);
+
+      // Create Critical patient
+      const p2 = await Patient.create({
+        name: 'Critical Patient',
+        condition: 'Critical',
+        age: 55,
+        gender: 'female',
+        assignedDoctorId: sampleDoctor._id,
+      });
+
+      statsRes = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+      expect(statsRes.body.data.totalPatients).toBe(2);
+      expect(statsRes.body.data.criticalPatients).toBe(1);
+      expect(statsRes.body.data.unassignedPatients).toBe(1);
+
+      // Assign doctor to p1
+      await Patient.findByIdAndUpdate(p1._id, { assignedDoctorId: sampleDoctor._id });
+      statsRes = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+      expect(statsRes.body.data.unassignedPatients).toBe(0);
+
+      // Delete p2
+      await Patient.findByIdAndDelete(p2._id);
+      statsRes = await request(app).get('/api/v1/patients/stats').set('Cookie', authCookie);
+      expect(statsRes.body.data.totalPatients).toBe(1);
+      expect(statsRes.body.data.criticalPatients).toBe(0);
+    });
+  });
+
+  describe('Patient Date Range Filtering & Timezone Suite', () => {
+    async function seedTestPatients() {
+      await Patient.create([
+        {
+          name: 'Patient Nov 4 Night',
+          condition: 'Stable',
+          age: 30,
+          gender: 'male',
+          createdAt: new Date('2026-11-04T23:59:00.000+06:00'),
+        },
+        {
+          name: 'Patient Nov 5 Early',
+          condition: 'Under Treatment',
+          age: 32,
+          gender: 'female',
+          createdAt: new Date('2026-11-05T00:05:00.000+06:00'),
+        },
+        {
+          name: 'Patient Nov 5 Late',
+          condition: 'Critical',
+          age: 45,
+          gender: 'male',
+          createdAt: new Date('2026-11-05T23:55:00.000+06:00'),
+        },
+        {
+          name: 'Patient Nov 6 Early',
+          condition: 'Recovering',
+          age: 28,
+          gender: 'female',
+          createdAt: new Date('2026-11-06T00:05:00.000+06:00'),
+        },
+      ]);
+    }
+
+    it('should filter patients by single-day inclusive range covering entire local calendar day (Asia/Dhaka UTC+6)', async () => {
+      await seedTestPatients();
+
+      // Single day filter: 2026-11-05 to 2026-11-05
+      const res = await request(app)
+        .get('/api/v1/patients?from=2026-11-05&to=2026-11-05')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.meta.total).toBe(2);
+      const names = res.body.data.map((p: any) => p.name);
+      expect(names).toContain('Patient Nov 5 Early');
+      expect(names).toContain('Patient Nov 5 Late');
+      expect(names).not.toContain('Patient Nov 4 Night');
+      expect(names).not.toContain('Patient Nov 6 Early');
+    });
+
+    it('should support aliased startDate and endDate params across multi-day inclusive range', async () => {
+      await seedTestPatients();
+
+      const res = await request(app)
+        .get('/api/v1/patients?startDate=2026-11-04&endDate=2026-11-06')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.meta.total).toBe(4);
+    });
+
+    it('should return empty results when date range has no matching records', async () => {
+      await seedTestPatients();
+
+      const res = await request(app)
+        .get('/api/v1/patients?from=2025-01-01&to=2025-01-02')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.meta.total).toBe(0);
+      expect(res.body.data).toHaveLength(0);
+    });
+
+    it('should reject inverted date ranges (from > to) with 422 Unprocessable Entity', async () => {
+      const res = await request(app)
+        .get('/api/v1/patients?from=2026-11-06&to=2026-11-04')
+        .set('Cookie', authCookie);
+
+      expect(res.status).toBe(422);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should paginate correctly within date-filtered records', async () => {
+      await seedTestPatients();
+
+      const resPage1 = await request(app)
+        .get('/api/v1/patients?startDate=2026-11-04&endDate=2026-11-06&page=1&limit=2')
+        .set('Cookie', authCookie);
+
+      expect(resPage1.status).toBe(200);
+      expect(resPage1.body.data).toHaveLength(2);
+      expect(resPage1.body.meta.total).toBe(4);
+      expect(resPage1.body.meta.totalPages).toBe(2);
+      expect(resPage1.body.meta.page).toBe(1);
+
+      const resPage2 = await request(app)
+        .get('/api/v1/patients?startDate=2026-11-04&endDate=2026-11-06&page=2&limit=2')
+        .set('Cookie', authCookie);
+
+      expect(resPage2.status).toBe(200);
+      expect(resPage2.body.data).toHaveLength(2);
+      expect(resPage2.body.meta.page).toBe(2);
+    });
+  });
 });

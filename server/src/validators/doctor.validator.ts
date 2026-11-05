@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { dateStringSchema, parseDateFrom, parseDateTo } from './common.validator.js';
+import {
+  dateStringSchema,
+  parseDateFrom,
+  parseDateTo,
+  parseExclusiveDateTo,
+} from './common.validator.js';
 
 /**
  * Zod schema for creating a new Doctor record.
@@ -65,13 +70,24 @@ export const doctorQuerySchema = z
     search: z.string().trim().max(100, 'Search term cannot exceed 100 characters').optional(),
     from: dateStringSchema.optional(),
     to: dateStringSchema.optional(),
+    startDate: dateStringSchema.optional(),
+    endDate: dateStringSchema.optional(),
+  })
+  .transform((data) => {
+    const from = data.from || data.startDate;
+    const to = data.to || data.endDate;
+    return {
+      ...data,
+      from,
+      to,
+    };
   })
   .refine(
     (data) => {
       if (data.from && data.to) {
         const fromDate = parseDateFrom(data.from);
-        const toDate = parseDateTo(data.to);
-        return fromDate <= toDate;
+        const toDate = parseExclusiveDateTo(data.to);
+        return fromDate < toDate;
       }
       return true;
     },

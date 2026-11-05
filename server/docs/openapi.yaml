@@ -265,6 +265,18 @@ paths:
         '422':
           description: Validation failure.
 
+  /patients/stats:
+    get:
+      summary: Get global patient collection statistics
+      description: 'Calculates global summary metrics across the entire collection (total, critical, under treatment, unassigned) independent of pagination.'
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Patient statistics retrieved successfully.
+        '401':
+          description: Unauthorized.
+
   /patients/{id}:
     parameters:
       - name: id

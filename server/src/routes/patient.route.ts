@@ -5,6 +5,7 @@ import {
   getPatientByIdHandler,
   updatePatientHandler,
   deletePatientHandler,
+  getPatientStatsHandler,
 } from '../controllers/patient.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
@@ -21,6 +22,8 @@ const router = Router();
 router.use(authenticate);
 
 router.post('/', validate({ body: createPatientBodySchema }), createPatientHandler);
+
+router.get('/stats', getPatientStatsHandler);
 
 router.get('/', validate({ query: patientQuerySchema }), getAllPatientsHandler);
 

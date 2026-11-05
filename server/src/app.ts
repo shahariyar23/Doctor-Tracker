@@ -10,6 +10,10 @@ import { errorHandler } from './middlewares/error.middleware.js';
 
 const app: Application = express();
 
+// Configure trusted reverse proxies (e.g. 1 hop for Vercel, Render, AWS ALB, Nginx)
+// Never blindly trust arbitrary forwarded headers
+app.set('trust proxy', config.trustProxy);
+
 // Security HTTP headers
 app.use(helmet());
 

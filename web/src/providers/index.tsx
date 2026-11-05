@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Provider } from "react-redux";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { store, useAppDispatch } from "@/store";
 import { setAuthenticatedUser, clearAuthentication } from "@/store/slices/auth-slice";
 import { authService } from "@/features/auth/services/auth-service";
@@ -10,22 +10,21 @@ import { authService } from "@/features/auth/services/auth-service";
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
 
-  // Call /api/v1/auth/me once on startup to rehydrate user state via HTTP-only cookie
-  useQuery({
-    queryKey: ["auth", "me"],
-    queryFn: async () => {
-      try {
-        const user = await authService.getMe();
-        dispatch(setAuthenticatedUser(user));
-        return user;
-      } catch {
-        dispatch(clearAuthentication());
-        return null;
-      }
-    },
-    retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  // Call /api/v1/auth/me only on the client side after mounting to rehydrate user state via HTTP-only cookie
+  useEffect(() => {
+    let isMounted = true;
+    authService
+      .getMe()
+      .then((user) => {
+        if (isMounted) dispatch(setAuthenticatedUser(user));
+      })
+      .catch(() => {
+        if (isMounted) dispatch(clearAuthentication());
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
 
   return <>{children}</>;
 }

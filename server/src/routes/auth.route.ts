@@ -7,7 +7,7 @@ import { loginBodySchema } from '../validators/auth.validator.js';
 
 const router = Router();
 
-router.post('/login', loginRateLimiter, validate({ body: loginBodySchema }), loginHandler);
+router.post('/login', validate({ body: loginBodySchema }), loginRateLimiter, loginHandler);
 
 router.get('/me', authenticate, getMeHandler);
 

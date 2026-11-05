@@ -566,7 +566,7 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
       <AssignPatientModal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
-        doctorId={doctor.id}
+        doctorId={doctor.id || doctor._id || doctorId}
         doctorName={doctor.name}
       />
     </div>

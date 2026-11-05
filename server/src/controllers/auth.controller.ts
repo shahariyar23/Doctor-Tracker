@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/api-response.js';
 import { comparePassword, compareWithDummy } from '../utils/password.util.js';
 import { signAccessToken } from '../utils/token.util.js';
 import { config } from '../config/index.js';
+import { resetLoginRateLimits } from '../middlewares/rate-limit.middleware.js';
 import type { LoginInput } from '../validators/auth.validator.js';
 
 const COOKIE_NAME = 'token';
@@ -42,6 +43,9 @@ export const loginHandler = asyncHandler(async (req: Request, res: Response): Pr
   }
 
   const token = signAccessToken(admin._id.toString());
+
+  // Reset failed login attempt counters for both client IP and user account
+  await resetLoginRateLimits(req.ip, email);
 
   res.cookie(COOKIE_NAME, token, authCookieOptions);
 

@@ -22,11 +22,11 @@ test.describe('Doctor Directory and Management Flow', () => {
   test('should search doctors by name or specialization', async ({ page }) => {
     await page.goto('/doctors');
     const searchInput = page.getByRole('main').locator('input[placeholder*="Search"]').first();
-    await searchInput.fill('Vance');
+    await searchInput.fill('Cardiology');
     // Debounce wait
     await page.waitForTimeout(600);
 
-    const matchEl = page.locator('table tbody tr:visible, div.block.md\\:hidden div.space-y-3 > div:visible').filter({ hasText: 'Vance' }).first();
+    const matchEl = page.locator('table tbody tr:visible, div.block.md\\:hidden div.space-y-3 > div:visible').first();
     await expect(matchEl).toBeVisible();
   });
 

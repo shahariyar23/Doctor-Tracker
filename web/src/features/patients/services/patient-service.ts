@@ -5,12 +5,13 @@ import type {
   PatientDoctorReference,
   PatientFilterParams,
   PaginatedPatientsResponse,
+  PatientStats,
 } from "../types";
 import type { PatientFormData } from "../schemas/patient-schema";
 
 function normalizePatientDoctor(
   doctorRef?: string | null | PatientDoctorReference,
-  fallbackDoctor?: PatientDoctorReference | null
+  fallbackDoctor?: PatientDoctorReference | null,
 ): { rawDoctorId: string | null; populatedDoctor: PatientDoctorReference | null } {
   if (doctorRef && typeof doctorRef === "object") {
     return {
@@ -27,7 +28,8 @@ function normalizePatientDoctor(
     };
   }
 
-  const rawDoctorId = typeof doctorRef === "string" && doctorRef.trim().length > 0 ? doctorRef : null;
+  const rawDoctorId =
+    typeof doctorRef === "string" && doctorRef.trim().length > 0 ? doctorRef : null;
   return {
     rawDoctorId,
     populatedDoctor: fallbackDoctor || null,
@@ -38,9 +40,7 @@ export const patientService = {
   /**
    * GET /api/v1/patients
    */
-  getPatients: async (
-    params: PatientFilterParams = {}
-  ): Promise<PaginatedPatientsResponse> => {
+  getPatients: async (params: PatientFilterParams = {}): Promise<PaginatedPatientsResponse> => {
     const queryParams: Record<string, unknown> = {
       page: params.page || 1,
       limit: params.limit || 10,
@@ -48,8 +48,12 @@ export const patientService = {
     if (params.search) queryParams.search = params.search;
     if (params.condition) queryParams.condition = params.condition;
     if (params.doctorId) queryParams.doctorId = params.doctorId;
-    if (params.from) queryParams.from = params.from;
-    if (params.to) queryParams.to = params.to;
+    const fromDate = params.from || params.startDate;
+    const toDate = params.to || params.endDate;
+    if (fromDate) queryParams.from = fromDate;
+    if (toDate) queryParams.to = toDate;
+    if (params.startDate) queryParams.startDate = params.startDate;
+    if (params.endDate) queryParams.endDate = params.endDate;
 
     const response = await apiClient.get<ApiResponse<Patient[]>>("/patients", {
       params: queryParams,
@@ -58,7 +62,7 @@ export const patientService = {
     const patients = (response.data.data || []).map((p) => {
       const { rawDoctorId, populatedDoctor } = normalizePatientDoctor(
         p.assignedDoctorId,
-        p.assignedDoctor
+        p.assignedDoctor,
       );
 
       return {
@@ -86,6 +90,14 @@ export const patientService = {
   },
 
   /**
+   * GET /api/v1/patients/stats
+   */
+  getPatientStats: async (): Promise<PatientStats> => {
+    const response = await apiClient.get<ApiResponse<PatientStats>>("/patients/stats");
+    return response.data.data;
+  },
+
+  /**
    * GET /api/v1/patients/:id
    */
   getPatientById: async (id: string): Promise<Patient> => {
@@ -93,7 +105,7 @@ export const patientService = {
     const p = response.data.data;
     const { rawDoctorId, populatedDoctor } = normalizePatientDoctor(
       p.assignedDoctorId,
-      p.assignedDoctor
+      p.assignedDoctor,
     );
 
     return {
@@ -118,9 +130,15 @@ export const patientService = {
     };
     const response = await apiClient.post<ApiResponse<Patient>>("/patients", payload);
     const p = response.data.data;
+    const { rawDoctorId, populatedDoctor } = normalizePatientDoctor(
+      p.assignedDoctorId,
+      p.assignedDoctor,
+    );
     return {
       ...p,
       id: p.id || p._id || "",
+      assignedDoctorId: rawDoctorId,
+      assignedDoctor: populatedDoctor,
     };
   },
 
@@ -140,9 +158,15 @@ export const patientService = {
 
     const response = await apiClient.patch<ApiResponse<Patient>>(`/patients/${id}`, payload);
     const p = response.data.data;
+    const { rawDoctorId, populatedDoctor } = normalizePatientDoctor(
+      p.assignedDoctorId,
+      p.assignedDoctor,
+    );
     return {
       ...p,
       id: p.id || p._id || "",
+      assignedDoctorId: rawDoctorId,
+      assignedDoctor: populatedDoctor,
     };
   },
 

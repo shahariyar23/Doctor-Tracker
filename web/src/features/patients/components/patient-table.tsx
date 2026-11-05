@@ -19,8 +19,17 @@ import {
   Bed,
   CheckSquare,
 } from "lucide-react";
-import { Patient, PatientStats } from "../types";
+import { Patient, PatientStats, PatientDoctorReference } from "../types";
 import { Doctor } from "@/features/doctors/types";
+
+export function getPatientDoctor(patient?: Patient | null): PatientDoctorReference | null {
+  if (!patient) return null;
+  if (patient.assignedDoctor) return patient.assignedDoctor;
+  if (patient.assignedDoctorId && typeof patient.assignedDoctorId === "object") {
+    return patient.assignedDoctorId as PatientDoctorReference;
+  }
+  return null;
+}
 import patientConditionOptions from "@/data/options/patient-conditions.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -383,13 +392,19 @@ export function PatientTable({
                   <div className="flex items-center gap-1.5 text-muted-foreground truncate">
                     <Stethoscope className="h-3.5 w-3.5 text-primary shrink-0" />
                     <span className="truncate">
-                      {patient.assignedDoctor?.name || (
+                      {getPatientDoctor(patient)?.name || (
                         <span className="text-amber-600 font-semibold">Unassigned</span>
                       )}
                     </span>
                   </div>
                   <span className="text-[11px] text-muted-foreground shrink-0">
-                    {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : "—"}
+                    {patient.createdAt
+                      ? new Date(patient.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—"}
                   </span>
                 </div>
 
@@ -563,24 +578,27 @@ export function PatientTable({
 
                           {/* ASSIGNED DOCTOR */}
                           <TableCell className="py-3 px-4">
-                            {patient.assignedDoctor ? (
-                              <div className="flex flex-col text-xs leading-relaxed">
-                                <Link
-                                  href={`/doctors`}
-                                  className="font-semibold text-primary hover:underline flex items-center gap-1"
-                                >
-                                  <Stethoscope className="h-3 w-3" />
-                                  <span>{patient.assignedDoctor.name}</span>
-                                </Link>
-                                <span className="text-[11px] text-muted-foreground">
-                                  {patient.assignedDoctor.specialization}
+                            {(() => {
+                              const doc = getPatientDoctor(patient);
+                              return doc ? (
+                                <div className="flex flex-col text-xs leading-relaxed">
+                                  <Link
+                                    href={`/doctors`}
+                                    className="font-semibold text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    <Stethoscope className="h-3 w-3" />
+                                    <span>{doc.name}</span>
+                                  </Link>
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {doc.specialization}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs font-semibold text-amber-600">
+                                  Unassigned
                                 </span>
-                              </div>
-                            ) : (
-                              <span className="text-xs font-semibold text-amber-600">
-                                Unassigned
-                              </span>
-                            )}
+                              );
+                            })()}
                           </TableCell>
 
                           {/* CONTACT */}
@@ -714,7 +732,7 @@ export function PatientTable({
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
                     <span className="text-muted-foreground">
-                      {patient.assignedDoctor?.name || "Unassigned"}
+                      {getPatientDoctor(patient)?.name || "Unassigned"}
                     </span>
                     <button
                       type="button"

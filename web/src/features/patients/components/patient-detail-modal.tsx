@@ -50,6 +50,12 @@ export function PatientDetailModal({
 
   if (!isOpen || !patient) return null;
 
+  const assignedDoc =
+    patient.assignedDoctor ||
+    (typeof patient.assignedDoctorId === "object" && patient.assignedDoctorId !== null
+      ? (patient.assignedDoctorId as any)
+      : null);
+
   const getInitials = (nameStr: string) => {
     const clean = nameStr.trim();
     if (!clean) return "PT";
@@ -202,16 +208,16 @@ export function PatientDetailModal({
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto flex flex-col gap-6 flex-1 bg-white">
+        <div className="p-6 overflow-y-auto overflow-x-hidden flex flex-col gap-6 flex-1 bg-white">
           {/* Inline Reassign Doctor Drawer */}
           {isReassigning && (
             <form
               onSubmit={handleReassignSubmit}
-              className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col gap-3 animate-in fade-in duration-150"
+              className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col gap-3 animate-in fade-in duration-150 w-full min-w-0"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
-                  <Stethoscope className="w-4 h-4 text-blue-600" /> Reassign Attending Physician
+                  <Stethoscope className="w-4 h-4 text-blue-600 shrink-0" /> Reassign Attending Physician
                 </span>
                 <button
                   type="button"
@@ -228,11 +234,11 @@ export function PatientDetailModal({
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full min-w-0">
                 <select
                   value={selectedDoctorId}
                   onChange={(e) => setSelectedDoctorId(e.target.value)}
-                  className="flex-1 h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                  className="w-full min-w-0 flex-1 h-9 px-3 bg-white text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium truncate"
                 >
                   <option value="">-- No Doctor Assigned (Unassign) --</option>
                   {doctors.map((doc) => (
@@ -245,9 +251,10 @@ export function PatientDetailModal({
                 <Button
                   type="submit"
                   size="sm"
-                  className="h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4"
+                  disabled={updatePatientMutation.isPending}
+                  className="shrink-0 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 whitespace-nowrap"
                 >
-                  Save Assignment
+                  {updatePatientMutation.isPending ? "Saving..." : "Save Assignment"}
                 </Button>
               </div>
             </form>
@@ -267,7 +274,7 @@ export function PatientDetailModal({
             {/* 3 Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Triage Status */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs min-w-0">
                 <span className="text-[11px] text-slate-500 font-medium">Medical Condition</span>
                 <span
                   className={`text-base font-bold mt-1 inline-flex items-center gap-1 ${
@@ -284,27 +291,27 @@ export function PatientDetailModal({
               </div>
 
               {/* Demographics */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs min-w-0">
                 <span className="text-[11px] text-slate-500 font-medium">Demographics</span>
-                <span className="text-base font-bold text-slate-900 mt-1">
+                <span className="text-base font-bold text-slate-900 mt-1 truncate">
                   Age {patient.age} · {patient.gender ? patient.gender.replace(/_/g, " ") : "—"}
                 </span>
                 <span className="text-[11px] text-slate-400 mt-0.5">Verified Profile</span>
               </div>
 
               {/* Attending Physician */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200/70 flex flex-col shadow-xs min-w-0">
                 <span className="text-[11px] text-slate-500 font-medium">
                   Attending Physician
                 </span>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 min-w-0">
                   <Stethoscope className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="text-sm font-bold text-slate-900 truncate">
-                    {patient.assignedDoctor?.name || "Unassigned"}
+                    {assignedDoc?.name || "Unassigned"}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-500 mt-0.5 truncate">
-                  {patient.assignedDoctor?.specialization || "No doctor assigned"}
+                  {assignedDoc?.specialization || "No doctor assigned"}
                 </span>
               </div>
             </div>
@@ -347,12 +354,12 @@ export function PatientDetailModal({
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Doctor Name</span>
                   <span className="font-semibold text-blue-600 truncate max-w-[180px]">
-                    {patient.assignedDoctor ? (
+                    {assignedDoc ? (
                       <Link
                         href={`/doctors`}
                         className="hover:underline"
                       >
-                        {patient.assignedDoctor.name}
+                        {assignedDoc.name}
                       </Link>
                     ) : (
                       "Unassigned"
@@ -362,7 +369,7 @@ export function PatientDetailModal({
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Specialization</span>
                   <span className="font-semibold text-slate-900">
-                    {patient.assignedDoctor?.specialization || "Not specified"}
+                    {assignedDoc?.specialization || "Not specified"}
                   </span>
                 </div>
               </div>

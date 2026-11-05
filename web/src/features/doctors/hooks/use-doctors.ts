@@ -116,6 +116,7 @@ export function useAddPatientToDoctor() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["doctor-patients", variables.doctorId] });
+      queryClient.invalidateQueries({ queryKey: ["doctor", variables.doctorId] });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
@@ -151,6 +152,7 @@ export function useRemovePatientFromDoctor() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["doctor-patients", variables.doctorId] });
+      queryClient.invalidateQueries({ queryKey: ["doctor", variables.doctorId] });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       queryClient.invalidateQueries({ queryKey: ["doctors"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
