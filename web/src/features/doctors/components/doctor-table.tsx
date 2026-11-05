@@ -21,6 +21,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Doctor, DoctorStats } from "../types";
+import { TableRowSkeleton, MobileCardSkeleton } from "@/components/ui/skeleton";
 import specialtyOptionsData from "@/data/options/specializations.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -271,9 +272,10 @@ export function DoctorTable({
       {/* Mobile Card Stack (< md screen size) */}
       <div className="block md:hidden space-y-3">
         {isLoading ? (
-          <div className="py-12 text-center text-xs text-muted-foreground">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-2" />
-            Loading physician records...
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <MobileCardSkeleton key={i} />
+            ))}
           </div>
         ) : doctors.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border/80 bg-card p-8 text-center text-xs text-muted-foreground">
@@ -418,16 +420,11 @@ export function DoctorTable({
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="h-52 text-center">
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                          <span className="text-xs text-muted-foreground">
-                            Loading physician records...
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <TableRowSkeleton key={i} />
+                      ))}
+                    </>
                   ) : doctors.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="h-52 text-center">

@@ -28,6 +28,7 @@ import { PatientFormModal } from "./patient-form-modal";
 import { PatientDetailModal } from "./patient-detail-modal";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -249,7 +250,7 @@ export function PatientsView() {
           <div className="flex items-baseline gap-2">
             <span className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
               {isStatsLoading ? (
-                <span className="bg-muted inline-block h-7 w-12 animate-pulse rounded" />
+                <Skeleton className="h-7 w-14 inline-block" />
               ) : (
                 stats.totalPatients
               )}
@@ -273,7 +274,7 @@ export function PatientsView() {
           <div className="flex items-baseline gap-2">
             <span className="text-xl font-bold tracking-tight text-red-600 sm:text-2xl">
               {isStatsLoading ? (
-                <span className="inline-block h-7 w-12 animate-pulse rounded bg-red-100 dark:bg-red-950/40" />
+                <Skeleton className="h-7 w-14 inline-block" />
               ) : (
                 stats.criticalCare
               )}
@@ -297,7 +298,7 @@ export function PatientsView() {
           <div className="flex items-baseline gap-2">
             <span className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
               {isStatsLoading ? (
-                <span className="inline-block h-7 w-12 animate-pulse rounded bg-amber-100 dark:bg-amber-950/40" />
+                <Skeleton className="h-7 w-14 inline-block" />
               ) : (
                 stats.underTreatment
               )}
@@ -321,7 +322,7 @@ export function PatientsView() {
           <div className="flex items-baseline gap-2">
             <span className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
               {isStatsLoading ? (
-                <span className="inline-block h-7 w-12 animate-pulse rounded bg-indigo-100 dark:bg-indigo-950/40" />
+                <Skeleton className="h-7 w-14 inline-block" />
               ) : (
                 stats.unassigned
               )}

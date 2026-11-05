@@ -26,6 +26,7 @@ import { DoctorDetailModal } from "./doctor-detail-modal";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export function DoctorsView() {
@@ -218,7 +219,7 @@ export function DoctorsView() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {totalDoctorsCount}
+              {isLoading ? <Skeleton className="h-7 w-14 inline-block" /> : totalDoctorsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
@@ -238,7 +239,7 @@ export function DoctorsView() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {totalAssignedPatientsCount}
+              {isLoading ? <Skeleton className="h-7 w-14 inline-block" /> : totalAssignedPatientsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
@@ -258,7 +259,7 @@ export function DoctorsView() {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {unassignedPatientsCount}
+              {isLoading ? <Skeleton className="h-7 w-14 inline-block" /> : unassignedPatientsCount}
             </span>
           </div>
           <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">

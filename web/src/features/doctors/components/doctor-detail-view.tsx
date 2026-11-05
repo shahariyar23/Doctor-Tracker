@@ -24,6 +24,12 @@ import {
 } from "../hooks/use-doctors";
 import { AssignPatientModal } from "./assign-patient-modal";
 import { Button } from "@/components/ui/button";
+import {
+  Skeleton,
+  KpiCardSkeleton,
+  TableRowSkeleton,
+  MobileCardSkeleton,
+} from "@/components/ui/skeleton";
 
 interface DoctorDetailViewProps {
   doctorId: string;
@@ -43,8 +49,41 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="space-y-6 motion-reduce:animate-none">
+        {/* Profile Card Skeleton */}
+        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-20 w-20 rounded-full shrink-0" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48 rounded" />
+                <Skeleton className="h-4 w-32 rounded" />
+                <Skeleton className="h-3 w-40 rounded" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-28 rounded-lg" />
+              <Skeleton className="h-9 w-28 rounded-lg" />
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiCardSkeleton />
+          <KpiCardSkeleton />
+          <KpiCardSkeleton />
+        </div>
+
+        {/* Patients Table Container */}
+        <div className="rounded-xl border border-border/80 bg-card shadow-xs p-6 space-y-4">
+          <Skeleton className="h-5 w-44 rounded" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -326,8 +365,10 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
           {/* Responsive Mobile Card List (< md) */}
           <div className="block md:hidden divide-y divide-border/60 border border-border rounded-xl p-3 bg-card">
             {isLoadingPatients ? (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                Loading assigned patient records...
+              <div className="space-y-3 py-1">
+                {[1, 2, 3].map((i) => (
+                  <MobileCardSkeleton key={i} />
+                ))}
               </div>
             ) : paginatedPatients.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
@@ -391,11 +432,11 @@ export function DoctorDetailView({ doctorId }: DoctorDetailViewProps) {
                 </thead>
                 <tbody className="divide-y divide-border/60 text-foreground">
                   {isLoadingPatients ? (
-                    <tr>
-                      <td colSpan={7} className="h-32 text-center text-muted-foreground">
-                        Loading assigned patient records...
-                      </td>
-                    </tr>
+                    <>
+                      {[1, 2, 3, 4].map((i) => (
+                        <TableRowSkeleton key={i} />
+                      ))}
+                    </>
                   ) : paginatedPatients.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="h-32 text-center text-muted-foreground">

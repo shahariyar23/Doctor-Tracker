@@ -47,7 +47,7 @@ describe('Global Search API Test Suite — GET /api/v1/search', () => {
       specialization: 'Diagnostic Medicine',
       hospital: 'Princeton-Plainsboro Teaching Hospital',
       email: 'house.diag@clinical.test.invalid',
-      phone: '01761102860',
+      phone: '01761102861',
     });
 
     // Seed test patients
@@ -159,7 +159,7 @@ describe('Global Search API Test Suite — GET /api/v1/search', () => {
 
   it('10. should search Doctor by phone', async () => {
     const res = await request(app)
-      .get('/api/v1/search?q=019-2834')
+      .get('/api/v1/search?q=01761102860')
       .set('Cookie', authCookie);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

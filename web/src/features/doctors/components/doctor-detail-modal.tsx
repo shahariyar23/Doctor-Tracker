@@ -23,6 +23,7 @@ import {
 } from "../hooks/use-doctors";
 import { AssignPatientModal } from "./assign-patient-modal";
 import { Button } from "@/components/ui/button";
+import { TableRowSkeleton } from "@/components/ui/skeleton";
 
 interface DoctorDetailModalProps {
   doctor: Doctor | null;
@@ -348,11 +349,11 @@ export function DoctorDetailModal({
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">
                     {isLoading ? (
-                      <tr>
-                        <td colSpan={7} className="h-32 text-center text-slate-400">
-                          Loading assigned patient records...
-                        </td>
-                      </tr>
+                      <>
+                        {[1, 2, 3, 4].map((i) => (
+                          <TableRowSkeleton key={i} />
+                        ))}
+                      </>
                     ) : paginatedPatients.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="h-32 text-center text-slate-400">
