@@ -1,11 +1,11 @@
 import axios, { AxiosError } from "axios";
-import type { ApiResponse, ApiErrorResponse } from "@/types/api-response";
+import type { ApiErrorResponse } from "@/types/api-response";
 
 /**
  * Base URL for the Express backend API.
- * Defaults to http://localhost:5000/api/v1
+ * Uses same-origin reverse proxy /api/v1 by default in the browser.
  */
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

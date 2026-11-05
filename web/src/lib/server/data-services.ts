@@ -1,5 +1,5 @@
 import "server-only";
-import { serverFetch } from "@/lib/server/api-client";
+import { serverFetch, getBackendUrl } from "@/lib/server/api-client";
 import type {
   DashboardOverviewData,
   PatientTrendsData,
@@ -55,10 +55,7 @@ export const serverDoctorService = {
     // Let's do a direct fetch or handle meta:
     const cookieStore = await (await import("next/headers")).cookies();
     const tokenCookie = cookieStore.get("token");
-    const backendBase =
-      process.env.INTERNAL_API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:5000/api/v1";
+    const backendBase = getBackendUrl();
 
     const searchParams = new URLSearchParams();
     for (const [k, v] of Object.entries(queryParams)) {
@@ -127,10 +124,7 @@ export const serverPatientService = {
 
     const cookieStore = await (await import("next/headers")).cookies();
     const tokenCookie = cookieStore.get("token");
-    const backendBase =
-      process.env.INTERNAL_API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:5000/api/v1";
+    const backendBase = getBackendUrl();
 
     const searchParams = new URLSearchParams();
     for (const [k, v] of Object.entries(queryParams)) {

@@ -4,14 +4,18 @@ import type { ApiResponse } from "@/types/api-response";
 
 /**
  * Server-only backend URL.
- * Falls back to NEXT_PUBLIC_API_URL or local default.
+ * Uses INTERNAL_API_URL with safe fallback to production backend or local development.
+ * Must always return an absolute HTTP(S) URL. Never return a relative URL.
  */
-function getBackendUrl(): string {
-  return (
+export function getBackendUrl(): string {
+  const rawUrl =
     process.env.INTERNAL_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000/api/v1"
-  );
+    (process.env.NODE_ENV === "development"
+      ? "http://localhost:5000/api/v1"
+      : "https://doctor-tracker-ten-iota.vercel.app/api/v1");
+
+  const cleanUrl = rawUrl.replace(/\/+$/, "");
+  return cleanUrl.endsWith("/api/v1") ? cleanUrl : `${cleanUrl}/api/v1`;
 }
 
 export interface ServerFetchOptions extends RequestInit {
